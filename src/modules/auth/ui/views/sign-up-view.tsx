@@ -3,7 +3,6 @@
 import { z } from "zod";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { OctagonAlertIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,8 +10,10 @@ import { authClient } from "@/lib/auth-client";
  
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import { FaGithub, FaGoogle, FaFacebook } from "react-icons/fa";
 
 import {
   Form,
@@ -22,6 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -35,7 +37,7 @@ const formSchema = z.object({
 })
 
 export const SignUpView = () => {
-  const router = useRouter();
+  const router = useRouter();  
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>();
 
@@ -49,6 +51,27 @@ export const SignUpView = () => {
     },
   });
 
+  const onSocial = (provider: "google" | "github" | "facebook") => {
+    setError(null);
+    setPending(true);
+
+    authClient.signIn.social(
+      {
+        provider: provider,
+        callbackURL: "/",
+      },
+      {
+        onSuccess: () => {
+          setPending(false);
+        },
+        onError: ({ error }) => {
+          setPending(false);
+          setError(error.message);
+        },
+      }
+    );
+  };
+
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     setError(null);
     setPending(true);
@@ -58,6 +81,7 @@ export const SignUpView = () => {
         name: data.name,
         email: data.email,
         password: data.password,
+        callbackURL: "/",
       },
       {
         onSuccess: () => {
@@ -175,18 +199,15 @@ export const SignUpView = () => {
                     Or continue with
                   </span>
                 </div>
-                <div className="grid grid-cols-4 gap-2">
-                  <Button type="button" variant="outline" className="w-full" disabled={pending}>
-                    Google
+                <div className="grid grid-cols-3 gap-2">
+                  <Button onClick={() => onSocial("google")} type="button" variant="outline" className="w-full" disabled={pending}>
+                    <FaGoogle />
                   </Button>
-                  <Button type="button" variant="outline" className="w-full" disabled={pending}>
-                    github
+                  <Button onClick={() => onSocial("github")} type="button" variant="outline" className="w-full" disabled={pending}>
+                    <FaGithub />
                   </Button>
-                  <Button type="button" variant="outline" className="w-full" disabled={pending}>
-                    gmail
-                  </Button>
-                  <Button type="button" variant="outline" className="w-full" disabled={pending}>
-                    facebook
+                  <Button onClick={() => onSocial("facebook")} type="button" variant="outline" className="w-full" disabled={pending}>
+                    <FaFacebook />  
                   </Button>
                 </div>
                 <div className="text-sm text-center">
@@ -202,7 +223,12 @@ export const SignUpView = () => {
             </form>
           </Form>
           <div className="bg-radial from-green-700 to-green-900 relative hidden md:flex flex-col gap-y-4 items-center justify-center">
-            <img src="/logo.svg" alt="image" className="h-[92px] w-[92px]" />
+            <Image 
+              src="/logo.svg"
+              alt="image"
+              height={92}
+              width={92}
+            />
             <p className="text-2xl font-semibold text-white">Meet.AI</p>
           </div>
         </CardContent>
