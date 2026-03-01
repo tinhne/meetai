@@ -1,9 +1,9 @@
-import { AgentGetOne } from "../types";
+import { AgentGetOne } from "../../types";
 import { useTRPC } from "@/trpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { AgentInsertSchema } from "../schemas/schemas";
+import { AgentInsertSchema } from "../../schemas/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,9 @@ export const AgentForm = ({
       onSuccess: async () => {
         toast.success("Agent created successfully");
 
-        await queryClient.invalidateQueries(trpc.agents.getMany.queryOptions());
+        await queryClient.invalidateQueries(
+          trpc.agents.getMany.queryOptions({}),
+        );
 
         if (initialValues?.id) {
           await queryClient.invalidateQueries(
