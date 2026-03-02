@@ -6,12 +6,16 @@ import {
 } from "@/constants";
 import { z } from "zod";
 
-export const AgentInsertSchema = z.object({
+export const agentInsertSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }).max(100),
   instructions: z.string().min(1, { message: "Instructions are required" }),
 });
 
-export const AgentFilterSchema = z.object({
+export const agentsUpdateSchema = agentInsertSchema.extend({
+  id: z.string().min(1, { message: "ID is required" }),
+});
+
+export const agentFilterSchema = z.object({
   page: z.number().min(MIN_PAGE_SIZE).default(DEFAULT_PAGE),
   pageSize: z
     .number()
