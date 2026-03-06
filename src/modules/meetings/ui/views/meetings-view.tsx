@@ -9,7 +9,11 @@ export const MeetingsView = () => {
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(trpc.meetings.getMany.queryOptions({}));
 
-  return <div>{JSON.stringify(data)}</div>;
+  return (
+    <div className="flex-1 pb-4 px-4 md:px-8 flex flex-col gap-y-4">
+      {JSON.stringify(data, null, 2)}
+    </div>
+  );
 };
 
 export const MeetingsViewLoading = () => {
