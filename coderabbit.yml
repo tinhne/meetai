@@ -1,0 +1,8 @@
+reviews:
+  profile: aggressive
+
+focus:
+  - architecture
+  - scalability
+  - security
+  - performance
