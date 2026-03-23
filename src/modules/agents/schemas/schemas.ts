@@ -4,6 +4,7 @@ import {
   MAX_PAGE_SIZE,
   MIN_PAGE_SIZE,
 } from "@/constants";
+import { MeetingStatus } from "@/modules/meetings/types";
 import { z } from "zod";
 
 export const agentInsertSchema = z.object({
@@ -23,4 +24,14 @@ export const agentFilterSchema = z.object({
     .max(MAX_PAGE_SIZE)
     .default(DEFAULT_PAGE_SIZE),
   search: z.string().nullish(),
+  agentId: z.string().nullish(),
+  status: z
+    .enum([
+      MeetingStatus.Upcoming,
+      MeetingStatus.Active,
+      MeetingStatus.Completed,
+      MeetingStatus.Processing,
+      MeetingStatus.Cancelled,
+    ])
+    .nullish(),
 });

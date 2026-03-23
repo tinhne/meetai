@@ -73,11 +73,13 @@ export const meetingsRouter = createTRPCRouter({
   getMany: protectedProcedure
     .input(agentFilterSchema)
     .query(async ({ ctx, input }) => {
-      const { search, page, pageSize } = input;
+      const { search, page, pageSize, status, agentId } = input;
 
       const filter = and(
         eq(meetings.userId, ctx.auth.session.userId),
         search ? ilike(meetings.name, `%${search}%`) : undefined,
+        status ? eq(meetings.status, status) : undefined,
+        agentId ? eq(meetings.agentId, agentId) : undefined,
       );
 
       const data = await db
@@ -97,7 +99,7 @@ export const meetingsRouter = createTRPCRouter({
       const [{ count: total }] = await db
         .select({ count: count() })
         .from(meetings)
-        .innerJoin(agents, eq(agents.id, meetings.agentId))
+        // .innerJoin(agents, eq(agents.id, meetings.agentId))
         .where(filter);
 
       const totalPages = Math.ceil(Number(total) / pageSize);

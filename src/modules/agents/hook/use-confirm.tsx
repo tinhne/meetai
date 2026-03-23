@@ -1,55 +1,63 @@
+import { useState, useRef, useEffect, JSX } from "react";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { Button } from "@/components/ui/button";
-import { JSX, useState } from "react";
+
+type ConfirmFn = () => Promise<boolean>;
 
 export const useConfirm = (
   title: string,
   description: string,
-): [() => JSX.Element, () => Promise<unknown>] => {
-  const [promise, setPromise] = useState<{
-    resolve: (value: boolean) => void;
-  } | null>(null);
+): [() => JSX.Element, ConfirmFn] => {
+  const [open, setOpen] = useState(false);
+  const resolverRef = useRef<((value: boolean) => void) | null>(null);
 
-  const confirm = () => {
-    return new Promise((resolve) => {
-      setPromise({ resolve });
+  const confirm: ConfirmFn = () => {
+    return new Promise<boolean>((resolve) => {
+      resolverRef.current = resolve;
+      setOpen(true);
     });
   };
 
   const handleClose = () => {
-    setPromise(null);
+    setOpen(false);
   };
 
   const handleConfirm = () => {
-    promise?.resolve(true);
+    resolverRef.current?.(true);
+    resolverRef.current = null;
     handleClose();
   };
 
   const handleCancel = () => {
-    promise?.resolve(false);
+    resolverRef.current?.(false);
+    resolverRef.current = null;
     handleClose();
   };
 
+  // cleanup tránh memory leak
+  useEffect(() => {
+    return () => {
+      resolverRef.current?.(false);
+      resolverRef.current = null;
+    };
+  }, []);
+
   const ConfirmationDialog = () => (
     <ResponsiveDialog
-      open={promise !== null}
+      open={open}
       onOpenChange={handleClose}
       title={title}
       description={description}
     >
-      <div className="pt-4 w-full flex flex-col-reverse gap-y-2 lg:flex-row gap-x-2 items-center justify-center">
-        <Button
-          variant="outline"
-          onClick={handleCancel}
-          className="w-full lg:w-auto"
-        >
+      <div className="pt-4 flex gap-2 justify-center">
+        <Button variant="outline" onClick={handleCancel}>
           Cancel
         </Button>
-        <Button onClick={handleConfirm} className="w-full lg:w-auto">
-          Confirm
-        </Button>
+
+        <Button onClick={handleConfirm}>Confirm</Button>
       </div>
     </ResponsiveDialog>
   );
+
   return [ConfirmationDialog, confirm];
 };
