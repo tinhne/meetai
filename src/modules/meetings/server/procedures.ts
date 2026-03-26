@@ -6,8 +6,31 @@ import { TRPCError } from "@trpc/server";
 import { and, count, eq, getTableColumns, ilike, sql } from "drizzle-orm";
 import { z } from "zod";
 import { meetingInsertSchema, meetingUpdateSchema } from "../schemas/schemas";
+import { streamVideo } from "@/lib/stream-video";
+import { generateAvatar } from "@/lib/avatar";
 
 export const meetingsRouter = createTRPCRouter({
+  generateToken: protectedProcedure.mutation(async ({ ctx }) => {
+    await streamVideo.upsertUsers([
+      {
+        id: ctx.auth.session.userId,
+        name: ctx.auth.user.name || "Unknown User",
+        role: "admin",
+        image:
+          ctx.auth.user.image ??
+          generateAvatar(ctx.auth.user.name || "Unknown User", "initials"),
+      },
+    ]);
+    const expirationTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour
+    const issuedAt = Math.floor(Date.now() / 1000) - 60; // 1 minute ago to account for clock skew
+
+    const token = streamVideo.generateUserToken({
+      user_id: ctx.auth.session.userId,
+      exp: expirationTime,
+      iat: issuedAt,
+    });
+    return token;
+  }),
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -56,6 +79,22 @@ export const meetingsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(meetingInsertSchema)
     .mutation(async ({ ctx, input }) => {
+      const [existingAgent] = await db
+        .select()
+        .from(agents)
+        .where(
+          and(
+            eq(agents.id, input.agentId),
+            eq(agents.userId, ctx.auth.session.userId),
+          ),
+        );
+
+      if (!existingAgent) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Agent not found or unauthorized",
+        });
+      }
       const [createdMeeting] = await db
         .insert(meetings)
         .values({
@@ -64,7 +103,40 @@ export const meetingsRouter = createTRPCRouter({
         })
         .returning();
 
-      // TODO: Create Stream Call, Upsert Stream Users
+      const callType = "default"; // You can modify this based on your requirements
+      const call = streamVideo.video.call(callType, createdMeeting.id);
+      await call.create({
+        data: {
+          created_by_id: ctx.auth.user.id,
+          custom: {
+            meetingId: createdMeeting.id,
+            meetingName: createdMeeting.name,
+          },
+          settings_override: {
+            transcription: {
+              language: "en",
+              mode: "auto-on",
+              closed_caption_mode: "auto-on",
+            },
+            recording: {
+              mode: "auto-on",
+              quality: "1080p",
+            },
+          },
+        },
+      });
+
+      await streamVideo.upsertUsers([
+        {
+          id: ctx.auth.session.userId,
+          name: ctx.auth.user.name || "Unknown User",
+          role: "user",
+          image: generateAvatar(
+            ctx.auth.user.name || "Unknown User",
+            "initials",
+          ),
+        },
+      ]);
 
       return createdMeeting;
     }),
