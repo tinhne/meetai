@@ -13,7 +13,7 @@ export const meetingsRouter = createTRPCRouter({
   generateToken: protectedProcedure.mutation(async ({ ctx }) => {
     await streamVideo.upsertUsers([
       {
-        id: ctx.auth.session.userId,
+        id: ctx.auth.user.id,
         name: ctx.auth.user.name || "Unknown User",
         role: "admin",
         image:
@@ -25,7 +25,7 @@ export const meetingsRouter = createTRPCRouter({
     const issuedAt = Math.floor(Date.now() / 1000) - 60; // 1 minute ago to account for clock skew
 
     const token = streamVideo.generateUserToken({
-      user_id: ctx.auth.session.userId,
+      user_id: ctx.auth.user.id,
       exp: expirationTime,
       iat: issuedAt,
     });
@@ -37,10 +37,7 @@ export const meetingsRouter = createTRPCRouter({
       const [removedMeeting] = await db
         .delete(meetings)
         .where(
-          and(
-            eq(meetings.id, input.id),
-            eq(meetings.userId, ctx.auth.session.userId),
-          ),
+          and(eq(meetings.id, input.id), eq(meetings.userId, ctx.auth.user.id)),
         )
         .returning();
 
@@ -60,10 +57,7 @@ export const meetingsRouter = createTRPCRouter({
         .update(meetings)
         .set(input)
         .where(
-          and(
-            eq(meetings.id, input.id),
-            eq(meetings.userId, ctx.auth.session.userId),
-          ),
+          and(eq(meetings.id, input.id), eq(meetings.userId, ctx.auth.user.id)),
         )
         .returning();
 
@@ -79,22 +73,6 @@ export const meetingsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(meetingInsertSchema)
     .mutation(async ({ ctx, input }) => {
-      const [existingAgent] = await db
-        .select()
-        .from(agents)
-        .where(
-          and(
-            eq(agents.id, input.agentId),
-            eq(agents.userId, ctx.auth.session.userId),
-          ),
-        );
-
-      if (!existingAgent) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Agent not found or unauthorized",
-        });
-      }
       const [createdMeeting] = await db
         .insert(meetings)
         .values({
@@ -103,8 +81,7 @@ export const meetingsRouter = createTRPCRouter({
         })
         .returning();
 
-      const callType = "default"; // You can modify this based on your requirements
-      const call = streamVideo.video.call(callType, createdMeeting.id);
+      const call = streamVideo.video.call("default", createdMeeting.id);
       await call.create({
         data: {
           created_by_id: ctx.auth.user.id,
@@ -126,13 +103,25 @@ export const meetingsRouter = createTRPCRouter({
         },
       });
 
+      const [existingAgent] = await db
+        .select()
+        .from(agents)
+        .where(eq(agents.id, createdMeeting.agentId));
+
+      if (!existingAgent) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Agent not found",
+        });
+      }
+
       await streamVideo.upsertUsers([
         {
-          id: ctx.auth.session.userId,
-          name: ctx.auth.user.name || "Unknown User",
+          id: existingAgent.id,
+          name: existingAgent.name || "Unknown User",
           role: "user",
           image: generateAvatar(
-            ctx.auth.user.name || "Unknown User",
+            existingAgent.name || "Unknown User",
             "initials",
           ),
         },
@@ -154,10 +143,7 @@ export const meetingsRouter = createTRPCRouter({
         .from(meetings)
         .innerJoin(agents, eq(agents.id, meetings.agentId))
         .where(
-          and(
-            eq(meetings.id, input.id),
-            eq(meetings.userId, ctx.auth.session.userId),
-          ),
+          and(eq(meetings.id, input.id), eq(meetings.userId, ctx.auth.user.id)),
         );
 
       if (!existingMeeting) {
@@ -175,7 +161,7 @@ export const meetingsRouter = createTRPCRouter({
       const { search, page, pageSize, status, agentId } = input;
 
       const filter = and(
-        eq(meetings.userId, ctx.auth.session.userId),
+        eq(meetings.userId, ctx.auth.user.id),
         search ? ilike(meetings.name, `%${search}%`) : undefined,
         status ? eq(meetings.status, status) : undefined,
         agentId ? eq(meetings.agentId, agentId) : undefined,

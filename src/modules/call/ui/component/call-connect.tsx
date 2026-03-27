@@ -66,7 +66,7 @@ export const CallConnect = ({
     return () => {
       if (myCall.state.callingState !== CallingState.LEFT) {
         myCall.leave();
-        // myCall.endCall();
+        myCall.endCall();
         setCall(undefined);
       }
     };
