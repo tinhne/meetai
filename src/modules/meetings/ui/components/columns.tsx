@@ -13,16 +13,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import humanizeDuration from "humanize-duration";
-import { cn } from "@/lib/utils";
-
-function formatDuration(secords: number) {
-  return humanizeDuration(secords * 1000, {
-    largest: 1,
-    round: true,
-    units: ["h", "m", "s"],
-  });
-}
+import { cn, formatDuration } from "@/lib/utils";
 
 const statusIconMap = {
   upcoming: ClockArrowUpIcon,
