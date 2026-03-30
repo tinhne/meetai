@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import { db } from "@/db";
 import { agents, meetings } from "@/db/schema";
 import { inngest } from "@/inngest/client";
@@ -135,6 +136,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
     }
     await inngest.send({
+      id: `meeting-processing-${meetingId}`,
       name: "meetings/processing",
       data: {
         meetingId: updateMeeting.id,
