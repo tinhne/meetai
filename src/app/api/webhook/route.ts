@@ -3,7 +3,9 @@ import { db } from "@/db";
 import { agents, meetings } from "@/db/schema";
 import { inngest } from "@/inngest/client";
 import { streamVideo } from "@/lib/stream-video";
+
 import {
+  MessageNewEvent,
   CallEndedEvent,
   CallRecordingReadyEvent,
   CallSessionParticipantLeftEvent,
@@ -151,7 +153,59 @@ export async function POST(request: Request) {
       .update(meetings)
       .set({ recordingUrl: event.call_recording.url })
       .where(eq(meetings.id, meetingId));
-  }
+  } else if (eventType === "message.new") {
+    const event = payload as MessageNewEvent;
 
+    const userId = event.user?.id ?? event.message?.user?.id;
+    const channelId = event.channel_id;
+    const text = event.message?.text;
+    const messageType = event.message?.type;
+    const messageId = event.message?.id; //
+
+    if (!userId || !channelId || !text || !messageId) {
+      return NextResponse.json({ status: "ok" });
+    }
+
+    if (messageType !== "regular") {
+      return NextResponse.json({ status: "ok" });
+    }
+
+    const [existingMeeting] = await db
+      .select()
+      .from(meetings)
+      .where(and(eq(meetings.id, channelId), eq(meetings.status, "completed")));
+
+    if (!existingMeeting) {
+      return NextResponse.json({ status: "ok" }); // ← Trả 200 thay vì 404
+    }
+
+    const [existingAgent] = await db
+      .select()
+      .from(agents)
+      .where(eq(agents.id, existingMeeting.agentId));
+
+    if (!existingAgent) {
+      return NextResponse.json({ status: "ok" });
+    }
+
+    if (userId === existingAgent.id) {
+      return NextResponse.json({ status: "ok" });
+    }
+
+    await inngest.send({
+      id: `chat-message-${messageId}`,
+      name: "chat/message.new",
+      data: {
+        messageId,
+        userId,
+        channelId,
+        text,
+        agentId: existingAgent.id,
+        agentName: existingAgent.name,
+        agentInstructions: existingAgent.instructions,
+        meetingSummary: existingMeeting.summary,
+      },
+    });
+  }
   return NextResponse.json({ status: "Webhook processed successfully" });
 }

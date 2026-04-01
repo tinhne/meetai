@@ -13,7 +13,16 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { cn, formatDuration } from "@/lib/utils";
+import humanizeDuration from "humanize-duration";
+import { cn } from "@/lib/utils";
+
+function formatDuration(secords: number) {
+  return humanizeDuration(secords * 1000, {
+    largest: 1,
+    round: true,
+    units: ["h", "m", "s"],
+  });
+}
 
 const statusIconMap = {
   upcoming: ClockArrowUpIcon,
@@ -42,7 +51,7 @@ export const columns: ColumnDef<MeetingGetMany[number]>[] = [
         <div className="flex items-center gap-x-2">
           <div className="flex items-center gap-x-1">
             <CornerDownRightIcon className="size-3 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground max-w-[200px] truncate capitalize">
+            <span className="text-sm text-muted-foreground max-w-50 truncate capitalize">
               {row.original.agent.name}
             </span>
           </div>
