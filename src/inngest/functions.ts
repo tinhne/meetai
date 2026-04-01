@@ -5,6 +5,10 @@ import { db } from "@/db";
 import { agents, meetings, user } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { createAgent, gemini, TextMessage } from "@inngest/agent-kit";
+import { generateAvatar } from "@/lib/avatar";
+import { streamChat } from "@/lib/stream-chat";
+// import OpenAI from "openai";
+// import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 
 const summarizer = createAgent({
   name: "Summarizer",
@@ -33,11 +37,11 @@ Example:
     model: "gemini-2.5-flash",
     apiKey: process.env.GOOGLE_AI_API_KEY,
   }),
-  // model: openai({ model: "gpt-4o", apiKey: process.env.OPENAI_API_KEY }),
 });
 
 export const meetingsProcessing = inngest.createFunction(
-  { id: "meetings/processing", triggers: { event: "meetings/processing" } },
+  { id: "meetings/processing" },
+  { event: "meetings/processing" },
   async ({ event, step }) => {
     const response = await step.run("fetch-transcript", async () => {
       return fetch(event.data.transcriptUrl).then((res) => res.text());
@@ -109,6 +113,73 @@ export const meetingsProcessing = inngest.createFunction(
           status: "completed",
         })
         .where(eq(meetings.id, event.data.meetingId));
+    });
+  },
+);
+
+const chatAgent = createAgent({
+  name: "Chat Agent",
+  system: "You are a helpful AI assistant.",
+  model: gemini({
+    model: "gemini-2.5-flash",
+    apiKey: process.env.GOOGLE_AI_API_KEY,
+  }),
+});
+
+export const chatMessageProcessing = inngest.createFunction(
+  { id: "chat/message.new" },
+  { event: "chat/message.new" },
+  async ({ event }) => {
+    const {
+      channelId,
+      text,
+      agentId,
+      agentName,
+      agentInstructions,
+      meetingSummary,
+    } = event.data;
+
+    const channel = streamChat.channel("messaging", channelId);
+    await channel.watch();
+
+    const previousMessages = channel.state.messages
+      .slice(-5)
+      .filter((msg) => msg.text && msg.text.trim() !== "")
+      .map((msg) => ({
+        role: msg.user?.id === agentId ? "assistant" : "user",
+        content: msg.text || "",
+      }));
+
+    const instructions = `
+You are an AI assistant helping the user revisit a recently completed meeting.
+Below is a summary of the meeting, generated from the transcript:
+
+${meetingSummary}
+
+${agentInstructions}
+
+Be concise, helpful, and focus on providing accurate information from the meeting.
+
+Recent conversation history:
+${previousMessages.map((m) => `${m.role === "assistant" ? "Assistant" : "User"}: ${m.content}`).join("\n")}
+    `.trim();
+
+    const { output } = await chatAgent.run(`${instructions}\n\nUser: ${text}`);
+
+    const GPTResponseText = (output[0] as TextMessage).content as string;
+    if (!GPTResponseText) return;
+
+    const avatarUrl = generateAvatar(agentName, "initials");
+
+    await streamChat.upsertUser({
+      id: agentId,
+      name: agentName,
+      image: avatarUrl,
+    });
+
+    await channel.sendMessage({
+      text: GPTResponseText,
+      user_id: agentId,
     });
   },
 );

@@ -21,4 +21,9 @@ export type StreamTranscriptItem = {
   text: string;
   start_ts: number;
   end_ts: number;
+  user?: {
+    id?: string;
+    name: string;
+    image: string;
+  };
 };

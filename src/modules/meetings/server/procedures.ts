@@ -1,15 +1,108 @@
+import {
+  and,
+  count,
+  eq,
+  getTableColumns,
+  ilike,
+  inArray,
+  sql,
+} from "drizzle-orm";
+import { z } from "zod";
+import JSONL from "jsonl-parse-stringify";
+
 import { db } from "@/db";
-import { agents, meetings } from "@/db/schema";
+import { agents, meetings, user } from "@/db/schema";
 import { agentFilterSchema } from "@/modules/agents/schemas/schemas";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { and, count, eq, getTableColumns, ilike, sql } from "drizzle-orm";
-import { z } from "zod";
-import { meetingInsertSchema, meetingUpdateSchema } from "../schemas/schemas";
 import { streamVideo } from "@/lib/stream-video";
 import { generateAvatar } from "@/lib/avatar";
+import { meetingInsertSchema, meetingUpdateSchema } from "../schemas/schemas";
+import { StreamTranscriptItem } from "../types";
+import { streamChat } from "@/lib/stream-chat";
 
 export const meetingsRouter = createTRPCRouter({
+  generateChatToken: protectedProcedure.mutation(async ({ ctx }) => {
+    const token = streamChat.createToken(ctx.auth.user.id);
+    await streamChat.upsertUsers([
+      {
+        id: ctx.auth.user.id,
+        role: "admin",
+      },
+    ]);
+    return token;
+  }),
+  getTranscription: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const [existingMeeting] = await db
+        .select()
+        .from(meetings)
+        .where(
+          and(eq(meetings.id, input.id), eq(meetings.userId, ctx.auth.user.id)),
+        );
+
+      if (!existingMeeting) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Meeting not found",
+        });
+      }
+
+      if (!existingMeeting.transcriptUrl) {
+        return [];
+      }
+
+      const transcriptResponse = await fetch(existingMeeting.transcriptUrl)
+        .then((res) => res.text())
+        .then((text) => JSONL.parse<StreamTranscriptItem>(text))
+        .catch(() => []);
+
+      const speakerIds = [
+        ...new Set(transcriptResponse.map((item) => item.speaker_id)),
+      ];
+      if (speakerIds.length === 0) return transcriptResponse;
+
+      const [userRows, agentRows] = await Promise.all([
+        db.select().from(user).where(inArray(user.id, speakerIds)),
+        db.select().from(agents).where(inArray(agents.id, speakerIds)),
+      ]);
+
+      const speakersMap = new Map<
+        string,
+        { id: string; name: string; image: string }
+      >();
+
+      // Đưa User vào Map
+      userRows.forEach((u) => {
+        speakersMap.set(u.id, {
+          id: u.id,
+          name: u.name,
+          image: u.image ?? generateAvatar(u.name, "initials"),
+        });
+      });
+
+      agentRows.forEach((a) => {
+        speakersMap.set(a.id, {
+          id: a.id,
+          name: a.name,
+          image: generateAvatar(a.name, "botttsNeutral"),
+        });
+      });
+
+      const transcriptWithSpeakers = transcriptResponse.map((item) => {
+        const speaker = speakersMap.get(item.speaker_id);
+
+        return {
+          ...item,
+          user: speaker ?? {
+            name: "Unknown Speaker",
+            image: generateAvatar("Unknown Speaker", "initials"),
+          },
+        };
+      });
+      return transcriptWithSpeakers;
+    }),
   generateToken: protectedProcedure.mutation(async ({ ctx }) => {
     await streamVideo.upsertUsers([
       {
@@ -184,7 +277,7 @@ export const meetingsRouter = createTRPCRouter({
       const [{ count: total }] = await db
         .select({ count: count() })
         .from(meetings)
-        // .innerJoin(agents, eq(agents.id, meetings.agentId))
+        .innerJoin(agents, eq(agents.id, meetings.agentId))
         .where(filter);
 
       const totalPages = Math.ceil(Number(total) / pageSize);
