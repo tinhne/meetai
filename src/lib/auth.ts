@@ -1,7 +1,15 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import {
+  polar,
+  checkout,
+  portal,
+  usage,
+  webhooks,
+} from "@polar-sh/better-auth";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
+import { polarClient } from "./polar";
 
 export const auth = betterAuth({
   socialProviders: {
@@ -27,7 +35,32 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
-        ...schema,
-    }
+      ...schema,
+    },
   }),
+
+  // Setup polar customer deletion when a user is deleted in our system
+  user: {
+    deleteUser: {
+      enabled: true,
+      afterDelete: async (user) => {
+        await polarClient.customers.deleteExternal({
+          externalId: user.id,
+        });
+      },
+    },
+  },
+  plugins: [
+    polar({
+      client: polarClient,
+      createCustomerOnSignUp: true,
+      use: [
+        checkout({
+          successUrl: "/upgrade",
+          authenticatedUsersOnly: true,
+        }),
+        portal(),
+      ],
+    }),
+  ],
 });
