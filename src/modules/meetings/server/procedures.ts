@@ -13,7 +13,11 @@ import JSONL from "jsonl-parse-stringify";
 import { db } from "@/db";
 import { agents, meetings, user } from "@/db/schema";
 import { agentFilterSchema } from "@/modules/agents/schemas/schemas";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import {
+  createTRPCRouter,
+  premiumProcedure,
+  protectedProcedure,
+} from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { streamVideo } from "@/lib/stream-video";
 import { generateAvatar } from "@/lib/avatar";
@@ -163,7 +167,7 @@ export const meetingsRouter = createTRPCRouter({
 
       return updatedMeeting;
     }),
-  create: protectedProcedure
+  create: premiumProcedure("meetings")
     .input(meetingInsertSchema)
     .mutation(async ({ ctx, input }) => {
       const [createdMeeting] = await db

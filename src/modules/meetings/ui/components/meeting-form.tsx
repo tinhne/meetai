@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { CommandSelect } from "../../../../components/command-select";
 import { NewAgentDialog } from "@/modules/agents/ui/components/new-agent-dialog";
+import { useRouter } from "next/navigation";
 
 interface MeetingFormProps {
   onSuccess?: (id?: string) => void;
@@ -36,6 +37,7 @@ export const MeetingForm = ({
 }: MeetingFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const [openNewAgentDialog, setOpenNewAgentDialog] = useState(false);
   const [agentSearch, setAgentSearch] = useState("");
@@ -52,17 +54,17 @@ export const MeetingForm = ({
       onSuccess: async (data) => {
         toast.success("Meeting created successfully");
 
-        await queryClient.invalidateQueries(
-          trpc.meetings.getMany.queryOptions({}),
-        );
+        queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
+        queryClient.invalidateQueries(trpc.premium.getFreeUsage.queryOptions());
 
-        // TODO: Invalidate free tier usage
         onSuccess?.(data.id);
       },
       onError: (error) => {
         toast.error(error.message || "Failed to create meeting");
 
-        // TODO: Check if error code is "FORBIDDEN" , REDIRECT TO "/upgrade"
+        if (error.data?.code === "FORBIDDEN") {
+          router.push("/upgrade");
+        }
       },
     }),
   );
