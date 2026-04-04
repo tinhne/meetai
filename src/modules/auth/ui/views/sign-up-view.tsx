@@ -58,7 +58,7 @@ export const SignUpView = () => {
     authClient.signIn.social(
       {
         provider: provider,
-        callbackURL: "/",
+        callbackURL: "/dashboard",
       },
       {
         onSuccess: () => {
@@ -81,7 +81,7 @@ export const SignUpView = () => {
         name: data.name,
         email: data.email,
         password: data.password,
-        callbackURL: "/",
+        callbackURL: "/dashboard",
       },
       {
         onSuccess: () => {

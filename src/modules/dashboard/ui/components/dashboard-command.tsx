@@ -56,7 +56,7 @@ export const DashboardCommand = ({ open, setOpen }: Props) => {
             <CommandItem
               key={meeting.id}
               onSelect={() => {
-                router.push(`/meetings/${meeting.id}`);
+                router.push(`/dashboard/meetings/${meeting.id}`);
                 setOpen(false);
               }}
             >
@@ -74,7 +74,7 @@ export const DashboardCommand = ({ open, setOpen }: Props) => {
             <CommandItem
               key={agent.id}
               onSelect={() => {
-                router.push(`/agents/${agent.id}`);
+                router.push(`/dashboard/agents/${agent.id}`);
                 setOpen(false);
               }}
             >
