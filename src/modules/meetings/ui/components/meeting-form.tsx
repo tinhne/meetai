@@ -63,7 +63,7 @@ export const MeetingForm = ({
         toast.error(error.message || "Failed to create meeting");
 
         if (error.data?.code === "FORBIDDEN") {
-          router.push("/upgrade");
+          router.push("/dashboard/upgrade");
         }
       },
     }),

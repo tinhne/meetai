@@ -23,12 +23,12 @@ const firstSection = [
   {
     icon: VideoIcon,
     label: "Meetings",
-    href: "/meetings",
+    href: "/dashboard/meetings",
   },
   {
     icon: BotIcon,
     label: "Agents",
-    href: "/agents",
+    href: "/dashboard/agents",
   },
 ];
 
@@ -36,7 +36,7 @@ const secondSection = [
   {
     icon: StarIcon,
     label: "Uprade",
-    href: "/upgrade",
+    href: "/dashboard/upgrade",
   },
 ];
 
@@ -45,7 +45,7 @@ export const DashboardSidebar = () => {
   return (
     <Sidebar>
       <SidebarHeader>
-        <Link href="/" className="flex items-center pt-2 px-2 gap-2">
+        <Link href="/dashboard" className="flex items-center pt-2 px-2 gap-2">
           <Image
             src="/logo.svg"
             alt="Meet.AI"

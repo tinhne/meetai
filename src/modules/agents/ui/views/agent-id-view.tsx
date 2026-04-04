@@ -36,7 +36,7 @@ export const AgentViewId = ({ agentId }: Props) => {
       onSuccess: async () => {
         queryClient.invalidateQueries(trpc.agents.getMany.queryOptions({}));
         queryClient.invalidateQueries(trpc.premium.getFreeUsage.queryOptions());
-        router.push("/agents");
+        router.push("/dashboard/agents");
       },
       onError: (error) => {
         toast.error(error.message || "Failed to remove agent");

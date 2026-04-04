@@ -13,8 +13,38 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Meet.AI - AI Meeting Assistant",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "https://meetai-assitant.vercel.app"
+  ),
+  title: {
+    default: "Meet.AI - AI Meeting Assistant",
+    template: "%s | Meet.AI",
+  },
   description: "AI-powered meeting notes, summaries, and agents.",
+  keywords: [
+    "AI",
+    "Meeting Assistant",
+    "Meeting Notes",
+    "Transcriptions",
+    "AI Agents",
+    "Meet.AI",
+  ],
+  authors: [{ name: "Meet.AI" }],
+  creator: "Meet.AI",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://meetai-assitant.vercel.app",
+    title: "Meet.AI - AI Meeting Assistant",
+    description: "AI-powered meeting notes, summaries, and AI-driven agents.",
+    siteName: "Meet.AI",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Meet.AI - AI Meeting Assistant",
+    description: "AI-powered meeting notes, summaries, and actionable insights.",
+    creator: "@meetai",
+  },
 };
 
 export default function RootLayout({
