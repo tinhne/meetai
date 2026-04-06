@@ -14,13 +14,14 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "https://meetai-assitant.vercel.app"
+    process.env.NEXT_PUBLIC_APP_URL || "https://meetai-assitant.vercel.app",
   ),
   title: {
-    default: "Meet.AI - AI Meeting Assistant",
+    default: "AI Meeting Assistant - Transcribe, Summarize & Chat | Meet.AI",
     template: "%s | Meet.AI",
   },
-  description: "AI-powered meeting notes, summaries, and agents.",
+  description:
+    "Record meetings, generate transcripts, summaries, and chat with your meetings using AI. Built for teams and developers.",
   keywords: [
     "AI",
     "Meeting Assistant",
@@ -42,7 +43,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Meet.AI - AI Meeting Assistant",
-    description: "AI-powered meeting notes, summaries, and actionable insights.",
+    description:
+      "AI-powered meeting notes, summaries, and actionable insights.",
     creator: "@meetai",
   },
 };
