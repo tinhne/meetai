@@ -24,7 +24,7 @@ export const agentsRouter = createTRPCRouter({
         .where(
           and(
             eq(agents.id, input.id),
-            eq(agents.userId, ctx.auth.session.userId),
+            eq(agents.userId, ctx.auth.user.id),
           ),
         )
         .returning();
@@ -46,7 +46,7 @@ export const agentsRouter = createTRPCRouter({
         .where(
           and(
             eq(agents.id, input.id),
-            eq(agents.userId, ctx.auth.session.userId),
+            eq(agents.userId, ctx.auth.user.id),
           ),
         )
         .returning();
@@ -72,7 +72,7 @@ export const agentsRouter = createTRPCRouter({
         .where(
           and(
             eq(agents.id, input.id),
-            eq(agents.userId, ctx.auth.session.userId),
+            eq(agents.userId, ctx.auth.user.id),
           ),
         )
         .limit(1);
@@ -92,7 +92,7 @@ export const agentsRouter = createTRPCRouter({
       const { search, page, pageSize } = input;
 
       const filter = and(
-        eq(agents.userId, ctx.auth.session.userId),
+        eq(agents.userId, ctx.auth.user.id),
         search ? ilike(agents.name, `%${search}%`) : undefined,
       );
 

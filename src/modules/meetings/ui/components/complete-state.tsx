@@ -81,7 +81,7 @@ export const CompletedState = ({ data }: Props) => {
               <h2 className="text-2xl font-medium capitalize">{data.name}</h2>
               <div className="gap-x-2 flex items-center">
                 <Link
-                  href={`dashboard/agents/${data.agent.id}`}
+                  href={`/dashboard/agents/${data.agent.id}`}
                   className="flex items-center gap-x-2 underline underline-offset-4 capitalize"
                 >
                   <GeneratedAvatar

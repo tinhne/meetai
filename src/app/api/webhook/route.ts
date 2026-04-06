@@ -80,25 +80,51 @@ export async function POST(request: Request) {
       .set({ status: "active", startedAt: new Date() })
       .where(eq(meetings.id, existingMeeting.id));
 
+    console.log("[Webhook] Session started for meeting:", meetingId);
+
     const [existingAgent] = await db
       .select()
       .from(agents)
       .where(eq(agents.id, existingMeeting.agentId));
 
     if (!existingAgent) {
+      console.error("[Webhook] Agent not found for meeting:", meetingId);
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
 
-    const call = streamVideo.video.call("default", meetingId);
-    const realtimeClient = await streamVideo.video.connectOpenAi({
-      call,
-      openAiApiKey: process.env.OPENAI_API_KEY!,
-      agentUserId: existingAgent.id,
-    });
+    const openAiApiKey = process.env.OPENAI_API_KEY;
+    if (!openAiApiKey) {
+      console.error("[Webhook] OPENAI_API_KEY is missing");
+      return NextResponse.json(
+        { error: "OPENAI_API_KEY is missing" },
+        { status: 500 },
+      );
+    }
 
-    realtimeClient.updateSession({
-      instructions: existingAgent.instructions,
-    });
+    try {
+      const call = streamVideo.video.call("default", meetingId);
+      console.log("[Webhook] Connecting OpenAI agent:", existingAgent.id);
+      
+      const realtimeClient = await streamVideo.video.connectOpenAi({
+        call,
+        openAiApiKey: openAiApiKey,
+        agentUserId: existingAgent.id,
+      });
+
+      console.log("[Webhook] OpenAI agent connected. Updating session instructions.");
+      
+      realtimeClient.updateSession({
+        instructions: existingAgent.instructions,
+      });
+      
+      console.log("[Webhook] Session instructions updated successfully.");
+    } catch (error) {
+      console.error("[Webhook] Error connecting OpenAI agent:", error);
+      return NextResponse.json(
+        { error: "Failed to connect OpenAI agent" },
+        { status: 500 },
+      );
+    }
   } else if (eventType === "call.session_participant_left") {
     const event = payload as CallSessionParticipantLeftEvent;
     const meetingId = event.call_cid.split(":")[1];
