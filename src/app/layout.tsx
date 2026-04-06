@@ -14,7 +14,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "https://meetai-assitant.vercel.app",
+    process.env.NEXT_PUBLIC_APP_URL || "https://meetai-assistant.vercel.app",
   ),
   title: {
     default: "AI Meeting Assistant - Transcribe, Summarize & Chat | Meet.AI",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://meetai-assitant.vercel.app",
+    url: "https://meetai-assistant.vercel.app",
     title: "Meet.AI - AI Meeting Assistant",
     description: "AI-powered meeting notes, summaries, and AI-driven agents.",
     siteName: "Meet.AI",
