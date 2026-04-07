@@ -166,7 +166,24 @@ ${previousMessages.map((m) => `${m.role === "assistant" ? "Assistant" : "User"}:
 
     const { output } = await chatAgent.run(`${instructions}\n\nUser: ${text}`);
 
-    const GPTResponseText = (output[0] as TextMessage).content as string;
+    let GPTResponseText = "";
+
+    try {
+      const { output } = await chatAgent.run(
+        `${instructions}\n\nUser: ${text}`,
+      );
+      GPTResponseText = (output[0] as TextMessage)?.content as string;
+    } catch (err: any) {
+      console.error("AI error:", err?.error?.message || err.message);
+
+      if (err?.error?.code === 429) {
+        GPTResponseText =
+          "I'm currently rate limited. Please wait a moment and try again.";
+      } else {
+        GPTResponseText = "Something went wrong while generating a response.";
+      }
+    }
+
     if (!GPTResponseText) return;
 
     const avatarUrl = generateAvatar(agentName, "initials");
