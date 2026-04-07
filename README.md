@@ -9,6 +9,18 @@ Meet.AI is an AI-native meeting platform that doesn't just record your calls—i
 
 ---
 
+## 🌐 Live Demo
+
+<p align="center">
+  <a href="https://your-domain.com" target="_blank">
+    <img src="https://img.shields.io/badge/🚀_Try_Meet.AI_Live-000?style=for-the-badge&logo=vercel&logoColor=white" />
+  </a>
+</p>
+
+<p align="center">
+  Real-time meetings. AI summaries. Context-aware agents.
+</p>
+
 ## ✨ Key Features
 
 - 🎥 **Pro Video Experience**: High-quality, low-latency video meetings powered by **Stream.io**.
@@ -50,16 +62,16 @@ graph TD
 
 ## 🛠️ Technical Stack
 
-| Category | Technology |
-| :--- | :--- |
-| **Frontend** | Next.js 16 (App Router), Tailwind CSS 4, Radix UI, Lucide Icons |
-| **Backend** | tRPC, Node.js, TypeScript |
-| **Database** | Neon (Serverless PostgreSQL), Drizzle ORM |
-| **Authentication** | Better Auth (OAuth & Email/Password) |
-| **AI / NLP** | Google Gemini 2.5 Flash, Inngest Agent Kit |
-| **Background Jobs** | Inngest (Event-driven workflows) |
-| **Video / Real-time** | Stream.io Video & Chat SDK |
-| **Payments** | Polar.sh (Next-gen billing) |
+| Category              | Technology                                                      |
+| :-------------------- | :-------------------------------------------------------------- |
+| **Frontend**          | Next.js 16 (App Router), Tailwind CSS 4, Radix UI, Lucide Icons |
+| **Backend**           | tRPC, Node.js, TypeScript                                       |
+| **Database**          | Neon (Serverless PostgreSQL), Drizzle ORM                       |
+| **Authentication**    | Better Auth (OAuth & Email/Password)                            |
+| **AI / NLP**          | Google Gemini 2.5 Flash, Inngest Agent Kit                      |
+| **Background Jobs**   | Inngest (Event-driven workflows)                                |
+| **Video / Real-time** | Stream.io Video & Chat SDK                                      |
+| **Payments**          | Polar.sh (Next-gen billing)                                     |
 
 ---
 
@@ -74,18 +86,21 @@ graph TD
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/tinhne/meetai.git
    cd meetai
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install --legacy-peer-deps
    ```
 
 3. **Environment Variables**
    Create a `.env` file in the root directory and add the following:
+
    ```env
    # Database
    DATABASE_URL=your_neon_db_url
