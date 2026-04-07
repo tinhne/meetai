@@ -12,7 +12,7 @@ Meet.AI is an AI-native meeting platform that doesn't just record your calls—i
 ## 🌐 Live Demo
 
 <p align="center">
-  <a href="https://your-domain.com" target="_blank">
+  <a href="https://meetai-assistant.vercel.app" target="_blank">
     <img src="https://img.shields.io/badge/🚀_Try_Meet.AI_Live-000?style=for-the-badge&logo=vercel&logoColor=white" />
   </a>
 </p>
