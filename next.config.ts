@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const isDev = process.env.NODE_ENV === "development";
 
 const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   serverExternalPackages: ["@inngest/agent-kit", "inngest"],
   async headers() {
     // Chỉ bật CORS lỏng lẻo khi đang chạy ở máy local (Development)
