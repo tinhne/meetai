@@ -6,9 +6,10 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+
   serverExternalPackages: ["@inngest/agent-kit", "inngest"],
+
   async headers() {
-    // Chỉ bật CORS lỏng lẻo khi đang chạy ở máy local (Development)
     if (!isDev) return [];
 
     return [
@@ -25,6 +26,22 @@ const nextConfig: NextConfig = {
             value: "Content-Type, x-inngest-signature",
           },
         ],
+      },
+    ];
+  },
+
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "meetai-assitant.vercel.app",
+          },
+        ],
+        destination: "https://meetai-assistant.vercel.app/:path*",
+        permanent: true,
       },
     ];
   },
