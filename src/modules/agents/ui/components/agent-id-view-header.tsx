@@ -18,7 +18,7 @@ import {
   PencilIcon,
   TrashIcon,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 interface Props {
   agentId: string;
@@ -63,11 +63,11 @@ export const AgentIdViewHeader = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={onEdit}>
-            <PencilIcon className="size-4 text-black" />
+            <PencilIcon className="size-4" />
             Edit
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onDelete}>
-            <TrashIcon className="size-4 text-black" />
+            <TrashIcon className="size-4" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -12,7 +12,7 @@ import {
   VideoPreview,
 } from "@stream-io/video-react-sdk";
 import { LogInIcon } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 interface Props {
   onJoin: () => void;

@@ -1,32 +1,16 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { RocketIcon } from "lucide-react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 
-const UsageRow = ({
-  label,
-  used,
-  limit,
-}: {
-  label: string;
-  used: number;
-  limit: number | null;
-}) => (
-  <div className="flex flex-col gap-y-2">
-    <p className="text-xs">
-      {limit === null ? `${used} ${label}` : `${used}/${limit} ${label}`}
-    </p>
-    {limit !== null && (
-      <Progress value={Math.min(100, (used / Math.max(1, limit)) * 100)} />
-    )}
-  </div>
-);
+import { Button } from "@/components/ui/button";
+import { UsageMeter } from "@/components/usage-meter";
+import { Link } from "@/i18n/navigation";
+import { useTRPC } from "@/trpc/client";
 
 export const DashboardTrial = () => {
+  const t = useTranslations("usage");
   const trpc = useTRPC();
 
   const { data } = useQuery(trpc.premium.getFreeUsage.queryOptions());
@@ -34,24 +18,29 @@ export const DashboardTrial = () => {
   if (!data) return null;
 
   return (
-    <div className="border border-border/10 rounded-lg w-full bg-white/5 flex flex-col gap-y-2">
-      <div className="p-3 flex flex-col gap-y-4">
+    <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/40 flex flex-col">
+      <div className="p-3 flex flex-col gap-y-3">
         <div className="flex items-center gap-2">
-          <RocketIcon className="size-4" />
-          <p className="text-sm font-medium">Free plan</p>
+          <RocketIcon className="size-4 text-sidebar-primary" />
+          <p className="text-sm font-medium">{t("freePlan")}</p>
         </div>
-        <UsageRow label="Agents" used={data.agentCount} limit={data.agentLimit} />
-        <UsageRow
-          label="Meetings this month"
+        <UsageMeter
+          label={t("agents")}
+          used={data.agentCount}
+          limit={data.agentLimit}
+        />
+        <UsageMeter
+          label={t("meetingsThisMonth")}
           used={data.meetingCount}
           limit={data.meetingLimit}
         />
       </div>
       <Button
-        className="bg-transparent border-t border-border/10 hover:bg-white/10 rounded-t-none"
         asChild
+        size="sm"
+        className="m-3 mt-0 bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
       >
-        <Link href="/dashboard/upgrade">Upgrade</Link>
+        <Link href="/dashboard/upgrade">{t("upgrade")}</Link>
       </Button>
     </div>
   );

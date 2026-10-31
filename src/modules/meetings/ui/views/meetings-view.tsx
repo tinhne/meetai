@@ -1,13 +1,13 @@
 "use client";
 
 import { ErrorState } from "@/components/error-state";
-import { LoadingState } from "@/components/loading-state";
+import { ListSkeleton } from "@/components/skeletons";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { DataTable } from "../../../../components/data-table";
 import { columns } from "../components/columns";
-import { EmptyState } from "@/components/emty-state";
-import { useRouter } from "next/navigation";
+import { EmptyState } from "@/components/empty-state";
+import { useRouter } from "@/i18n/navigation";
 import { useMeetingsFilters } from "../../hook/use-meetings-filters";
 import { DataPagination } from "@/components/data-pagination";
 
@@ -46,10 +46,9 @@ export const MeetingsView = () => {
 
 export const MeetingsViewLoading = () => {
   return (
-    <LoadingState
-      title="Loading meetings"
-      description="this may take a few seconds"
-    />
+    <div className="flex-1 pb-4 px-4 md:px-8">
+      <ListSkeleton />
+    </div>
   );
 };
 

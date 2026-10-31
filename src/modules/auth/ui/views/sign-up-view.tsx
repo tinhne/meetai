@@ -1,20 +1,14 @@
 "use client";
 
-import { z } from "zod";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { useState } from "react";
-import { OctagonAlertIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { authClient } from "@/lib/auth-client";
- 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
-import { Alert, AlertTitle } from "@/components/ui/alert";
-import { FaGithub, FaGoogle, FaFacebook } from "react-icons/fa";
+import { MailCheckIcon, OctagonAlertIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
+import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -23,55 +17,58 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useRouter } from "next/navigation";
-
-const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  email: z.string().email(),
-  password: z.string().min(8, "Password must be at least 8 characters."),
-  confirmPassword: z.string().min(8, "Password must be at least 8 characters."),
-})
-.refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-})
+import { Input } from "@/components/ui/input";
+import { getPathname, Link, useRouter } from "@/i18n/navigation";
+import { authClient } from "@/lib/auth-client";
+import { getAuthErrorKey } from "../../lib/errors";
+import { AuthCard, AuthShell } from "../components/auth-shell";
+import { SocialButtons, type SocialProvider } from "../components/social-buttons";
 
 export const SignUpView = () => {
-  const router = useRouter();  
+  const t = useTranslations("auth");
+  const locale = useLocale();
+  const router = useRouter();
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>();
+  const [error, setError] = useState<string | null>(null);
   const [verificationEmail, setVerificationEmail] = useState<string | null>(
     null,
   );
 
+  const formSchema = useMemo(
+    () =>
+      z
+        .object({
+          name: z.string().trim().min(2, t("validation.nameMin")),
+          email: z.email(t("validation.emailInvalid")),
+          password: z.string().min(8, t("validation.passwordMin")),
+          confirmPassword: z.string(),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: t("validation.passwordMismatch"),
+          path: ["confirmPassword"],
+        }),
+    [t],
+  );
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
+    defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
   });
 
-  const onSocial = (provider: "google" | "github" | "facebook") => {
+  const callbackURL = getPathname({ href: "/dashboard", locale });
+
+  const onSocial = (provider: SocialProvider) => {
     setError(null);
     setPending(true);
 
     authClient.signIn.social(
+      { provider, callbackURL },
       {
-        provider: provider,
-        callbackURL: "/dashboard",
-      },
-      {
-        onSuccess: () => {
-          setPending(false);
-        },
         onError: ({ error }) => {
           setPending(false);
-          setError(error.message);
+          setError(t(`errors.${getAuthErrorKey(error)}`));
         },
-      }
+      },
     );
   };
 
@@ -84,7 +81,7 @@ export const SignUpView = () => {
         name: data.name,
         email: data.email,
         password: data.password,
-        callbackURL: "/dashboard",
+        callbackURL,
       },
       {
         onSuccess: ({ data: result }) => {
@@ -98,172 +95,136 @@ export const SignUpView = () => {
         },
         onError: ({ error }) => {
           setPending(false);
-          setError(error.message);
+          setError(t(`errors.${getAuthErrorKey(error)}`));
         },
-      }
+      },
     );
   };
 
   if (verificationEmail) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-          <h1 className="text-2xl font-bold">Check your inbox</h1>
+      <AuthCard>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="flex size-12 items-center justify-center rounded-full bg-primary/10">
+            <MailCheckIcon className="size-6 text-primary" />
+          </div>
+          <h1 className="text-2xl font-semibold">
+            {t("signUp.checkInboxTitle")}
+          </h1>
           <p className="text-muted-foreground text-balance">
-            We sent a verification link to{" "}
-            <span className="font-medium text-foreground">
-              {verificationEmail}
-            </span>
-            . Open it to activate your account.
+            {t("signUp.checkInboxDescription", { email: verificationEmail })}
           </p>
           <Button asChild variant="outline">
-            <Link href="/sign-in">Back to sign in</Link>
+            <Link href="/sign-in">{t("backToSignIn")}</Link>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </AuthCard>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 md:p-8">
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col items-center text-center">
-                  <h1 className="text-2xl font-bold">Let&apos;s get started</h1>
-                  <p className="text-muted-foreground text-balance">
-                    Create your account
-                  </p>
-                </div>
-                <div className="grid gap-3">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="text"
-                            placeholder="Enter your name"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="grid gap-3">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="Enter your email"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="grid gap-3">
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="********"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="grid gap-3">
-                  <FormField
-                    control={form.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirm Password</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="********"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                {!!error && (
-                  <Alert className="bg-destructive/10 border-none">
-                    <OctagonAlertIcon className="h-4 w-4 !text-destructive" />
-                    <AlertTitle>{error}</AlertTitle>
-                  </Alert>
-                )}
-                <Button className="w-full" type="submit" disabled={pending}>
-                  Sign In
-                </Button>
-                <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                  <span className="bg-card text-muted-foreground relative z-10 px-2">
-                    Or continue with
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <Button onClick={() => onSocial("google")} type="button" variant="outline" className="w-full" disabled={pending}>
-                    <FaGoogle />
-                  </Button>
-                  <Button onClick={() => onSocial("github")} type="button" variant="outline" className="w-full" disabled={pending}>
-                    <FaGithub />
-                  </Button>
-                  <Button onClick={() => onSocial("facebook")} type="button" variant="outline" className="w-full" disabled={pending}>
-                    <FaFacebook />  
-                  </Button>
-                </div>
-                <div className="text-sm text-center">
-                  Already have an account? {" "}
-                  <Link
-                    href="/sign-in"
-                    className="underline underline-offset-4"
-                  >
-                    Sign-in
-                  </Link>
-                </div>
-              </div>
-            </form>
-          </Form>
-          <div className="bg-radial from-sidebar-accent to-sidebar relative hidden md:flex flex-col gap-y-4 items-center justify-center">
-            <Image 
-              src="/logo.svg"
-              alt="image"
-              height={92}
-              width={92}
+    <AuthShell>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col items-center text-center gap-1">
+              <h1 className="text-2xl font-semibold tracking-tight">
+                {t("signUp.title")}
+              </h1>
+              <p className="text-muted-foreground text-balance">
+                {t("signUp.subtitle")}
+              </p>
+            </div>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("fields.name")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      autoComplete="name"
+                      placeholder={t("fields.namePlaceholder")}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <p className="text-2xl font-semibold text-white">Meet.AI</p>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("fields.email")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      autoComplete="email"
+                      placeholder={t("fields.emailPlaceholder")}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("fields.password")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("fields.confirmPassword")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {!!error && (
+              <Alert className="bg-destructive/10 border-none" role="alert">
+                <OctagonAlertIcon className="h-4 w-4 !text-destructive" />
+                <AlertTitle>{error}</AlertTitle>
+              </Alert>
+            )}
+            <Button className="w-full" type="submit" disabled={pending}>
+              {t("signUp.submit")}
+            </Button>
+            <SocialButtons disabled={pending} onSelect={onSocial} />
+            <p className="text-sm text-center">
+              {t("signUp.haveAccount")}{" "}
+              <Link href="/sign-in" className="font-medium underline underline-offset-4">
+                {t("signUp.signInLink")}
+              </Link>
+            </p>
           </div>
-        </CardContent>
-      </Card>
-      <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By continuing, you agree to our Terms of Service and Privacy Policy.
-      </div>
-    </div>
+        </form>
+      </Form>
+    </AuthShell>
   );
 };

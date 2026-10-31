@@ -1,15 +1,27 @@
+import { useQuery } from "@tanstack/react-query";
+import {
+  BotIcon,
+  HomeIcon,
+  PlusIcon,
+  SettingsIcon,
+  SparklesIcon,
+  SunMoonIcon,
+  VideoIcon,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
+import { Dispatch, SetStateAction, useState } from "react";
+
 import { GeneratedAvatar } from "@/components/generated-avatar";
 import {
-  CommandResponsiveDialog,
+  CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
+  CommandResponsiveDialog,
 } from "@/components/ui/command";
+import { useRouter } from "@/i18n/navigation";
 import { useTRPC } from "@/trpc/client";
-import { useQuery } from "@tanstack/react-query";
-import { CommandEmpty, CommandGroup } from "cmdk";
-import { useRouter } from "next/navigation";
-import { Dispatch, SetStateAction, useState } from "react";
 
 interface Props {
   open: boolean;
@@ -17,23 +29,57 @@ interface Props {
 }
 
 export const DashboardCommand = ({ open, setOpen }: Props) => {
+  const t = useTranslations("commandPalette");
+  const tNav = useTranslations("nav");
   const router = useRouter();
+  const { resolvedTheme, setTheme } = useTheme();
   const [search, setSearch] = useState("");
   const trpc = useTRPC();
 
-  const meeting = useQuery(
-    trpc.meetings.getMany.queryOptions({
-      search,
-      pageSize: 100,
-    }),
-  );
+  const meetings = useQuery({
+    ...trpc.meetings.getMany.queryOptions({ search, pageSize: 20 }),
+    enabled: open,
+  });
 
-  const agents = useQuery(
-    trpc.agents.getMany.queryOptions({
-      search,
-      pageSize: 100,
-    }),
-  );
+  const agents = useQuery({
+    ...trpc.agents.getMany.queryOptions({ search, pageSize: 20 }),
+    enabled: open,
+  });
+
+  const run = (action: () => void) => {
+    setOpen(false);
+    action();
+  };
+
+  const matches = (label: string) =>
+    label.toLowerCase().includes(search.trim().toLowerCase());
+
+  const actions = [
+    {
+      label: t("newMeeting"),
+      icon: PlusIcon,
+      onSelect: () => router.push("/dashboard/meetings?new=1"),
+    },
+    {
+      label: t("newAgent"),
+      icon: PlusIcon,
+      onSelect: () => router.push("/dashboard/agents?new=1"),
+    },
+    {
+      label: t("toggleTheme"),
+      icon: SunMoonIcon,
+      onSelect: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
+    },
+  ].filter((action) => matches(action.label));
+
+  const pages = [
+    { label: tNav("home"), icon: HomeIcon, href: "/dashboard" },
+    { label: tNav("meetings"), icon: VideoIcon, href: "/dashboard/meetings" },
+    { label: tNav("agents"), icon: BotIcon, href: "/dashboard/agents" },
+    { label: tNav("upgrade"), icon: SparklesIcon, href: "/dashboard/upgrade" },
+    { label: tNav("settings"), icon: SettingsIcon, href: "/dashboard/settings" },
+  ].filter((page) => matches(page.label));
+
   return (
     <CommandResponsiveDialog
       shouldFilter={false}
@@ -43,40 +89,65 @@ export const DashboardCommand = ({ open, setOpen }: Props) => {
       <CommandInput
         value={search}
         onValueChange={(value) => setSearch(value)}
-        placeholder="Find a meeting or agent"
+        placeholder={t("placeholder")}
       />
       <CommandList>
-        <CommandGroup heading="Meetings">
-          <CommandEmpty>
-            <span className="text-muted-foreground text-sm">
-              No meetings found.
-            </span>
-          </CommandEmpty>
-          {meeting.data?.items.map((meeting) => (
+        {actions.length > 0 && (
+          <CommandGroup heading={t("actions")}>
+            {actions.map((action) => (
+              <CommandItem
+                key={action.label}
+                onSelect={() => run(action.onSelect)}
+              >
+                <action.icon />
+                {action.label}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {pages.length > 0 && (
+          <CommandGroup heading={t("navigation")}>
+            {pages.map((page) => (
+              <CommandItem
+                key={page.href}
+                onSelect={() => run(() => router.push(page.href))}
+              >
+                <page.icon />
+                {page.label}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        <CommandGroup heading={t("meetings")}>
+          {meetings.data?.items.length === 0 && (
+            <p className="px-2 py-1.5 text-sm text-muted-foreground">
+              {t("noMeetings")}
+            </p>
+          )}
+          {meetings.data?.items.map((meeting) => (
             <CommandItem
               key={meeting.id}
-              onSelect={() => {
-                router.push(`/dashboard/meetings/${meeting.id}`);
-                setOpen(false);
-              }}
+              onSelect={() =>
+                run(() => router.push(`/dashboard/meetings/${meeting.id}`))
+              }
             >
+              <VideoIcon />
               {meeting.name}
             </CommandItem>
           ))}
         </CommandGroup>
-        <CommandGroup heading="Agents">
-          <CommandEmpty>
-            <span className="text-muted-foreground text-sm">
-              No agents found.
-            </span>
-          </CommandEmpty>
+        <CommandGroup heading={t("agents")}>
+          {agents.data?.items.length === 0 && (
+            <p className="px-2 py-1.5 text-sm text-muted-foreground">
+              {t("noAgents")}
+            </p>
+          )}
           {agents.data?.items.map((agent) => (
             <CommandItem
               key={agent.id}
-              onSelect={() => {
-                router.push(`/dashboard/agents/${agent.id}`);
-                setOpen(false);
-              }}
+              onSelect={() =>
+                run(() => router.push(`/dashboard/agents/${agent.id}`))
+              }
             >
               <GeneratedAvatar
                 seed={agent.name}

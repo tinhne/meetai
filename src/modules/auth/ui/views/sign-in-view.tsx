@@ -1,21 +1,14 @@
 "use client";
 
-import { z } from "zod";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { useState } from "react";
-import { OctagonAlertIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { OctagonAlertIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertTitle } from "@/components/ui/alert";
-import { FaGithub, FaGoogle, FaFacebook } from "react-icons/fa";
-
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -24,43 +17,48 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
-const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8, "Password must be at least 8 characters."),
-});
+import { Input } from "@/components/ui/input";
+import { getPathname, Link, useRouter } from "@/i18n/navigation";
+import { authClient } from "@/lib/auth-client";
+import { getAuthErrorKey } from "../../lib/errors";
+import { AuthShell } from "../components/auth-shell";
+import { SocialButtons, type SocialProvider } from "../components/social-buttons";
 
 export const SignInView = () => {
+  const t = useTranslations("auth");
+  const locale = useLocale();
   const router = useRouter();
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>();
+  const [error, setError] = useState<string | null>(null);
+
+  const formSchema = useMemo(
+    () =>
+      z.object({
+        email: z.email(t("validation.emailInvalid")),
+        password: z.string().min(1, t("validation.passwordRequired")),
+      }),
+    [t],
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   });
 
-  const onSocial = (provider: "google" | "github" | "facebook") => {
+  const callbackURL = getPathname({ href: "/dashboard", locale });
+
+  const onSocial = (provider: SocialProvider) => {
     setError(null);
     setPending(true);
 
     authClient.signIn.social(
+      { provider, callbackURL },
       {
-        provider: provider,
-        callbackURL: "/dashboard",
-      },
-      {
-        onSuccess: () => {
-          setPending(false);
-        },
         onError: ({ error }) => {
           setPending(false);
-          setError(error.message);
+          setError(t(`errors.${getAuthErrorKey(error)}`));
         },
-      }
+      },
     );
   };
 
@@ -69,11 +67,7 @@ export const SignInView = () => {
     setPending(true);
 
     authClient.signIn.email(
-      {
-        email: data.email,
-        password: data.password,
-        callbackURL: "/dashboard",
-      },
+      { email: data.email, password: data.password, callbackURL },
       {
         onSuccess: () => {
           setPending(false);
@@ -81,125 +75,88 @@ export const SignInView = () => {
         },
         onError: ({ error }) => {
           setPending(false);
-          setError(
-            error.status === 403
-              ? "Please verify your email first. We have sent you a new verification link."
-              : error.message,
-          );
+          setError(t(`errors.${getAuthErrorKey(error)}`));
         },
-      }
+      },
     );
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 md:p-8">
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col items-center text-center">
-                  <h1 className="text-2xl font-bold">welcome back</h1>
-                  <p className="text-muted-foreground text-balance">
-                    Login to your account
-                  </p>
-                </div>
-                <div className="grid gap-3">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="Enter your email"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="grid gap-3">
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-center justify-between">
-                          <FormLabel>Password</FormLabel>
-                          <Link
-                            href="/forgot-password"
-                            className="text-sm underline-offset-4 hover:underline"
-                          >
-                            Forgot password?
-                          </Link>
-                        </div>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="********"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                {!!error && (
-                  <Alert className="bg-destructive/10 border-none">
-                    <OctagonAlertIcon className="h-4 w-4 !text-destructive" />
-                    <AlertTitle>{error}</AlertTitle>
-                  </Alert>
-                )}
-                <Button className="w-full" type="submit" disabled={pending}>
-                  Sign In
-                </Button>
-                <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                  <span className="bg-card text-muted-foreground relative z-10 px-2">
-                    Or continue with
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <Button onClick={() => onSocial("google")} type="button" variant="outline" className="w-full" disabled={pending}>
-                    <FaGoogle />
-                  </Button>
-                  <Button onClick={() => onSocial("github")} type="button" variant="outline" className="w-full" disabled={pending}>
-                    <FaGithub />
-                  </Button>
-                  <Button onClick={() => onSocial("facebook")} type="button" variant="outline" className="w-full" disabled={pending}>
-                    <FaFacebook />
-                  </Button>
-                </div>
-                <div className="text-sm text-center">
-                  Don&apos;t have an account? {" "}
-                  <Link
-                    href="/sign-up"
-                    className="underline underline-offset-4"
-                  >
-                    Sign-up
-                  </Link>
-                </div>
-              </div>
-            </form>
-          </Form>
-          <div className="bg-radial from-sidebar-accent to-sidebar relative hidden md:flex flex-col gap-y-4 items-center justify-center">
-            <Image 
-              src="/logo.svg"
-              alt="image"
-              height={92}
-              width={92}
-            />            <p className="text-2xl font-semibold text-white">Meet.AI</p>
+    <AuthShell>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col items-center text-center gap-1">
+              <h1 className="text-2xl font-semibold tracking-tight">
+                {t("signIn.title")}
+              </h1>
+              <p className="text-muted-foreground text-balance">
+                {t("signIn.subtitle")}
+              </p>
+            </div>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("fields.email")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      autoComplete="email"
+                      placeholder={t("fields.emailPlaceholder")}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>{t("fields.password")}</FormLabel>
+                    <Link
+                      href="/forgot-password"
+                      className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                    >
+                      {t("signIn.forgotPassword")}
+                    </Link>
+                  </div>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      autoComplete="current-password"
+                      placeholder="••••••••"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {!!error && (
+              <Alert className="bg-destructive/10 border-none" role="alert">
+                <OctagonAlertIcon className="h-4 w-4 !text-destructive" />
+                <AlertTitle>{error}</AlertTitle>
+              </Alert>
+            )}
+            <Button className="w-full" type="submit" disabled={pending}>
+              {t("signIn.submit")}
+            </Button>
+            <SocialButtons disabled={pending} onSelect={onSocial} />
+            <p className="text-sm text-center">
+              {t("signIn.noAccount")}{" "}
+              <Link href="/sign-up" className="font-medium underline underline-offset-4">
+                {t("signIn.signUpLink")}
+              </Link>
+            </p>
           </div>
-        </CardContent>
-      </Card>
-      <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By continuing, you agree to our Terms of Service and Privacy Policy.
-      </div>
-    </div>
+        </form>
+      </Form>
+    </AuthShell>
   );
 };

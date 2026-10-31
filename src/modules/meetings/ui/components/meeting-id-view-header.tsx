@@ -19,7 +19,7 @@ import {
   PencilIcon,
   TrashIcon,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 interface Props {
   meetingId: string;
@@ -66,17 +66,17 @@ export const MeetingIdViewHeader = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={onEdit}>
-            <PencilIcon className="size-4 text-black" />
+            <PencilIcon className="size-4" />
             Edit
           </DropdownMenuItem>
           {onCancel && (
             <DropdownMenuItem onClick={onCancel}>
-              <BanIcon className="size-4 text-black" />
+              <BanIcon className="size-4" />
               Cancel meeting
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={onDelete}>
-            <TrashIcon className="size-4 text-black" />
+            <TrashIcon className="size-4" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>

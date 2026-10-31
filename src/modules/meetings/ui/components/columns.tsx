@@ -1,21 +1,13 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { MeetingGetMany } from "../../types";
+import { MeetingGetMany, MeetingStatus } from "../../types";
+import { MeetingStatusBadge } from "./meeting-status-badge";
 import { GeneratedAvatar } from "@/components/generated-avatar";
-import {
-  CircleCheckIcon,
-  CircleXIcon,
-  ClockArrowUpIcon,
-  ClockFadingIcon,
-  CornerDownRightIcon,
-  LoaderIcon,
-  TriangleAlertIcon,
-} from "lucide-react";
+import { ClockFadingIcon, CornerDownRightIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import humanizeDuration from "humanize-duration";
-import { cn } from "@/lib/utils";
 
 function formatDuration(secords: number) {
   return humanizeDuration(secords * 1000, {
@@ -25,23 +17,6 @@ function formatDuration(secords: number) {
   });
 }
 
-const statusIconMap = {
-  upcoming: ClockArrowUpIcon,
-  active: LoaderIcon,
-  completed: CircleCheckIcon,
-  processing: LoaderIcon,
-  cancelled: CircleXIcon,
-  failed: TriangleAlertIcon,
-};
-
-const statusColorMap = {
-  upcoming: "bg-yellow-500/20 text-yellow-800 border-yellow-800/2",
-  active: "bg-blue-500/20 text-blue-800 border-blue-800/2",
-  completed: "bg-emerald-500/20 text-emerald-800 border-emerald-800/2",
-  processing: "bg-gray-500/20 text-gray-800 border-gray-800/2",
-  cancelled: "bg-rose-500/20 text-rose-800 border-rose-800/2",
-  failed: "bg-orange-500/20 text-orange-800 border-orange-800/2",
-};
 
 export const columns: ColumnDef<MeetingGetMany[number]>[] = [
   {
@@ -75,27 +50,9 @@ export const columns: ColumnDef<MeetingGetMany[number]>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => {
-      const Icon =
-        statusIconMap[row.original.status as keyof typeof statusIconMap];
-
-      return (
-        <Badge
-          variant="outline"
-          className={cn(
-            "capitalize [&>svg]:size-4 text-muted-foreground",
-            statusColorMap[row.original.status as keyof typeof statusColorMap],
-          )}
-        >
-          <Icon
-            className={cn(
-              row.original.status === "processing" && "animate-spin",
-            )}
-          />
-          {row.original.status}
-        </Badge>
-      );
-    },
+    cell: ({ row }) => (
+      <MeetingStatusBadge status={row.original.status as MeetingStatus} />
+    ),
   },
   {
     accessorKey: "duration",
@@ -106,7 +63,7 @@ export const columns: ColumnDef<MeetingGetMany[number]>[] = [
           variant="outline"
           className="capitalize [&>svg]:size-4 flex items-center gap-x-1"
         >
-          <ClockFadingIcon className="text-blue-700" />
+          <ClockFadingIcon className="text-info" />
           {row.original.duration
             ? formatDuration(row.original.duration)
             : "No duration"}

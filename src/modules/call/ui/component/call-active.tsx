@@ -4,11 +4,11 @@ import { CallControls, SpeakerLayout } from "@stream-io/video-react-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { PhoneOffIcon } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { useConfirm } from "@/modules/agents/hook/use-confirm";
+import { useConfirm } from "@/hooks/use-confirm";
 import { useTRPC } from "@/trpc/client";
 
 interface Props {
@@ -30,6 +30,7 @@ export const CallActive = ({
   const [EndConfirmation, confirmEnd] = useConfirm(
     "End meeting for everyone?",
     "All participants will be disconnected and the AI summary will start generating.",
+    { destructive: true },
   );
 
   const endCall = useMutation(
@@ -46,12 +47,12 @@ export const CallActive = ({
   };
 
   return (
-    <div className="flex flex-col p-4 h-full justify-center text-white">
+    <div className="flex flex-col p-4 h-full justify-center text-stage-foreground">
       <EndConfirmation />
-      <div className="bg-[#101213] rounded-full p-4 flex items-center gap-4">
+      <div className="bg-stage-surface rounded-full p-4 flex items-center gap-4">
         <Link
           href="/"
-          className="flex items-center justify-center p-1 bg-white-10 rounded-full w-fit"
+          className="flex items-center justify-center p-1 bg-stage-foreground/10 rounded-full w-fit"
         >
           <Image src="/logo.svg" alt="Logo" width={22} height={22} />
         </Link>
@@ -70,7 +71,7 @@ export const CallActive = ({
         )}
       </div>
       <SpeakerLayout />
-      <div className="rounded-full px-4 bg-[#101213]">
+      <div className="rounded-full px-4 bg-stage-surface">
         <CallControls onLeave={onLeave} />
       </div>
     </div>

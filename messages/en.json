@@ -1,0 +1,168 @@
+{
+  "metadata": {
+    "title": "Meet.AI — AI meeting assistant: notes, summaries and Q&A",
+    "description": "Invite AI into your meeting like a teammate: it answers by voice, takes notes, summarizes, and answers questions about the meeting."
+  },
+  "common": {
+    "appName": "Meet.AI",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "continue": "Continue",
+    "tryAgain": "Try again",
+    "loading": "Loading…",
+    "save": "Save",
+    "back": "Back",
+    "unlimited": "Unlimited"
+  },
+  "nav": {
+    "home": "Home",
+    "meetings": "Meetings",
+    "agents": "Agents",
+    "upgrade": "Upgrade",
+    "settings": "Settings",
+    "toggleSidebar": "Toggle sidebar",
+    "search": "Search…",
+    "workspace": "Workspace",
+    "account": "Account"
+  },
+  "commandPalette": {
+    "placeholder": "Find a meeting, an agent, or type a command…",
+    "actions": "Actions",
+    "navigation": "Navigation",
+    "meetings": "Meetings",
+    "agents": "Agents",
+    "newMeeting": "New meeting",
+    "newAgent": "New agent",
+    "toggleTheme": "Toggle light/dark mode",
+    "noMeetings": "No meetings found.",
+    "noAgents": "No agents found."
+  },
+  "userMenu": {
+    "unnamed": "User",
+    "billing": "Billing",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "usage": {
+    "freePlan": "Free plan",
+    "agents": "Agents",
+    "meetingsThisMonth": "Meetings this month",
+    "upgrade": "Upgrade"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggle": "Toggle theme"
+  },
+  "language": {
+    "label": "Language",
+    "vi": "Tiếng Việt",
+    "en": "English",
+    "switch": "Change language"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Customize how Meet.AI looks and which language it uses.",
+    "appearanceTitle": "Appearance",
+    "appearanceDescription": "Choose light, dark, or follow your device setting.",
+    "languageTitle": "Language",
+    "languageDescription": "The display language of the app."
+  },
+  "states": {
+    "errorTitle": "Something went wrong",
+    "errorDescription": "Please try again in a moment."
+  },
+  "confirm": {
+    "title": "Are you sure?",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "aiStatus": {
+    "idle": "AI is waiting",
+    "listening": "AI is listening",
+    "thinking": "AI is thinking",
+    "speaking": "AI is speaking",
+    "off": "AI is off"
+  },
+  "auth": {
+    "panel": {
+      "title": "Meetings with an AI that listens, speaks and remembers",
+      "point1": "AI joins the call and answers out loud",
+      "point2": "Notes, summaries and action items right after the meeting",
+      "point3": "Ask about anything that was said"
+    },
+    "fields": {
+      "name": "Full name",
+      "namePlaceholder": "Jane Doe",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "newPassword": "New password"
+    },
+    "validation": {
+      "nameMin": "Name must be at least 2 characters.",
+      "emailInvalid": "Enter a valid email address.",
+      "passwordMin": "Password must be at least 8 characters.",
+      "passwordMismatch": "Passwords do not match.",
+      "passwordRequired": "Please enter your password."
+    },
+    "orContinueWith": "Or continue with",
+    "continueWith": "Continue with {provider}",
+    "terms": "By continuing, you agree to our Terms of Service and Privacy Policy.",
+    "backToSignIn": "Back to sign in",
+    "signIn": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account",
+      "submit": "Sign in",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign up",
+      "metaTitle": "Sign in"
+    },
+    "signUp": {
+      "title": "Get started for free",
+      "subtitle": "Create your Meet.AI account",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "signInLink": "Sign in",
+      "checkInboxTitle": "Check your inbox",
+      "checkInboxDescription": "We sent a verification link to {email}. Open it to activate your account.",
+      "metaTitle": "Sign up"
+    },
+    "forgot": {
+      "title": "Forgot your password?",
+      "subtitle": "Enter your email and we'll send you a reset link.",
+      "submit": "Send reset link",
+      "sentTitle": "Check your inbox",
+      "sentDescription": "If an account exists for that email, we sent a link to reset your password. The link expires in 1 hour.",
+      "metaTitle": "Forgot password"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "submit": "Reset password",
+      "expiredTitle": "Link expired",
+      "expiredDescription": "This password reset link is invalid or has expired. Please request a new one.",
+      "requestNew": "Request a new link",
+      "success": "Your password has been reset. Please sign in.",
+      "metaTitle": "Reset password"
+    },
+    "errors": {
+      "INVALID_EMAIL_OR_PASSWORD": "Incorrect email or password.",
+      "EMAIL_NOT_VERIFIED": "Please verify your email first. We just sent you a new verification link.",
+      "USER_ALREADY_EXISTS": "This email is already registered. Please sign in.",
+      "PASSWORD_TOO_SHORT": "Password is too short.",
+      "PASSWORD_TOO_LONG": "Password is too long.",
+      "INVALID_TOKEN": "This link is invalid or has expired.",
+      "TOO_MANY_REQUESTS": "Too many attempts. Please try again in a few minutes.",
+      "generic": "We couldn't complete your request. Please try again."
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for doesn't exist or has moved.",
+    "home": "Back to home"
+  }
+}

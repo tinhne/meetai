@@ -11,9 +11,9 @@ import { AgentIdViewHeader } from "../components/agent-id-view-header";
 import { GeneratedAvatar } from "@/components/generated-avatar";
 import { VideoIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
-import { useConfirm } from "../../hook/use-confirm";
+import { useConfirm } from "@/hooks/use-confirm";
 import { useState } from "react";
 import { UpdateAgentDialog } from "../components/update-agent-dialog";
 
@@ -47,6 +47,7 @@ export const AgentViewId = ({ agentId }: Props) => {
   const [RemoveConfirmation, confirmRemove] = useConfirm(
     "Are you sure ?",
     `The following action will remove ${data.meetingCount} associated meetings`,
+    { destructive: true },
   );
 
   const handleRemoveAgent = async () => {
@@ -70,7 +71,7 @@ export const AgentViewId = ({ agentId }: Props) => {
           onEdit={() => setUpdateAgentDialog(true)}
           onDelete={handleRemoveAgent}
         />
-        <div className="bg-white rounded-lg border">
+        <div className="bg-card rounded-xl border shadow-sm">
           <div className="px-4 py-5 gap-y-5 flex flex-col col-span-5">
             <div className="text-2xl font-medium">
               <GeneratedAvatar
@@ -84,13 +85,13 @@ export const AgentViewId = ({ agentId }: Props) => {
               variant="outline"
               className="flex items-center gap-x-2 [&>svg]:size-4"
             >
-              <VideoIcon className="size-4 text-blue-500" />
+              <VideoIcon className="size-4 text-info" />
               {data.meetingCount}{" "}
               {data.meetingCount === 1 ? "meeting" : "meetings"}
             </Badge>
             <div className="flex flex-col gap-y-2">
               <p className="text-lg font-medium">Instructions</p>
-              <p className="text-neutral-800">{data.instructions}</p>
+              <p className="text-foreground/90 whitespace-pre-wrap">{data.instructions}</p>
             </div>
           </div>
         </div>

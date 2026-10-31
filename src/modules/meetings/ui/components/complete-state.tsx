@@ -9,7 +9,7 @@ import {
   FileVideoIcon,
   SparkleIcon,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { GeneratedAvatar } from "@/components/generated-avatar";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,7 @@ export const CompletedState = ({ data }: Props) => {
   return (
     <div className="flex flex-col gap-y-4">
       <Tabs defaultValue="summary">
-        <div className="bg-white rounded-lg border px-3">
+        <div className="bg-card rounded-xl border px-3">
           <ScrollArea>
             <TabsList className="p-0 bg-background justify-start rounded-none h-13">
               <TabsTrigger
@@ -67,7 +67,7 @@ export const CompletedState = ({ data }: Props) => {
           <Transcript meetingid={data.id} />
         </TabsContent>
         <TabsContent value="recording">
-          <div className="bg-white rounded-lg border px-4 py-5">
+          <div className="bg-card rounded-xl border px-4 py-5">
             {data.recordingUrl ? (
               <video
                 src={data.recordingUrl}
@@ -82,7 +82,7 @@ export const CompletedState = ({ data }: Props) => {
           </div>
         </TabsContent>
         <TabsContent value="summary">
-          <div className="bg-white rounded-lg border">
+          <div className="bg-card rounded-xl border">
             <div className="px-4 py-5 gap-y-5 flex flex-col col-span-5">
               <h2 className="text-2xl font-medium capitalize">{data.name}</h2>
               <div className="gap-x-2 flex items-center">
@@ -107,7 +107,7 @@ export const CompletedState = ({ data }: Props) => {
                 variant="outline"
                 className="flex items-center gap-x-2 [&svg]:size-4"
               >
-                <ClockFadingIcon className="text-blue-700" />
+                <ClockFadingIcon className="text-info" />
                 {data.duration ? formatDuration(data.duration) : ""}
               </Badge>
             </div>
@@ -138,13 +138,13 @@ export const CompletedState = ({ data }: Props) => {
                   ),
                   code: (props) => (
                     <code
-                      className="bg-gray-100 rounded px-1 py-0.5 font-mono text-sm"
+                      className="bg-muted rounded px-1 py-0.5 font-mono text-sm"
                       {...props}
                     />
                   ),
                   blockquote: (props) => (
                     <blockquote
-                      className="border-l-4 border-gray-300 pl-4 italic text-gray-600 mb-2"
+                      className="border-l-4 border-border pl-4 italic text-muted-foreground mb-2"
                       {...props}
                     />
                   ),

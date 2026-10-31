@@ -1,116 +1,113 @@
 "use client";
 
-import { Separator } from "@/components/ui/separator";
+import {
+  BotIcon,
+  HomeIcon,
+  SettingsIcon,
+  SparklesIcon,
+  VideoIcon,
+  type LucideIcon,
+} from "lucide-react";
+import Image from "next/image";
+import { useTranslations } from "next-intl";
+
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
+  SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
-import { BotIcon, StarIcon, VideoIcon } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { DashboardUserButton } from "./dashboard-user-button";
 import { DashboardTrial } from "./dashboard-trial";
 
-const firstSection = [
-  {
-    icon: VideoIcon,
-    label: "Meetings",
-    href: "/dashboard/meetings",
-  },
-  {
-    icon: BotIcon,
-    label: "Agents",
-    href: "/dashboard/agents",
-  },
+type NavKey = "home" | "meetings" | "agents" | "upgrade" | "settings";
+
+interface NavItem {
+  key: NavKey;
+  href: string;
+  icon: LucideIcon;
+  exact?: boolean;
+}
+
+const mainItems: NavItem[] = [
+  { key: "home", href: "/dashboard", icon: HomeIcon, exact: true },
+  { key: "meetings", href: "/dashboard/meetings", icon: VideoIcon },
+  { key: "agents", href: "/dashboard/agents", icon: BotIcon },
 ];
 
-const secondSection = [
-  {
-    icon: StarIcon,
-    label: "Upgrade",
-    href: "/dashboard/upgrade",
-  },
+const accountItems: NavItem[] = [
+  { key: "upgrade", href: "/dashboard/upgrade", icon: SparklesIcon },
+  { key: "settings", href: "/dashboard/settings", icon: SettingsIcon },
 ];
+
+const NavGroup = ({ label, items }: { label: string; items: NavItem[] }) => {
+  const t = useTranslations("nav");
+  const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel className="text-sidebar-foreground/60">
+        {label}
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map((item) => {
+            const isActive = item.exact
+              ? pathname === item.href
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive}
+                  className="h-10 data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
+                >
+                  <Link
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    onClick={() => isMobile && setOpenMobile(false)}
+                  >
+                    <item.icon className="size-5" />
+                    <span className="text-sm font-medium">{t(item.key)}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+};
 
 export const DashboardSidebar = () => {
-  const pathName = usePathname();
+  const t = useTranslations("nav");
+
   return (
     <Sidebar>
       <SidebarHeader>
-        <Link href="/dashboard" className="flex items-center pt-2 px-2 gap-2">
-          <Image
-            src="/logo.svg"
-            alt="Meet.AI"
-            width={28}
-            height={28}
-            style={{ width: "auto", height: "auto" }}
-          />
-          <p className="text-2xl font-semibold">Meet.AI</p>
+        <Link href="/dashboard" className="flex items-center gap-2 px-2 pt-2">
+          <Image src="/logo.svg" alt="" aria-hidden width={28} height={28} />
+          <span className="text-xl font-semibold tracking-tight text-sidebar-accent-foreground">
+            Meet.AI
+          </span>
         </Link>
       </SidebarHeader>
-      <div className="px-2 py-2">
-        <Separator className="opacity-10 text-[#5D6B68]" />
-      </div>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            {firstSection.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  className={cn(
-                    "h-10 hover:bg-linear-to-r/oklch border border-transparent hover:border-[#5D6B68]/10 from-sidebar-accent from-5% via-30% via-sidebar/50 to-sidebar/50",
-                    pathName === item.href &&
-                      "bg-linear-to-r/oklch border-[#5D6B68]/10",
-                  )}
-                >
-                  <Link href={item.href}>
-                    <item.icon className="size-5" />
-                    <span className="text-sm font-medium tracking-tight">
-                      {item.label}
-                    </span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <div className="px-2 py-2">
-          <Separator className="opacity-10 text-[#5D6B68]" />
-        </div>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            {secondSection.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  className={cn(
-                    "h-10 hover:bg-linear-to-r/oklch border border-transparent hover:border-[#5D6B68]/10 from-sidebar-accent from-5% via-30% via-sidebar/50 to-sidebar/50",
-                    pathName === item.href &&
-                      "bg-linear-to-r/oklch border-[#5D6B68]/10",
-                  )}
-                >
-                  <Link href={item.href}>
-                    <item.icon className="size-5" />
-                    <span className="text-sm font-medium tracking-tight">
-                      {item.label}
-                    </span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <NavGroup label={t("workspace")} items={mainItems} />
+        <NavGroup label={t("account")} items={accountItems} />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="gap-3">
         <DashboardTrial />
         <DashboardUserButton />
       </SidebarFooter>

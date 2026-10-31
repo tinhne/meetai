@@ -31,7 +31,7 @@ export const Transcript = ({ meetingid }: Props) => {
   }, [data, searchQuery]);
 
   return (
-    <div className="bg-white rounded-lg border px-4 py-5 flex flex-col gap-y-4 w-full">
+    <div className="bg-card rounded-xl border px-4 py-5 flex flex-col gap-y-4 w-full">
       <p className="text-sm font-medium">Transcript</p>
       <div className="relative">
         <Input
@@ -71,8 +71,8 @@ export const Transcript = ({ meetingid }: Props) => {
                 searchWords={[searchQuery]}
                 autoEscape
                 textToHighlight={item.text ?? ""}
-                className="text-sm text-neutral-700"
-                highlightClassName="bg-yellow-200"
+                className="text-sm text-foreground/80"
+                highlightClassName="bg-warning/25 text-foreground rounded-sm"
               />
             </div>
           ))}

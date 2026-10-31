@@ -1,0 +1,168 @@
+{
+  "metadata": {
+    "title": "Meet.AI — Trợ lý AI cho cuộc họp: ghi chép, tóm tắt, hỏi đáp",
+    "description": "Mời AI vào cuộc họp như một đồng nghiệp: trả lời bằng giọng nói, ghi biên bản, tóm tắt và hỏi đáp lại nội dung cuộc họp."
+  },
+  "common": {
+    "appName": "Meet.AI",
+    "cancel": "Huỷ",
+    "confirm": "Xác nhận",
+    "continue": "Tiếp tục",
+    "tryAgain": "Thử lại",
+    "loading": "Đang tải…",
+    "save": "Lưu",
+    "back": "Quay lại",
+    "unlimited": "Không giới hạn"
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "meetings": "Cuộc họp",
+    "agents": "Agents",
+    "upgrade": "Nâng cấp",
+    "settings": "Cài đặt",
+    "toggleSidebar": "Ẩn/hiện thanh bên",
+    "search": "Tìm kiếm…",
+    "workspace": "Không gian làm việc",
+    "account": "Tài khoản"
+  },
+  "commandPalette": {
+    "placeholder": "Tìm cuộc họp, agent hoặc gõ một lệnh…",
+    "actions": "Hành động",
+    "navigation": "Điều hướng",
+    "meetings": "Cuộc họp",
+    "agents": "Agents",
+    "newMeeting": "Tạo cuộc họp",
+    "newAgent": "Tạo agent",
+    "toggleTheme": "Đổi giao diện sáng/tối",
+    "noMeetings": "Không tìm thấy cuộc họp.",
+    "noAgents": "Không tìm thấy agent."
+  },
+  "userMenu": {
+    "unnamed": "Người dùng",
+    "billing": "Thanh toán",
+    "settings": "Cài đặt",
+    "logout": "Đăng xuất"
+  },
+  "usage": {
+    "freePlan": "Gói miễn phí",
+    "agents": "Agents",
+    "meetingsThisMonth": "Cuộc họp tháng này",
+    "upgrade": "Nâng cấp"
+  },
+  "theme": {
+    "label": "Giao diện",
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Theo hệ thống",
+    "toggle": "Đổi giao diện"
+  },
+  "language": {
+    "label": "Ngôn ngữ",
+    "vi": "Tiếng Việt",
+    "en": "English",
+    "switch": "Đổi ngôn ngữ"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "description": "Tuỳ chỉnh giao diện và ngôn ngữ của bạn.",
+    "appearanceTitle": "Giao diện",
+    "appearanceDescription": "Chọn giao diện sáng, tối hoặc theo cài đặt của thiết bị.",
+    "languageTitle": "Ngôn ngữ",
+    "languageDescription": "Ngôn ngữ hiển thị của ứng dụng."
+  },
+  "states": {
+    "errorTitle": "Đã có lỗi xảy ra",
+    "errorDescription": "Vui lòng thử lại sau ít phút."
+  },
+  "confirm": {
+    "title": "Bạn chắc chắn chứ?",
+    "confirm": "Xác nhận",
+    "cancel": "Huỷ"
+  },
+  "aiStatus": {
+    "idle": "AI đang chờ",
+    "listening": "AI đang nghe",
+    "thinking": "AI đang suy nghĩ",
+    "speaking": "AI đang nói",
+    "off": "AI đã tắt"
+  },
+  "auth": {
+    "panel": {
+      "title": "Cuộc họp có AI biết nghe, biết nói, biết nhớ",
+      "point1": "AI tham gia và trả lời trực tiếp bằng giọng nói",
+      "point2": "Biên bản, tóm tắt và việc cần làm ngay sau cuộc họp",
+      "point3": "Hỏi lại bất cứ điều gì đã được nói"
+    },
+    "fields": {
+      "name": "Họ tên",
+      "namePlaceholder": "Nguyễn Văn A",
+      "email": "Email",
+      "emailPlaceholder": "ban@congty.com",
+      "password": "Mật khẩu",
+      "confirmPassword": "Nhập lại mật khẩu",
+      "newPassword": "Mật khẩu mới"
+    },
+    "validation": {
+      "nameMin": "Họ tên cần ít nhất 2 ký tự.",
+      "emailInvalid": "Email không hợp lệ.",
+      "passwordMin": "Mật khẩu cần ít nhất 8 ký tự.",
+      "passwordMismatch": "Mật khẩu nhập lại không khớp.",
+      "passwordRequired": "Vui lòng nhập mật khẩu."
+    },
+    "orContinueWith": "Hoặc tiếp tục với",
+    "continueWith": "Tiếp tục với {provider}",
+    "terms": "Khi tiếp tục, bạn đồng ý với Điều khoản dịch vụ và Chính sách quyền riêng tư của chúng tôi.",
+    "backToSignIn": "Quay lại đăng nhập",
+    "signIn": {
+      "title": "Chào mừng trở lại",
+      "subtitle": "Đăng nhập vào tài khoản của bạn",
+      "submit": "Đăng nhập",
+      "forgotPassword": "Quên mật khẩu?",
+      "noAccount": "Chưa có tài khoản?",
+      "signUpLink": "Đăng ký",
+      "metaTitle": "Đăng nhập"
+    },
+    "signUp": {
+      "title": "Bắt đầu miễn phí",
+      "subtitle": "Tạo tài khoản Meet.AI của bạn",
+      "submit": "Tạo tài khoản",
+      "haveAccount": "Đã có tài khoản?",
+      "signInLink": "Đăng nhập",
+      "checkInboxTitle": "Kiểm tra hộp thư",
+      "checkInboxDescription": "Chúng tôi đã gửi liên kết xác minh tới {email}. Mở liên kết để kích hoạt tài khoản.",
+      "metaTitle": "Đăng ký"
+    },
+    "forgot": {
+      "title": "Quên mật khẩu?",
+      "subtitle": "Nhập email, chúng tôi sẽ gửi liên kết đặt lại mật khẩu.",
+      "submit": "Gửi liên kết",
+      "sentTitle": "Kiểm tra hộp thư",
+      "sentDescription": "Nếu email này có tài khoản, chúng tôi đã gửi liên kết đặt lại mật khẩu. Liên kết hết hạn sau 1 giờ.",
+      "metaTitle": "Quên mật khẩu"
+    },
+    "reset": {
+      "title": "Đặt mật khẩu mới",
+      "submit": "Đặt lại mật khẩu",
+      "expiredTitle": "Liên kết đã hết hạn",
+      "expiredDescription": "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu liên kết mới.",
+      "requestNew": "Yêu cầu liên kết mới",
+      "success": "Đã đặt lại mật khẩu. Vui lòng đăng nhập.",
+      "metaTitle": "Đặt lại mật khẩu"
+    },
+    "errors": {
+      "INVALID_EMAIL_OR_PASSWORD": "Email hoặc mật khẩu không đúng.",
+      "EMAIL_NOT_VERIFIED": "Bạn cần xác minh email trước. Chúng tôi vừa gửi lại liên kết xác minh.",
+      "USER_ALREADY_EXISTS": "Email này đã được đăng ký. Hãy đăng nhập.",
+      "PASSWORD_TOO_SHORT": "Mật khẩu quá ngắn.",
+      "PASSWORD_TOO_LONG": "Mật khẩu quá dài.",
+      "INVALID_TOKEN": "Liên kết không hợp lệ hoặc đã hết hạn.",
+      "TOO_MANY_REQUESTS": "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.",
+      "generic": "Không thể hoàn tất yêu cầu. Vui lòng thử lại."
+    }
+  },
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang bạn tìm không tồn tại hoặc đã được chuyển đi.",
+    "home": "Về trang chủ"
+  }
+}

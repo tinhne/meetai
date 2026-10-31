@@ -9,8 +9,8 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { MeetingIdViewHeader } from "../components/meeting-id-view-header";
-import { useRouter } from "next/navigation";
-import { useConfirm } from "@/modules/agents/hook/use-confirm";
+import { useRouter } from "@/i18n/navigation";
+import { useConfirm } from "@/hooks/use-confirm";
 import { UpdateMeetingDialog } from "../components/update-meeting-dialog";
 import { useState } from "react";
 import { UpcomingState } from "../components/upcoming-state";
@@ -35,10 +35,12 @@ export const MeetingIdView = ({ meetingId }: Props) => {
   const [RemoveConfirmation, conFirmRemove] = useConfirm(
     "Are you sure?",
     "The following action will remove this meeting",
+    { destructive: true },
   );
   const [CancelConfirmation, confirmCancel] = useConfirm(
     "Cancel this meeting?",
     "Nobody will be able to join it anymore.",
+    { destructive: true },
   );
 
   const { data } = useSuspenseQuery(

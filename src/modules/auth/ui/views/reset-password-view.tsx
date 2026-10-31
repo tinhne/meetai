@@ -1,19 +1,15 @@
 "use client";
 
-import { z } from "zod";
-import Link from "next/link";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { OctagonAlertIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { OctagonAlertIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 
-import { authClient } from "@/lib/auth-client";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -22,25 +18,35 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
-const formSchema = z
-  .object({
-    password: z.string().min(8, "Password must be at least 8 characters."),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+import { Input } from "@/components/ui/input";
+import { Link, useRouter } from "@/i18n/navigation";
+import { authClient } from "@/lib/auth-client";
+import { getAuthErrorKey } from "../../lib/errors";
+import { AuthCard } from "../components/auth-shell";
 
 interface Props {
   token: string | null;
 }
 
 export const ResetPasswordView = ({ token }: Props) => {
+  const t = useTranslations("auth");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const formSchema = useMemo(
+    () =>
+      z
+        .object({
+          password: z.string().min(8, t("validation.passwordMin")),
+          confirmPassword: z.string(),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: t("validation.passwordMismatch"),
+          path: ["confirmPassword"],
+        }),
+    [t],
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,18 +55,17 @@ export const ResetPasswordView = ({ token }: Props) => {
 
   if (!token) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-          <h1 className="text-2xl font-bold">Link expired</h1>
+      <AuthCard>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <h1 className="text-2xl font-semibold">{t("reset.expiredTitle")}</h1>
           <p className="text-muted-foreground text-balance">
-            This password reset link is invalid or has expired. Please request
-            a new one.
+            {t("reset.expiredDescription")}
           </p>
           <Button asChild>
-            <Link href="/forgot-password">Request a new link</Link>
+            <Link href="/forgot-password">{t("reset.requestNew")}</Link>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </AuthCard>
     );
   }
 
@@ -76,63 +81,72 @@ export const ResetPasswordView = ({ token }: Props) => {
     setPending(false);
 
     if (error) {
-      setError(error.message ?? "Could not reset your password.");
+      setError(t(`errors.${getAuthErrorKey(error)}`));
       return;
     }
 
-    toast.success("Your password has been reset. Please sign in.");
+    toast.success(t("reset.success"));
     router.push("/sign-in");
   };
 
   return (
-    <Card>
-      <CardContent className="p-6 md:p-8">
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-6"
-          >
-            <div className="flex flex-col items-center text-center">
-              <h1 className="text-2xl font-bold">Set a new password</h1>
-            </div>
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>New password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="********" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="********" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {!!error && (
-              <Alert className="bg-destructive/10 border-none">
-                <OctagonAlertIcon className="h-4 w-4 !text-destructive" />
-                <AlertTitle>{error}</AlertTitle>
-              </Alert>
+    <AuthCard>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-6"
+          noValidate
+        >
+          <h1 className="text-center text-2xl font-semibold tracking-tight">
+            {t("reset.title")}
+          </h1>
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("fields.newPassword")}</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-            <Button className="w-full" type="submit" disabled={pending}>
-              Reset password
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          />
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("fields.confirmPassword")}</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {!!error && (
+            <Alert className="bg-destructive/10 border-none" role="alert">
+              <OctagonAlertIcon className="h-4 w-4 !text-destructive" />
+              <AlertTitle>{error}</AlertTitle>
+            </Alert>
+          )}
+          <Button className="w-full" type="submit" disabled={pending}>
+            {t("reset.submit")}
+          </Button>
+        </form>
+      </Form>
+    </AuthCard>
   );
 };

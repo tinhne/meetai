@@ -30,7 +30,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { CommandSelect } from "../../../../components/command-select";
 import { NewAgentDialog } from "@/modules/agents/ui/components/new-agent-dialog";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { format } from "date-fns";
 import {
   MEETING_LANGUAGES,

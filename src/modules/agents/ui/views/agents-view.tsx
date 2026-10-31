@@ -1,14 +1,14 @@
 "use client";
 
 import { ErrorState } from "@/components/error-state";
-import { LoadingState } from "@/components/loading-state";
+import { ListSkeleton } from "@/components/skeletons";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { columns } from "../components/columns";
-import { EmptyState } from "@/components/emty-state";
+import { EmptyState } from "@/components/empty-state";
 import { useAgentsFilters } from "../../hook/use-agents-filters";
 import { DataPagination } from "@/components/data-pagination";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { DataTable } from "@/components/data-table";
 
 export const AgentsView = () => {
@@ -47,10 +47,9 @@ export const AgentsView = () => {
 
 export const AgentsViewLoading = () => {
   return (
-    <LoadingState
-      title="Loading agents"
-      description="this may take a few seconds"
-    />
+    <div className="flex-1 pb-4 px-4 md:px-8">
+      <ListSkeleton />
+    </div>
   );
 };
 

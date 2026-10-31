@@ -1,0 +1,9 @@
+interface Props {
+  children: React.ReactNode;
+}
+
+const Layout = ({ children }: Props) => {
+  return <div className="h-screen bg-stage text-stage-foreground">{children}</div>;
+};
+
+export default Layout;
