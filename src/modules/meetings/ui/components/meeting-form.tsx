@@ -44,20 +44,7 @@ import {
   type MeetingLanguage,
 } from "../../lib/stream";
 
-const TEMPLATE_LABELS: Record<MeetingTemplate, string> = {
-  general: "General summary",
-  minutes: "Formal minutes (Biên bản họp)",
-  standup: "Daily standup",
-  sales: "Sales call",
-  interview: "Interview scorecard",
-  lecture: "Lecture / study notes",
-};
 
-const LANGUAGE_LABELS: Record<MeetingLanguage, string> = {
-  vi: "Vietnamese",
-  en: "English",
-  auto: "Auto-detect",
-};
 
 // <input type="datetime-local"> works in local time; the API expects UTC ISO.
 const toLocalInputValue = (iso?: string | null) =>
@@ -76,6 +63,10 @@ export const MeetingForm = ({
 }: MeetingFormProps) => {
   const trpc = useTRPC();
   const tAi = useTranslations("aiModes");
+  const t = useTranslations("meetings");
+  const tForm = useTranslations("meetings.form");
+  const tLanguages = useTranslations("languages");
+  const tTemplates = useTranslations("templates");
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -92,7 +83,7 @@ export const MeetingForm = ({
   const createMeeting = useMutation(
     trpc.meetings.create.mutationOptions({
       onSuccess: async (data) => {
-        toast.success("Meeting created successfully");
+        toast.success(t("created"));
 
         queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
         queryClient.invalidateQueries(trpc.premium.getFreeUsage.queryOptions());
@@ -100,7 +91,7 @@ export const MeetingForm = ({
         onSuccess?.(data.id);
       },
       onError: (error) => {
-        toast.error(error.message || "Failed to create meeting");
+        toast.error(error.message);
 
         if (error.data?.code === "FORBIDDEN") {
           router.push("/dashboard/upgrade");
@@ -112,7 +103,7 @@ export const MeetingForm = ({
   const updateMeeting = useMutation(
     trpc.meetings.update.mutationOptions({
       onSuccess: async () => {
-        toast.success("Meeting updated successfully");
+        toast.success(t("updated"));
 
         await queryClient.invalidateQueries(
           trpc.meetings.getMany.queryOptions({}),
@@ -126,7 +117,7 @@ export const MeetingForm = ({
         onSuccess?.();
       },
       onError: (error) => {
-        toast.error(error.message || "Failed to update meeting");
+        toast.error(error.message);
       },
     }),
   );
@@ -164,6 +155,7 @@ export const MeetingForm = ({
       <NewAgentDialog
         open={openNewAgentDialog}
         onOpenChange={setOpenNewAgentDialog}
+        stayOnPage
       />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -172,9 +164,9 @@ export const MeetingForm = ({
             name="name"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Name</FormLabel>
+                <FormLabel>{tForm("name")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g Example Consultations" {...field} />
+                  <Input placeholder={tForm("namePlaceholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -185,7 +177,7 @@ export const MeetingForm = ({
             name="agentId"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Agent</FormLabel>
+                <FormLabel>{tForm("agent")}</FormLabel>
                 <FormControl>
                   <CommandSelect
                     disabled={isLocked}
@@ -206,18 +198,18 @@ export const MeetingForm = ({
                     onSelect={field.onChange}
                     onSearch={setAgentSearch}
                     value={field.value}
-                    placeholder="Select an agent..."
+                    placeholder={tForm("agentPlaceholder")}
                   />
                 </FormControl>
                 <FormDescription>
-                  Not found what you&apos;re looking for ?{" "}
+                  {tForm("agentMissing")}{" "}
                   <Button
                     type="button"
                     variant="link"
                     className="text-primary hover:underline"
                     onClick={() => setOpenNewAgentDialog(true)}
                   >
-                    Create new agent
+                    {tForm("createAgent")}
                   </Button>
                 </FormDescription>
                 <FormMessage />
@@ -229,7 +221,7 @@ export const MeetingForm = ({
             name="language"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Meeting language</FormLabel>
+                <FormLabel>{tForm("language")}</FormLabel>
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
@@ -237,21 +229,18 @@ export const MeetingForm = ({
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a language" />
+                      <SelectValue />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {MEETING_LANGUAGES.map((language) => (
                       <SelectItem key={language} value={language}>
-                        {LANGUAGE_LABELS[language]}
+                        {tLanguages(language)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <FormDescription>
-                  The language spoken in the meeting. Used for transcription
-                  and the summary.
-                </FormDescription>
+                <FormDescription>{tForm("languageHint")}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -261,7 +250,7 @@ export const MeetingForm = ({
             name="aiMode"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>AI mode</FormLabel>
+                <FormLabel>{tForm("aiMode")}</FormLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
                     <SelectTrigger className="w-full">
@@ -286,17 +275,17 @@ export const MeetingForm = ({
             name="template"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Summary format</FormLabel>
+                <FormLabel>{tForm("template")}</FormLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a format" />
+                      <SelectValue />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {MEETING_TEMPLATES.map((template) => (
                       <SelectItem key={template} value={template}>
-                        {TEMPLATE_LABELS[template]}
+                        {tTemplates(template)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -310,7 +299,7 @@ export const MeetingForm = ({
             name="scheduledAt"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Scheduled for (optional)</FormLabel>
+                <FormLabel>{tForm("scheduledAt")}</FormLabel>
                 <FormControl>
                   <Input
                     type="datetime-local"
@@ -333,10 +322,10 @@ export const MeetingForm = ({
             name="agenda"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Agenda (optional)</FormLabel>
+                <FormLabel>{tForm("agenda")}</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="What should this meeting cover?"
+                    placeholder={tForm("agendaPlaceholder")}
                     {...field}
                   />
                 </FormControl>
@@ -353,11 +342,11 @@ export const MeetingForm = ({
                 disabled={isPending}
                 type="button"
               >
-                Cancel
+                {tForm("cancel")}
               </Button>
             )}
             <Button disabled={isPending} type="submit">
-              {isEdit ? "Update" : "Create"}
+              {isEdit ? tForm("update") : tForm("create")}
             </Button>
           </div>
         </form>

@@ -7,7 +7,7 @@ import {
 import { z } from "zod";
 import { AI_MODES, MEETING_TEMPLATES } from "@/config/ai";
 import { MEETING_LANGUAGES } from "../lib/stream";
-import { MeetingStatus } from "../types";
+import { MEETING_VIEWS, MeetingStatus } from "../types";
 
 export const meetingInsertSchema = z.object({
   name: z.string().trim().min(1, { message: "Name is required" }).max(100),
@@ -38,4 +38,6 @@ export const meetingFilterSchema = z.object({
   search: z.string().max(100).nullish(),
   agentId: z.string().nullish(),
   status: z.enum(MeetingStatus).nullish(),
+  // Tabs: upcoming/live, past (finished or failed), all
+  view: z.enum(MEETING_VIEWS).default("all"),
 });

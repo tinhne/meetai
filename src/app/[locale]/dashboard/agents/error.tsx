@@ -1,9 +1,7 @@
 "use client";
 
-import { ErrorState } from "@/components/error-state";
+import { AgentsViewError } from "@/modules/agents/ui/views/agents-view";
 
-const ErrorPage = () => {
-    return (<ErrorState title="Failed to load agents" description="please try again later" />);
-}
+const ErrorPage = () => <AgentsViewError />;
 
-export default ErrorPage; 
+export default ErrorPage;

@@ -5,6 +5,7 @@ import {
   MIN_PAGE_SIZE,
 } from "@/constants";
 import { z } from "zod";
+import { REALTIME_VOICES } from "@/config/ai";
 
 export const agentInsertSchema = z.object({
   name: z.string().trim().min(1, { message: "Name is required" }).max(100),
@@ -13,6 +14,7 @@ export const agentInsertSchema = z.object({
     .trim()
     .min(1, { message: "Instructions are required" })
     .max(5000, { message: "Instructions must be at most 5000 characters" }),
+  voice: z.enum(REALTIME_VOICES),
 });
 
 export const agentsUpdateSchema = agentInsertSchema.extend({

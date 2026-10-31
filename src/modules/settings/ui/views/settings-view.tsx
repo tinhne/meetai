@@ -3,7 +3,7 @@
 import { LaptopIcon, MoonIcon, SunIcon, type LucideIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { useSyncExternalStore, type ReactNode } from "react";
+import { useSyncExternalStore } from "react";
 
 import { useSwitchLocale } from "@/components/locale-switcher";
 import { PageHeader } from "@/components/page-header";
@@ -11,29 +11,18 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
+import {
+  DataSection,
+  ProfileSection,
+  SessionsSection,
+  SettingsSection,
+} from "../components/account-sections";
 
 const subscribe = () => () => {};
 // The theme is only known on the client; avoid hydration mismatches.
 const useIsClient = () =>
   useSyncExternalStore(subscribe, () => true, () => false);
 
-const SettingsSection = ({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: ReactNode;
-}) => (
-  <section className="grid gap-4 rounded-xl border bg-card p-5 shadow-sm md:grid-cols-[240px_1fr] md:gap-8">
-    <div className="flex flex-col gap-1">
-      <h2 className="text-base font-semibold">{title}</h2>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </div>
-    {children}
-  </section>
-);
 
 const OptionCard = ({
   value,
@@ -79,6 +68,8 @@ export const SettingsView = () => {
     <div className="flex-1 py-6 px-4 md:px-8 flex flex-col gap-6 max-w-4xl w-full mx-auto">
       <PageHeader title={t("title")} description={t("description")} />
 
+      <ProfileSection />
+
       <SettingsSection
         title={t("appearanceTitle")}
         description={t("appearanceDescription")}
@@ -122,6 +113,9 @@ export const SettingsView = () => {
           ))}
         </RadioGroup>
       </SettingsSection>
+
+      <SessionsSection />
+      <DataSection />
     </div>
   );
 };

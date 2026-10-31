@@ -28,3 +28,9 @@ export type StreamTranscriptItem = {
     image: string;
   };
 };
+
+export const MEETING_VIEWS = ["upcoming", "past", "all"] as const;
+export type MeetingView = (typeof MEETING_VIEWS)[number];
+
+export type MeetingActionItems =
+  inferRouterOutputs<AppRouter>["meetings"]["getActionItems"];

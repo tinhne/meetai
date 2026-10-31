@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { AgentForm } from "./agent-form";
 import { AgentGetOne } from "../../types";
@@ -13,12 +15,13 @@ export const UpdateAgentDialog = ({
   onOpenChange,
   initialValues,
 }: UpdateAgentDialogProps) => {
+  const t = useTranslations("agents");
   return (
     <ResponsiveDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Update Agent"
-      description="Edit the agent details"
+      title={t("editTitle")}
+      description={t("editDescription")}
     >
       <AgentForm
         onSuccess={() => onOpenChange(false)}

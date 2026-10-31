@@ -136,6 +136,7 @@ export const meetingsProcessing = inngest.createFunction(
         .set({
           processingAttempts: sql`${meetings.processingAttempts} + 1`,
           failedReason: null,
+          processingStage: "waiting",
         })
         .where(and(eq(meetings.id, meetingId), eq(meetings.status, "processing")))
         .returning();
@@ -178,6 +179,10 @@ export const meetingsProcessing = inngest.createFunction(
       ]);
       const segments = streamLinesToSegments(lines, names, "Unknown speaker");
 
+      await db
+        .update(meetings)
+        .set({ processingStage: "transcribing" })
+        .where(eq(meetings.id, meetingId));
       await db.delete(transcriptSegments).where(eq(transcriptSegments.meetingId, meetingId));
       for (const batch of chunkBySize(segments, 500)) {
         await db.insert(transcriptSegments).values(
@@ -372,6 +377,10 @@ export const meetingsProcessing = inngest.createFunction(
 
     // 3. Structured insights + summary.
     const insights = await step.run("generate-insights", async () => {
+      await db
+        .update(meetings)
+        .set({ processingStage: "summarizing" })
+        .where(eq(meetings.id, meetingId));
       const segments = await loadSegments(meetingId);
       const transcript = formatTranscriptForPrompt(
         segments.map((segment) => ({
@@ -431,7 +440,7 @@ export const meetingsProcessing = inngest.createFunction(
     await step.run("complete", async () => {
       await db
         .update(meetings)
-        .set({ status: "completed", failedReason: null })
+        .set({ status: "completed", failedReason: null, processingStage: null })
         .where(and(eq(meetings.id, meetingId), eq(meetings.status, "processing")));
     });
 

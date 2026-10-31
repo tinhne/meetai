@@ -1,5 +1,6 @@
 import { CircleCheckIcon } from "lucide-react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -76,6 +77,8 @@ export const PricingCard = ({
   buttonText,
   onClick,
 }: Props) => {
+  const t = useTranslations("upgrade");
+  const format = useFormatter();
   return (
     <div
       className={cn(
@@ -105,11 +108,11 @@ export const PricingCard = ({
         </div>
         <div className="flex items-end shrink-0 gap-x-0.5">
           <h4 className="text-3xl font-medium">
-            {Intl.NumberFormat("en-US", {
+            {format.number(price, {
               style: "currency",
               currency: "USD",
               minimumFractionDigits: 0,
-            }).format(price)}
+            })}
           </h4>
           <span className={cn(pricingCardSecondaryTextVariants({ variant }))}>
             {priceSuffix}
@@ -128,7 +131,7 @@ export const PricingCard = ({
         {buttonText}
       </Button>
       <div className="flex flex-col gap-y-2 mt-6">
-        <p className="font-medium uppercase">Features</p>
+        <p className="font-medium uppercase">{t("features")}</p>
         <ul
           className={cn(
             "flex flex-col gap-y-2.5",

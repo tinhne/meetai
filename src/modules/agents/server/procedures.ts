@@ -24,6 +24,7 @@ export const agentsRouter = createTRPCRouter({
         .set({
           name: input.name,
           instructions: input.instructions,
+          voice: input.voice,
           updatedAt: new Date(),
         })
         .where(

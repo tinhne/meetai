@@ -11,6 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
+import { parseTimestamp } from "../../lib/analytics";
+import { TimestampButton } from "./timestamp-button";
+
+// "[12:34]" citations become links handled by TimestampButton.
+const linkCitations = (content: string) =>
+  content.replace(/\[(\d{1,2}:\d{2}(?::\d{2})?)\]/g, "[$1](#t=$1)");
 
 interface Props {
   meetingId: string;
@@ -101,7 +107,7 @@ export const AskAiPanel = ({ meetingId }: Props) => {
   const suggestions = [t("suggestion1"), t("suggestion2"), t("suggestion3")];
 
   return (
-    <div className="bg-card rounded-xl border flex flex-col h-[calc(100svh-18rem)] min-h-[420px]">
+    <div className="bg-card rounded-xl border flex flex-col h-[60svh] min-h-[420px]">
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-4 flex flex-col gap-4"
@@ -190,13 +196,23 @@ const MessageBubble = ({
       {role === "assistant" ? (
         <Markdown
           components={{
+            a: ({ href, children }) => {
+              const ms = href?.startsWith("#t=") ? parseTimestamp(href.slice(3)) : null;
+              return ms !== null ? (
+                <TimestampButton ms={ms} />
+              ) : (
+                <a href={href} className="underline" target="_blank" rel="noreferrer">
+                  {children}
+                </a>
+              );
+            },
             p: (props) => <p className="mb-2 last:mb-0" {...props} />,
             ul: (props) => <ul className="mb-2 list-disc pl-5" {...props} />,
             ol: (props) => <ol className="mb-2 list-decimal pl-5" {...props} />,
             strong: (props) => <strong className="font-semibold" {...props} />,
           }}
         >
-          {content}
+          {linkCitations(content)}
         </Markdown>
       ) : (
         <p className="whitespace-pre-wrap">{content}</p>

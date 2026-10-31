@@ -1,7 +1,8 @@
 "use client";
 
 import { ErrorState } from "@/components/error-state";
-import { LoadingState } from "@/components/loading-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 import { useTRPC } from "@/trpc/client";
 import {
   useMutation,
@@ -27,6 +28,7 @@ interface Props {
 }
 
 export const MeetingIdView = ({ meetingId }: Props) => {
+  const t = useTranslations("meetings");
   const trpc = useTRPC();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -34,13 +36,13 @@ export const MeetingIdView = ({ meetingId }: Props) => {
   const [updateMeetingDialogOpen, setUpdateMeetingDialogOpen] = useState(false);
 
   const [RemoveConfirmation, conFirmRemove] = useConfirm(
-    "Are you sure?",
-    "The following action will remove this meeting",
+    t("deleteConfirmTitle"),
+    t("deleteConfirmDescription"),
     { destructive: true },
   );
   const [CancelConfirmation, confirmCancel] = useConfirm(
-    "Cancel this meeting?",
-    "Nobody will be able to join it anymore.",
+    t("cancelConfirmTitle"),
+    t("cancelConfirmDescription"),
     { destructive: true },
   );
 
@@ -56,6 +58,7 @@ export const MeetingIdView = ({ meetingId }: Props) => {
       onSuccess: () => {
         queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
         queryClient.invalidateQueries(trpc.premium.getFreeUsage.queryOptions());
+        toast.success(t("deleted"));
         router.push("/dashboard/meetings");
       },
     }),
@@ -64,7 +67,7 @@ export const MeetingIdView = ({ meetingId }: Props) => {
   const cancelMeeting = useMutation(
     trpc.meetings.cancel.mutationOptions({
       onSuccess: () => {
-        toast.success("Meeting cancelled");
+        toast.success(t("cancelled"));
         queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
         queryClient.invalidateQueries(
           trpc.meetings.getOne.queryOptions({ id: meetingId }),
@@ -106,17 +109,16 @@ export const MeetingIdView = ({ meetingId }: Props) => {
         onOpenChange={setUpdateMeetingDialogOpen}
         initialValues={data}
       />
-      <div className="flex-1 py-4 px-4 md:px-8 flex flex-col gap-y-4">
+      <div className="flex-1 py-6 px-4 md:px-8 flex flex-col gap-y-4">
         <MeetingIdViewHeader
-          meetingId={meetingId}
-          meetingName={data.name}
+          meeting={data}
           onEdit={() => setUpdateMeetingDialogOpen(true)}
           onDelete={handleRemoveMeeting}
           onCancel={isUpcoming ? handleCancelMeeting : undefined}
         />
         {isCancelled && <CancelledState />}
         {isCompleted && <CompletedState data={data} />}
-        {isProcessing && <ProcessingState />}
+        {isProcessing && <ProcessingState stage={data.processingStage} />}
         {isActive && <ActiveState meetingId={meetingId} />}
         {isFailed && (
           <FailedState meetingId={meetingId} reason={data.failedReason} />
@@ -132,18 +134,17 @@ export const MeetingIdView = ({ meetingId }: Props) => {
 
 export const MeetingIdViewLoading = () => {
   return (
-    <LoadingState
-      title="Loading Meeting"
-      description="This may take a few seconds"
-    />
+    <div className="flex-1 py-6 px-4 md:px-8 flex flex-col gap-4">
+      <Skeleton className="h-8 w-64" />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Skeleton className="aspect-video w-full rounded-xl" />
+        <Skeleton className="h-80 w-full rounded-xl" />
+      </div>
+    </div>
   );
 };
 
 export const MeetingIdViewError = () => {
-  return (
-    <ErrorState
-      title="Failed to load meeting"
-      description="Please try again later"
-    />
-  );
+  const t = useTranslations("states");
+  return <ErrorState title={t("errorTitle")} description={t("errorDescription")} />;
 };

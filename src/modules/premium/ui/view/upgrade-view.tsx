@@ -1,12 +1,16 @@
 "use client";
 
-import { LoadingState } from "@/components/loading-state";
+import { useTranslations } from "next-intl";
+
+import { CardGridSkeleton } from "@/components/skeletons";
+import { ErrorState } from "@/components/error-state";
 import { authClient } from "@/lib/auth-client";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { PricingCard } from "../component/pricing-card";
 
 export const UpgradeView = () => {
+  const t = useTranslations("upgrade");
   const trpc = useTRPC();
 
   const { data: products } = useSuspenseQuery(
@@ -20,26 +24,22 @@ export const UpgradeView = () => {
   return (
     <div className="flex-1 py-4 px-4 md:px-8 flex flex-col gap-y-10">
       <div className="mt-4 flex-1 flex flex-col gap-y-10 items-center">
-        <h5 className="font-medium text-2xl md:text-3xl">
-          You are on the{" "}
-          <span className="font-semibold text-primary">
-            {currentSubscription?.name ?? "Free"}
-          </span>{" "}
-          plan
-        </h5>
+        <h1 className="text-center text-2xl font-semibold tracking-tight md:text-3xl">
+          {t("currentPlan", { plan: currentSubscription?.name ?? t("free") })}
+        </h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {products.map((product) => {
             const isCurrentProduct = currentSubscription?.id === product.id;
             const isPremium = !!currentSubscription;
 
-            let buttonText = "Upgrade";
+            let buttonText = t("upgrade");
             let onClick = () => authClient.checkout({ products: [product.id] });
 
             if (isCurrentProduct) {
-              buttonText = "Manage";
+              buttonText = t("manage");
               onClick = () => authClient.customer.portal();
             } else if (isPremium) {
-              buttonText = "Change Plan";
+              buttonText = t("changePlan");
               onClick = () => authClient.customer.portal();
             }
             return (
@@ -75,15 +75,14 @@ export const UpgradeView = () => {
 
 export const UpgradeViewLoading = () => {
   return (
-    <LoadingState title="Loading" description="This may take a few seconds" />
+    <div className="flex-1 py-8 px-4 md:px-8">
+      <CardGridSkeleton />
+    </div>
   );
 };
 
 export const UpgradeViewError = () => {
-  return (
-    <LoadingState
-      title="Error"
-      description="An error occurred while loading your subscription details. Please try again later."
-    />
-  );
+  const t = useTranslations("upgrade");
+  const tStates = useTranslations("states");
+  return <ErrorState title={tStates("errorTitle")} description={t("loadError")} />;
 };

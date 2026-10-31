@@ -7,6 +7,7 @@ import {
   getTableColumns,
   ilike,
   inArray,
+  isNull,
   sql,
 } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -15,11 +16,13 @@ import JSONL from "jsonl-parse-stringify";
 
 import { db } from "@/db";
 import {
+  actionItems,
   agents,
   aiChatMessages,
   meetingFeedback,
   meetingParticipants,
   meetings,
+  shareLinks,
   transcriptSegments,
   usageEvents,
   user,
@@ -44,6 +47,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { streamVideo } from "@/lib/stream-video";
 import { generateAvatar } from "@/lib/avatar";
+import { omit } from "@/lib/utils";
 import { getMeetingForUser, getOwnedAgent } from "@/server/authz";
 import { enforceRateLimit } from "@/server/rate-limit";
 import {
@@ -53,7 +57,11 @@ import {
 } from "../schemas/schemas";
 import { StreamTranscriptItem } from "../types";
 import { canJoinMeeting, planMeetingUpdate } from "../lib/rules";
-import { streamCallCid, toStreamTranscriptionLanguage } from "../lib/stream";
+import {
+  MEETING_LANGUAGES,
+  streamCallCid,
+  toStreamTranscriptionLanguage,
+} from "../lib/stream";
 import { env } from "@/env";
 
 const STREAM_TOKEN_TTL_SEC = 60 * 60;
@@ -75,6 +83,68 @@ function transcriptionSettings(language: string) {
     mode: "auto-on" as const,
     closed_caption_mode: "auto-on" as const,
   };
+}
+
+type MeetingCreateInput = z.infer<typeof meetingInsertSchema>;
+
+async function createMeetingForUser(userId: string, input: MeetingCreateInput) {
+  const agent = await getOwnedAgent(userId, input.agentId);
+  const meetingId = nanoid();
+
+  await upsertAgentStreamUser(agent);
+
+  const callType = env.STREAM_CALL_TYPE;
+  const call = streamVideo.video.call(callType, meetingId);
+  await call.create({
+    data: {
+      created_by_id: userId,
+      // Host actions (end, mute, remove) run server-side, so members
+      // only need the call type's basic grants.
+      members: [{ user_id: userId }],
+      custom: {
+        meetingId,
+        meetingName: input.name,
+      },
+      settings_override: {
+        transcription: transcriptionSettings(input.language),
+        recording: {
+          mode: "auto-on",
+          quality: AI_CONFIG.recordingQuality,
+        },
+      },
+    },
+  });
+
+  const [[createdMeeting]] = await db.batch([
+    db
+      .insert(meetings)
+      .values({
+        id: meetingId,
+        name: input.name,
+        agentId: agent.id,
+        userId,
+        language: input.language,
+        template: input.template,
+        aiMode: input.aiMode,
+        callType,
+        agenda: input.agenda ? input.agenda : null,
+        scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
+      })
+      .returning(),
+    db
+      .insert(usageEvents)
+      .values({ userId, kind: "meeting_created", meetingId }),
+    db.insert(meetingParticipants).values({
+      id: `host_${meetingId}`,
+      meetingId,
+      userId,
+      streamUserId: userId,
+      role: "host",
+      status: "admitted",
+    }),
+  ]);
+
+  return createdMeeting;
 }
 
 export const meetingsRouter = createTRPCRouter({
@@ -617,66 +687,47 @@ export const meetingsRouter = createTRPCRouter({
   create: premiumProcedure("meetings")
     .input(meetingInsertSchema)
     .mutation(async ({ ctx, input }) => {
+      await enforceRateLimit("createMeeting", ctx.auth.user.id);
+      return createMeetingForUser(ctx.auth.user.id, input);
+    }),
+  // "Meet now": sensible defaults and the most recently used agent.
+  createInstant: premiumProcedure("meetings")
+    .input(
+      z.object({
+        agentId: z.string().optional(),
+        name: z.string().trim().min(1).max(100),
+        language: z.enum(MEETING_LANGUAGES).default("vi"),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
       const userId = ctx.auth.user.id;
       await enforceRateLimit("createMeeting", userId);
 
-      const agent = await getOwnedAgent(userId, input.agentId);
-      const meetingId = nanoid();
+      const agentId =
+        input.agentId ??
+        (
+          await db
+            .select({ id: agents.id })
+            .from(agents)
+            .where(eq(agents.userId, userId))
+            .orderBy(desc(agents.updatedAt))
+            .limit(1)
+        )[0]?.id;
 
-      await upsertAgentStreamUser(agent);
+      if (!agentId) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Create an agent first.",
+        });
+      }
 
-      const callType = env.STREAM_CALL_TYPE;
-      const call = streamVideo.video.call(callType, meetingId);
-      await call.create({
-        data: {
-          created_by_id: userId,
-          // Host actions (end, mute, remove) run server-side, so members
-          // only need the call type's basic grants.
-          members: [{ user_id: userId }],
-          custom: {
-            meetingId,
-            meetingName: input.name,
-          },
-          settings_override: {
-            transcription: transcriptionSettings(input.language),
-            recording: {
-              mode: "auto-on",
-              quality: AI_CONFIG.recordingQuality,
-            },
-          },
-        },
+      return createMeetingForUser(userId, {
+        name: input.name,
+        agentId,
+        language: input.language,
+        template: "general",
+        aiMode: "conversational",
       });
-
-      const [[createdMeeting]] = await db.batch([
-        db
-          .insert(meetings)
-          .values({
-            id: meetingId,
-            name: input.name,
-            agentId: agent.id,
-            userId,
-            language: input.language,
-            template: input.template,
-            aiMode: input.aiMode,
-            callType,
-            agenda: input.agenda ? input.agenda : null,
-            scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
-          })
-          .returning(),
-        db
-          .insert(usageEvents)
-          .values({ userId, kind: "meeting_created", meetingId }),
-        db.insert(meetingParticipants).values({
-          id: `host_${meetingId}`,
-          meetingId,
-          userId,
-          streamUserId: userId,
-          role: "host",
-          status: "admitted",
-        }),
-      ]);
-
-      return createdMeeting;
     }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
@@ -707,19 +758,31 @@ export const meetingsRouter = createTRPCRouter({
   getMany: protectedProcedure
     .input(meetingFilterSchema)
     .query(async ({ ctx, input }) => {
-      const { search, page, pageSize, status, agentId } = input;
+      const { search, page, pageSize, status, agentId, view } = input;
+
+      const viewFilter =
+        view === "upcoming"
+          ? inArray(meetings.status, ["upcoming", "active"])
+          : view === "past"
+            ? inArray(meetings.status, ["completed", "processing", "failed", "cancelled"])
+            : undefined;
 
       const filter = and(
         eq(meetings.userId, ctx.auth.user.id),
         search ? ilike(meetings.name, `%${search}%`) : undefined,
         status ? eq(meetings.status, status) : undefined,
         agentId ? eq(meetings.agentId, agentId) : undefined,
+        viewFilter,
       );
+
+      // Lists do not need the full summary / insights payload.
+      const listColumns = omit(getTableColumns(meetings), ["summary", "insights"]);
 
       const data = await db
         .select({
-          ...getTableColumns(meetings),
+          ...listColumns,
           agent: agents,
+          tldr: sql<string | null>`${meetings.insights}->>'tldr'`,
           duration: sql<number>`EXTRACT(EPOCH FROM (ended_at - started_at))`.as(
             "duration",
           ),
@@ -727,7 +790,15 @@ export const meetingsRouter = createTRPCRouter({
         .from(meetings)
         .innerJoin(agents, eq(agents.id, meetings.agentId))
         .where(filter)
-        .orderBy(desc(meetings.createdAt), desc(meetings.id))
+        .orderBy(
+          ...(view === "upcoming"
+            ? [
+                sql`${meetings.status} = 'active' DESC`,
+                sql`${meetings.scheduledAt} ASC NULLS LAST`,
+                desc(meetings.createdAt),
+              ]
+            : [desc(meetings.createdAt), desc(meetings.id)]),
+        )
         .limit(pageSize)
         .offset((page - 1) * pageSize);
 
@@ -744,5 +815,82 @@ export const meetingsRouter = createTRPCRouter({
         total: total,
         totalPages,
       };
+    }),
+  getActionItems: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id, "owner");
+      return db
+        .select()
+        .from(actionItems)
+        .where(eq(actionItems.meetingId, meeting.id))
+        .orderBy(asc(actionItems.createdAt));
+    }),
+  setActionItemStatus: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        actionItemId: z.string(),
+        status: z.enum(["open", "done"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id, "owner");
+      const [item] = await db
+        .update(actionItems)
+        .set({ status: input.status })
+        .where(
+          and(
+            eq(actionItems.id, input.actionItemId),
+            eq(actionItems.meetingId, meeting.id),
+          ),
+        )
+        .returning();
+
+      if (!item) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Action item not found" });
+      }
+      return item;
+    }),
+  getShareLink: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id, "owner");
+      const [link] = await db
+        .select({ token: shareLinks.token })
+        .from(shareLinks)
+        .where(and(eq(shareLinks.meetingId, meeting.id), isNull(shareLinks.revokedAt)))
+        .orderBy(desc(shareLinks.createdAt))
+        .limit(1);
+      return link ?? null;
+    }),
+  createShareLink: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await enforceRateLimit("meetingAction", ctx.auth.user.id);
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id, "owner");
+
+      if (meeting.status !== "completed") {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Only finished meetings can be shared.",
+        });
+      }
+
+      const [link] = await db
+        .insert(shareLinks)
+        .values({ meetingId: meeting.id, createdBy: ctx.auth.user.id })
+        .returning({ token: shareLinks.token });
+      return link;
+    }),
+  revokeShareLinks: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id, "owner");
+      await db
+        .update(shareLinks)
+        .set({ revokedAt: new Date() })
+        .where(and(eq(shareLinks.meetingId, meeting.id), isNull(shareLinks.revokedAt)));
+      return { ok: true };
     }),
 });

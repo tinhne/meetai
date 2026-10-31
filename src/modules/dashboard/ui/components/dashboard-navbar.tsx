@@ -4,6 +4,8 @@ import { PanelLeftCloseIcon, PanelLeftIcon, SearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { useRouter } from "@/i18n/navigation";
+
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -13,6 +15,7 @@ import { DashboardCommand } from "./dashboard-command";
 export const DashboardNavbar = () => {
   const t = useTranslations("nav");
   const { state, toggleSidebar, isMobile } = useSidebar();
+  const router = useRouter();
   const [commandOpen, setCommandOpen] = useState(false);
 
   useEffect(() => {
@@ -20,11 +23,22 @@ export const DashboardNavbar = () => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setCommandOpen((open) => !open);
+        return;
+      }
+
+      // "N" = new meeting, unless the user is typing somewhere.
+      const target = e.target as HTMLElement | null;
+      const typing =
+        target?.isContentEditable ||
+        ["INPUT", "TEXTAREA", "SELECT"].includes(target?.tagName ?? "");
+      if (!typing && !e.metaKey && !e.ctrlKey && !e.altKey && e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        router.push("/dashboard/meetings?new=1");
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, []);
+  }, [router]);
 
   return (
     <>

@@ -1,8 +1,14 @@
+"use client";
+
+import { ChevronRightIcon, MoreVerticalIcon, PencilIcon, TrashIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
+  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -12,66 +18,55 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  ChevronRightIcon,
-  MoreVerticalIcon,
-  PencilIcon,
-  TrashIcon,
-} from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
 interface Props {
-  agentId: string;
   agentName: string;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-export const AgentIdViewHeader = ({
-  agentId,
-  agentName,
-  onEdit,
-  onDelete,
-}: Props) => {
+export const AgentIdViewHeader = ({ agentName, onEdit, onDelete }: Props) => {
+  const t = useTranslations("agents.detail");
+
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-2">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink asChild className="font-medium text-xl">
-              <Link href="/dashboard/agents">My Agents</Link>
+            <BreadcrumbLink asChild>
+              <Link href="/dashboard/agents">{t("breadcrumb")}</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator>
-            <ChevronRightIcon className="text-foreground text-xl font-medium [&>svg]:w-4 [&>svg]:h-4" />
+            <ChevronRightIcon />
           </BreadcrumbSeparator>
           <BreadcrumbItem>
-            <BreadcrumbLink
-              asChild
-              className="font-medium text-xl text-foreground"
-            >
-              <Link href={`/dashboard/agents/${agentId}`}>{agentName}</Link>
-            </BreadcrumbLink>
+            <BreadcrumbPage className="max-w-[60vw] truncate text-lg font-semibold">
+              {agentName}
+            </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm">
-            <MoreVerticalIcon />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onEdit}>
-            <PencilIcon className="size-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={onDelete}>
-            <TrashIcon className="size-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={onEdit}>
+          <PencilIcon />
+          {t("edit")}
+        </Button>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label={t("delete")}>
+              <MoreVerticalIcon />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive">
+              <TrashIcon />
+              {t("delete")}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 };

@@ -1,7 +1,8 @@
+import { VideoIcon } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
+
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { VideoIcon } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
 interface Props {
@@ -10,25 +11,33 @@ interface Props {
 }
 
 export const UpcomingState = ({ meetingId, scheduledAt }: Props) => {
+  const t = useTranslations("meetingStates");
+  const format = useFormatter();
+
   return (
-    <div className="bg-card rounded-xl border px-4 py-8 flex flex-col gap-y-8 items-center">
+    <div className="rounded-xl border bg-card px-4 py-8">
       <EmptyState
-        title="Not started yet"
+        title={t("upcomingTitle")}
         description={
           scheduledAt
-            ? `Scheduled for ${format(new Date(scheduledAt), "PPpp")}. Once the meeting ends, the summary will appear here.`
-            : "Once you start this meeting, a summary will appear here."
+            ? t("upcomingScheduled", {
+                date: format.dateTime(new Date(scheduledAt), {
+                  dateStyle: "full",
+                  timeStyle: "short",
+                }),
+              })
+            : t("upcomingDescription")
         }
         image="/upcoming.svg"
+        action={
+          <Button asChild>
+            <Link href={`/call/${meetingId}`}>
+              <VideoIcon />
+              {t("start")}
+            </Link>
+          </Button>
+        }
       />
-      <div className="flex flex-col-reverse lg:flex-row lg:justify-center items-center gap-2 w-full">
-        <Button asChild className="w-full lg:w-auto">
-          <Link href={`/call/${meetingId}`}>
-            <VideoIcon />
-            Start meeting
-          </Link>
-        </Button>
-      </div>
     </div>
   );
 };

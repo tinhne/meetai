@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CommandSelect } from "@/components/command-select";
 import { GeneratedAvatar } from "@/components/generated-avatar";
+import { useTranslations } from "next-intl";
 
 export const AgentIdFilter = () => {
-  const [filtter, setFilter] = useMeetingsFilters();
+  const t = useTranslations("meetings");
+  const [filters, setFilter] = useMeetingsFilters();
   const [agentSearch, setAgentSearch] = useState("");
 
   const trpc = useTRPC();
@@ -20,7 +22,7 @@ export const AgentIdFilter = () => {
 
   return (
     <CommandSelect
-      placeholder="Filter by agent id"
+      placeholder={t("agentFilter")}
       className="h-9"
       options={(data?.items ?? []).map((agent) => ({
         id: agent.id,
@@ -36,9 +38,9 @@ export const AgentIdFilter = () => {
           </div>
         ),
       }))}
-      onSelect={(value) => setFilter({ agentId: value })}
+      onSelect={(value) => setFilter({ agentId: value, page: 1 })}
       onSearch={setAgentSearch}
-      value={filtter.agentId ?? ""}
+      value={filters.agentId ?? ""}
     />
   );
 };

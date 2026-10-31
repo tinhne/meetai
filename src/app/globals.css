@@ -61,7 +61,9 @@
   --shadow-lg: var(--elevation-3);
 }
 
-:root {
+/* ".light" forces the light palette in a subtree (e.g. print view). */
+:root,
+.light {
   --radius: 0.75rem;
 
   --background: oklch(1 0 0);

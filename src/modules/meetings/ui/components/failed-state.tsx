@@ -16,6 +16,7 @@ interface Props {
 
 export const FailedState = ({ meetingId, reason }: Props) => {
   const t = useTranslations("meetingDetail");
+  const tStates = useTranslations("meetingStates");
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
@@ -34,10 +35,8 @@ export const FailedState = ({ meetingId, reason }: Props) => {
   return (
     <div className="bg-card rounded-xl border px-4 py-8 flex flex-col gap-y-8 items-center">
       <EmptyState
-        title="We couldn't process this meeting"
-        description={
-          reason ?? "Something went wrong while generating the summary."
-        }
+        title={tStates("failedTitle")}
+        description={reason ?? tStates("failedDescription")}
         image="/cancelled.svg"
         action={
           <Button

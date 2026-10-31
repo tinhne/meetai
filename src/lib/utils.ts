@@ -26,3 +26,9 @@ export function formatTimestamp(ms: number) {
     ? `${hours}:${pad(minutes)}:${pad(seconds)}`
     : `${minutes}:${pad(seconds)}`;
 }
+
+export function omit<T extends object, K extends keyof T>(value: T, keys: K[]): Omit<T, K> {
+  const result = { ...value };
+  for (const key of keys) delete result[key];
+  return result;
+}

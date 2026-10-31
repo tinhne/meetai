@@ -147,6 +147,8 @@ export const meetings = pgTable(
     joinMode: text("join_mode").notNull().default("approval"),
     // Stream call type used when the call was created.
     callType: text("call_type").notNull().default("default"),
+    // Progress shown while processing: "waiting" | "transcribing" | "summarizing"
+    processingStage: text("processing_stage"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
@@ -353,4 +355,27 @@ export const meetingFeedback = pgTable(
       table.userId,
     ),
   ],
+);
+
+// Read-only public links to a meeting's notes (/s/:token). Revocable.
+export const shareLinks = pgTable(
+  "share_links",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    token: text("token")
+      .notNull()
+      .unique()
+      .$defaultFn(() => nanoid(24)),
+    meetingId: text("meeting_id")
+      .notNull()
+      .references(() => meetings.id, { onDelete: "cascade" }),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    revokedAt: timestamp("revoked_at"),
+  },
+  (table) => [index("share_links_meeting_idx").on(table.meetingId)],
 );

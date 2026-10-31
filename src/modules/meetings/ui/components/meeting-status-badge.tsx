@@ -8,6 +8,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { useTranslations } from "next-intl";
+
 import { StatusBadge, type StatusTone } from "@/components/status-badge";
 import { cn } from "@/lib/utils";
 import { MeetingStatus } from "../../types";
@@ -23,6 +25,7 @@ const statusConfig: Record<MeetingStatus, { tone: StatusTone; icon: LucideIcon }
   };
 
 export const MeetingStatusBadge = ({ status }: { status: MeetingStatus }) => {
+  const t = useTranslations("meetingStatus");
   const { tone, icon: Icon } = statusConfig[status];
 
   return (
@@ -30,11 +33,14 @@ export const MeetingStatusBadge = ({ status }: { status: MeetingStatus }) => {
       tone={tone}
       icon={
         <Icon
-          className={cn(status === MeetingStatus.Processing && "animate-spin")}
+          className={cn(
+            (status === MeetingStatus.Processing || status === MeetingStatus.Active) &&
+              "animate-pulse",
+          )}
         />
       }
     >
-      {status}
+      {t(status)}
     </StatusBadge>
   );
 };

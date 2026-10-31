@@ -29,6 +29,13 @@
       "when": 1793482473328,
       "tag": "0003_phase3_multiparty",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793486957969,
+      "tag": "0004_phase4_app_ux",
+      "breakpoints": true
     }
   ]
 }

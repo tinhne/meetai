@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { ChevronsUpDownIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ReactNode, useState } from "react";
 
 interface Props {
@@ -34,6 +35,7 @@ export const CommandSelect = ({
   className,
   disabled,
 }: Props) => {
+  const t = useTranslations("common");
   const [open, setOpen] = useState(false);
   const selectedOption = options.find((option) => option.value === value);
 
@@ -63,10 +65,10 @@ export const CommandSelect = ({
         open={open}
         onOpenChange={handleOpenChange}
       >
-        <CommandInput placeholder="Search..." onValueChange={onSearch} />
+        <CommandInput placeholder={t("search")} onValueChange={onSearch} />
         <CommandList>
           <CommandEmpty className="text-muted-foreground text-sm">
-            <span>No options found</span>
+            <span>{t("noOptions")}</span>
           </CommandEmpty>
           {options.map((option) => (
             <CommandItem
