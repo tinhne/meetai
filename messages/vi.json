@@ -620,5 +620,408 @@
     "failedTitle": "Cuộc họp đã kết thúc",
     "failedDescription": "Không thể vào cuộc họp này nữa.",
     "back": "Về trang cuộc họp"
+  },
+  "landing": {
+    "meta": {
+      "title": "Meet.AI — Trợ lý AI cho cuộc họp: biết nghe, biết nói, biết nhớ",
+      "description": "Mời AI vào cuộc họp như một đồng nghiệp: trả lời bằng giọng nói, viết biên bản tiếng Việt chuẩn, giao việc và nhớ mọi quyết định. Dùng thử miễn phí."
+    },
+    "nav": {
+      "features": "Tính năng",
+      "useCases": "Giải pháp",
+      "pricing": "Bảng giá",
+      "faq": "FAQ",
+      "blog": "Blog",
+      "signIn": "Đăng nhập",
+      "getStarted": "Dùng thử miễn phí",
+      "dashboard": "Vào dashboard",
+      "menu": "Mở menu"
+    },
+    "hero": {
+      "badge": "Tiếng Việt là số 1",
+      "title": "Cuộc họp có AI biết nghe, biết nói, biết nhớ",
+      "subtitle": "Mời AI vào cuộc họp như một đồng nghiệp: hỏi đáp trực tiếp bằng giọng nói, biên bản tiếng Việt chuẩn sau vài phút, giao việc tự động và nhớ mọi quyết định của team.",
+      "primaryCta": "Dùng thử miễn phí",
+      "secondaryCta": "Xem demo",
+      "noCard": "Không cần thẻ thanh toán",
+      "trust1": "Tiếng Việt chuẩn dấu",
+      "trust2": "Kết nối mã hoá",
+      "trust3": "Xoá dữ liệu bất cứ lúc nào"
+    },
+    "mock": {
+      "meetingName": "Họp kế hoạch Q4",
+      "recording": "REC",
+      "aiSpeaking": "AI đang nói",
+      "caption": "Mia ơi, tuần trước team chốt giá gói Pro bao nhiêu?",
+      "answer": "Team đã chốt 149.000đ/tháng, anh Nam cập nhật bảng giá trước thứ Sáu.",
+      "notesTitle": "Biên bản sẵn sàng",
+      "note1": "Chốt giá Pro 149k/tháng",
+      "note2": "Nam: cập nhật bảng giá · Thứ Sáu",
+      "note3": "Còn mở: kênh quảng cáo Q4"
+    },
+    "builtWith": "Xây dựng trên hạ tầng của",
+    "problems": {
+      "title": "Họp nhiều, nhớ ít, việc trôi",
+      "subtitle": "Những vấn đề quen thuộc của mọi team họp online.",
+      "items": [
+        {
+          "title": "Ghi chép làm mất tập trung",
+          "description": "Người ghi biên bản gần như không thể tham gia thảo luận."
+        },
+        {
+          "title": "Quyết định bị quên",
+          "description": "Họp xong mỗi người nhớ một kiểu, việc không ai nhận."
+        },
+        {
+          "title": "Họp đa ngôn ngữ khó theo",
+          "description": "Khách hàng nước ngoài, đồng nghiệp ở xa, ghi chú rời rạc."
+        }
+      ],
+      "solutionTitle": "Meet.AI lo phần đó cho bạn",
+      "solution": "AI tham gia cuộc họp, ghi lại mọi thứ và trả lời bất cứ câu hỏi nào về cuộc họp, kể cả sau nhiều tuần."
+    },
+    "how": {
+      "title": "Bắt đầu trong 3 bước",
+      "steps": [
+        {
+          "title": "Chọn trợ lý AI",
+          "description": "Thư ký họp, người phỏng vấn, giám khảo IELTS… hoặc tự tạo."
+        },
+        {
+          "title": "Mời mọi người",
+          "description": "Gửi link. Khách không cần tài khoản, host duyệt trong phòng chờ."
+        },
+        {
+          "title": "Nhận biên bản",
+          "description": "Tóm tắt, quyết định, việc cần làm và transcript đồng bộ video."
+        }
+      ]
+    },
+    "features": {
+      "title": "Mọi thứ một cuộc họp hiệu quả cần",
+      "subtitle": "Không chỉ ghi âm: AI hiểu, trả lời và nhớ.",
+      "items": [
+        {
+          "title": "AI tham gia bằng giọng nói",
+          "description": "Gọi tên AI để hỏi ngay trong cuộc họp, hoặc để AI điều phối, nhắc giờ."
+        },
+        {
+          "title": "Biên bản tiếng Việt chuẩn",
+          "description": "6 mẫu: biên bản hành chính, standup, bán hàng, phỏng vấn, bài giảng."
+        },
+        {
+          "title": "Việc cần làm tự động",
+          "description": "Người phụ trách, hạn chót và mốc thời gian trong cuộc họp."
+        },
+        {
+          "title": "Hỏi AI về cuộc họp",
+          "description": "Câu trả lời kèm mốc thời gian, bấm để tua tới đúng đoạn video."
+        },
+        {
+          "title": "Transcript đồng bộ video",
+          "description": "Bấm câu nào tua tới câu đó, tìm kiếm và lọc theo người nói."
+        },
+        {
+          "title": "Phân tích cuộc họp",
+          "description": "Ai nói nhiều nhất, bao nhiêu câu hỏi, dùng từ đệm thế nào."
+        }
+      ]
+    },
+    "useCases": {
+      "title": "Một trợ lý, nhiều cách dùng",
+      "subtitle": "Từ họp team đến luyện phỏng vấn và IELTS.",
+      "learnMore": "Tìm hiểu thêm"
+    },
+    "demo": {
+      "title": "Xem thử một biên bản thật",
+      "subtitle": "Bấm vào câu trong transcript, hoặc hỏi AI một câu.",
+      "transcript": "Transcript",
+      "notes": "Biên bản",
+      "ask": "Hỏi AI",
+      "askHint": "Chọn một câu hỏi:",
+      "meetingName": "Họp chốt kế hoạch ra mắt"
+    },
+    "pricing": {
+      "title": "Giá đơn giản, bắt đầu miễn phí",
+      "subtitle": "Nâng cấp khi bạn cần nhiều cuộc họp và nhiều phút AI hơn.",
+      "monthly": "Theo tháng",
+      "yearly": "Theo năm",
+      "save": "Tiết kiệm 2 tháng",
+      "perMonth": "/tháng",
+      "perSeat": "/người/tháng",
+      "comingSoon": "Sắp ra mắt",
+      "current": "Bắt đầu miễn phí",
+      "plans": {
+        "free": {
+          "name": "Miễn phí",
+          "description": "Để thử và dùng cá nhân.",
+          "cta": "Bắt đầu miễn phí"
+        },
+        "pro": {
+          "name": "Pro",
+          "description": "Cho người họp và luyện tập thường xuyên.",
+          "cta": "Dùng thử Pro"
+        },
+        "team": {
+          "name": "Team",
+          "description": "Không gian làm việc chung cho đội nhóm.",
+          "cta": "Đăng ký nhận tin"
+        }
+      },
+      "features": {
+        "meetings5": "5 cuộc họp mỗi tháng",
+        "agents1": "1 trợ lý AI",
+        "voice10": "10 phút AI nói mỗi tháng",
+        "participants3": "Tối đa 3 người mỗi phòng",
+        "notes": "Biên bản, transcript, việc cần làm",
+        "askAi": "Hỏi AI về cuộc họp",
+        "meetingsUnlimited": "Không giới hạn cuộc họp",
+        "agentsUnlimited": "Không giới hạn trợ lý AI",
+        "voice60": "60 phút AI nói mỗi tháng",
+        "participants10": "Tối đa 10 người mỗi phòng",
+        "templates": "Mọi mẫu biên bản",
+        "share": "Chia sẻ link, xuất Markdown/PDF",
+        "priority": "Hỗ trợ ưu tiên",
+        "everythingPro": "Mọi thứ của Pro",
+        "workspace": "Không gian làm việc chung",
+        "sharedMemory": "AI nhớ quyết định của cả team",
+        "admin": "Quản trị thành viên",
+        "seats": "Tính theo số người, tối thiểu 3"
+      },
+      "creditsTitle": "Cần thêm phút AI?",
+      "creditsDescription": "Mua thêm gói phút AI nói, dùng không thời hạn trong năm.",
+      "creditsPack": "{minutes} phút",
+      "vat": "Giá chưa gồm VAT. Thanh toán qua Polar bằng thẻ quốc tế."
+    },
+    "security": {
+      "title": "Dữ liệu của bạn được bảo vệ",
+      "subtitle": "Quyền riêng tư được thiết kế từ đầu, không phải tính năng thêm vào.",
+      "items": [
+        {
+          "title": "Đồng ý ghi âm",
+          "description": "Ai vào phòng cũng thấy thông báo ghi âm và AI trước khi tham gia."
+        },
+        {
+          "title": "Kiểm soát truy cập",
+          "description": "Mỗi người chỉ vào được đúng cuộc họp được mời; host duyệt khách."
+        },
+        {
+          "title": "Link có thời hạn",
+          "description": "Bản ghi chỉ mở được qua link ký có hạn, sau khi kiểm tra quyền."
+        },
+        {
+          "title": "Xuất và xoá dữ liệu",
+          "description": "Tải toàn bộ dữ liệu hoặc xoá tài khoản ngay trong phần cài đặt."
+        }
+      ],
+      "cta": "Tìm hiểu về bảo mật"
+    },
+    "faq": {
+      "title": "Câu hỏi thường gặp",
+      "items": [
+        {
+          "question": "Meet.AI khác gì công cụ ghi biên bản thông thường?",
+          "answer": "AI không chỉ ghi lại: nó tham gia cuộc họp bằng giọng nói, trả lời khi được gọi tên, và bạn có thể hỏi lại AI về cuộc họp với câu trả lời kèm mốc thời gian."
+        },
+        {
+          "question": "Có hỗ trợ tiếng Việt không?",
+          "answer": "Có. Giao diện, giọng nói của AI và biên bản đều hỗ trợ tiếng Việt. Transcript tiếng Việt được tạo từ bản ghi sau cuộc họp để giữ đúng dấu."
+        },
+        {
+          "question": "Người tham gia có cần tài khoản không?",
+          "answer": "Không. Khách chỉ cần mở link mời và nhập tên; host có thể duyệt từng người."
+        },
+        {
+          "question": "Gói miễn phí có giới hạn gì?",
+          "answer": "5 cuộc họp và 10 phút AI nói mỗi tháng, 1 trợ lý AI, tối đa 3 người mỗi phòng. Biên bản, transcript và hỏi AI đều có sẵn."
+        },
+        {
+          "question": "Phút AI được tính thế nào?",
+          "answer": "Chỉ tính thời gian AI nói. Ghi biên bản, transcript và hỏi AI bằng chữ không tốn phút AI. Ở chế độ “Im lặng”, AI không nói nên không tốn phút nào."
+        },
+        {
+          "question": "Dữ liệu cuộc họp được lưu ở đâu?",
+          "answer": "Trên hạ tầng đám mây của các nhà cung cấp được liệt kê trong Chính sách quyền riêng tư. Bạn có thể tải về hoặc xoá dữ liệu bất cứ lúc nào."
+        },
+        {
+          "question": "Có dùng được trên điện thoại không?",
+          "answer": "Có. Meet.AI chạy trên trình duyệt di động, không cần cài ứng dụng."
+        },
+        {
+          "question": "Tôi có thể huỷ gói bất cứ lúc nào không?",
+          "answer": "Có. Bạn quản lý và huỷ gói trong cổng thanh toán, gói vẫn dùng được đến hết kỳ đã trả."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Cuộc họp tiếp theo, để AI ghi chép",
+      "subtitle": "Tạo tài khoản trong 30 giây và họp thử với AI ngay hôm nay.",
+      "cta": "Bắt đầu miễn phí"
+    },
+    "footer": {
+      "tagline": "Trợ lý AI cho cuộc họp, tiếng Việt là số 1.",
+      "product": "Sản phẩm",
+      "solutions": "Giải pháp",
+      "resources": "Tài nguyên",
+      "legal": "Pháp lý",
+      "changelog": "Cập nhật",
+      "about": "Giới thiệu",
+      "contact": "Liên hệ",
+      "security": "Bảo mật",
+      "terms": "Điều khoản",
+      "privacy": "Quyền riêng tư",
+      "cookies": "Cookie",
+      "rights": "© {year} Meet.AI."
+    },
+    "lead": {
+      "name": "Họ tên",
+      "email": "Email",
+      "message": "Nội dung",
+      "submit": "Gửi",
+      "success": "Cảm ơn bạn! Chúng tôi sẽ liên hệ sớm.",
+      "error": "Không gửi được, vui lòng thử lại.",
+      "teamTitle": "Nhận tin khi gói Team ra mắt",
+      "teamDescription": "Để lại email, chúng tôi sẽ báo bạn đầu tiên."
+    },
+    "cookie": {
+      "text": "Chúng tôi dùng cookie cần thiết để đăng nhập, và chỉ dùng cookie phân tích khi bạn đồng ý.",
+      "accept": "Đồng ý",
+      "decline": "Chỉ cookie cần thiết",
+      "learnMore": "Tìm hiểu thêm"
+    },
+    "pages": {
+      "home": "Trang chủ",
+      "pricing": {
+        "metaTitle": "Bảng giá Meet.AI: miễn phí để bắt đầu, Pro 149.000đ/tháng",
+        "metaDescription": "So sánh gói Miễn phí, Pro và Team của Meet.AI. Thanh toán theo tháng hoặc năm, mua thêm phút AI khi cần.",
+        "faqTitle": "Câu hỏi về thanh toán",
+        "faq": [
+          {
+            "question": "Tôi có cần thẻ để dùng gói Miễn phí không?",
+            "answer": "Không. Gói Miễn phí không cần thẻ và không giới hạn thời gian dùng."
+          },
+          {
+            "question": "Hết phút AI giọng nói thì sao?",
+            "answer": "Cuộc họp vẫn tiếp tục, AI chuyển sang chế độ chỉ ghi chép. Bạn có thể mua thêm gói phút hoặc nâng cấp."
+          },
+          {
+            "question": "Có huỷ được bất cứ lúc nào không?",
+            "answer": "Có. Bạn huỷ trong trang Cài đặt, gói vẫn dùng được đến hết kỳ đã thanh toán."
+          },
+          {
+            "question": "Có xuất hoá đơn không?",
+            "answer": "Có, hoá đơn được gửi qua email sau mỗi lần thanh toán."
+          }
+        ]
+      },
+      "useCase": {
+        "breadcrumb": "Giải pháp",
+        "painsTitle": "Bạn có đang gặp những vấn đề này?",
+        "benefitsTitle": "Meet.AI giúp gì cho bạn",
+        "stepsTitle": "Bắt đầu thế nào",
+        "faqTitle": "Câu hỏi thường gặp",
+        "ctaTitle": "Thử ngay, miễn phí",
+        "ctaSubtitle": "Tạo tài khoản trong 30 giây, chọn mẫu trợ lý có sẵn và bắt đầu.",
+        "otherTitle": "Giải pháp khác"
+      },
+      "blog": {
+        "metaTitle": "Blog Meet.AI: mẹo họp hiệu quả, luyện nói, ghi biên bản với AI",
+        "metaDescription": "Bài viết về cách họp hiệu quả, viết biên bản, luyện phỏng vấn và IELTS Speaking với trợ lý AI.",
+        "title": "Blog",
+        "subtitle": "Mẹo họp hiệu quả hơn và cách tận dụng trợ lý AI.",
+        "readMore": "Đọc bài",
+        "back": "Tất cả bài viết",
+        "ctaTitle": "Để AI ghi chép cuộc họp tiếp theo",
+        "ctaSubtitle": "Miễn phí để bắt đầu, không cần thẻ."
+      },
+      "legal": {
+        "updated": "Cập nhật lần cuối: {date}",
+        "draft": "Bản nháp: nội dung này đang được hoàn thiện và chưa được luật sư xem xét."
+      },
+      "security": {
+        "metaTitle": "Bảo mật và quyền riêng tư tại Meet.AI",
+        "metaDescription": "Cách Meet.AI bảo vệ cuộc họp, bản ghi và dữ liệu cá nhân: kiểm soát truy cập, link ký có thời hạn, đồng ý ghi âm, xoá dữ liệu.",
+        "title": "Bảo mật tại Meet.AI",
+        "subtitle": "Cuộc họp chứa thông tin nhạy cảm. Đây là cách chúng tôi bảo vệ nó.",
+        "sections": [
+          {
+            "title": "Kiểm soát truy cập",
+            "items": [
+              "Chỉ người tổ chức và người được mời mới vào được cuộc họp.",
+              "Khách đi qua phòng chờ, host duyệt từng người.",
+              "Token gọi video chỉ có hiệu lực cho đúng cuộc họp đó và hết hạn sau vài giờ."
+            ]
+          },
+          {
+            "title": "Bản ghi và biên bản",
+            "items": [
+              "Bản ghi chỉ mở được qua link ký có thời hạn, sau khi kiểm tra quyền.",
+              "Link chia sẻ biên bản là chỉ đọc và có thể thu hồi bất cứ lúc nào.",
+              "Bạn có thể xoá cuộc họp hoặc toàn bộ tài khoản trong Cài đặt."
+            ]
+          },
+          {
+            "title": "Đồng ý và minh bạch",
+            "items": [
+              "Mọi người thấy thông báo ghi âm và AI trước khi vào phòng.",
+              "Danh sách nhà cung cấp xử lý dữ liệu được công bố trong Chính sách quyền riêng tư.",
+              "Cookie phân tích chỉ bật khi bạn đồng ý."
+            ]
+          },
+          {
+            "title": "Hạ tầng",
+            "items": [
+              "Mọi kết nối dùng HTTPS, có HSTS và các header bảo mật.",
+              "Giới hạn tần suất cho đăng nhập, tạo cuộc họp và các API tốn chi phí.",
+              "Webhook được xác thực chữ ký và chống xử lý trùng."
+            ]
+          }
+        ],
+        "reportTitle": "Báo cáo lỗ hổng",
+        "report": "Nếu bạn phát hiện lỗ hổng bảo mật, vui lòng gửi qua trang Liên hệ. Chúng tôi sẽ phản hồi trong 72 giờ."
+      },
+      "about": {
+        "metaTitle": "Về Meet.AI",
+        "metaDescription": "Meet.AI là trợ lý AI cho cuộc họp, được xây dựng cho người Việt: biết nghe, biết nói và biết nhớ.",
+        "title": "Về Meet.AI",
+        "lead": "Chúng tôi tin rằng cuộc họp nên dùng để quyết định, không phải để ghi chép.",
+        "body": [
+          "Phần lớn công cụ ghi biên bản được làm cho tiếng Anh. Khi dùng cho tiếng Việt, transcript sai dấu, sai tên, và biên bản thiếu ý. Meet.AI bắt đầu từ chính vấn đề đó.",
+          "Meet.AI mời một trợ lý AI vào cuộc họp như một thành viên: nó lắng nghe, trả lời khi được gọi tên, viết biên bản theo đúng cách người Việt vẫn viết, và nhớ mọi quyết định để bạn hỏi lại bất cứ lúc nào.",
+          "Ngoài họp nhóm, Meet.AI còn là bạn luyện phỏng vấn, giám khảo IELTS Speaking và người huấn luyện bán hàng, sẵn sàng 24/7."
+        ],
+        "valuesTitle": "Điều chúng tôi coi trọng",
+        "values": [
+          {
+            "title": "Tiếng Việt trước tiên",
+            "description": "Mọi tính năng được thiết kế và kiểm thử với tiếng Việt."
+          },
+          {
+            "title": "Riêng tư mặc định",
+            "description": "Dữ liệu cuộc họp là của bạn, xoá được bất cứ lúc nào."
+          },
+          {
+            "title": "Giá hợp lý",
+            "description": "Miễn phí để bắt đầu, giá Pro bằng một bữa cà phê mỗi tuần."
+          }
+        ]
+      },
+      "contact": {
+        "metaTitle": "Liên hệ Meet.AI",
+        "metaDescription": "Gửi câu hỏi, góp ý, yêu cầu hợp tác hoặc yêu cầu về dữ liệu cá nhân cho đội ngũ Meet.AI.",
+        "title": "Liên hệ",
+        "subtitle": "Câu hỏi, góp ý, hợp tác hay yêu cầu về dữ liệu, chúng tôi đều đọc và trả lời.",
+        "emailLabel": "Hoặc email trực tiếp:"
+      },
+      "changelog": {
+        "metaTitle": "Nhật ký cập nhật Meet.AI",
+        "metaDescription": "Những tính năng và cải tiến mới nhất của Meet.AI.",
+        "title": "Nhật ký cập nhật",
+        "subtitle": "Những gì mới trong Meet.AI."
+      },
+      "legalLinks": {
+        "privacy": "Chính sách quyền riêng tư"
+      }
+    }
   }
 }

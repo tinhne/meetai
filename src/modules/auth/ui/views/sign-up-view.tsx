@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { getPathname, Link, useRouter } from "@/i18n/navigation";
+import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth-client";
 import { getAuthErrorKey } from "../../lib/errors";
 import { AuthCard, AuthShell } from "../components/auth-shell";
@@ -86,6 +87,7 @@ export const SignUpView = () => {
       {
         onSuccess: ({ data: result }) => {
           setPending(false);
+          track("signup_completed", { method: "email" });
           // No session token means the email must be verified first.
           if (result?.token) {
             router.push("/dashboard");

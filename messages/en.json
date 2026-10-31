@@ -620,5 +620,408 @@
     "failedTitle": "Meeting ended",
     "failedDescription": "This meeting can no longer be joined.",
     "back": "Back to meeting"
+  },
+  "landing": {
+    "meta": {
+      "title": "Meet.AI — the AI meeting assistant that listens, speaks and remembers",
+      "description": "Invite AI into your meetings like a teammate: it answers by voice, writes clean notes, assigns action items and remembers every decision. Free to start."
+    },
+    "nav": {
+      "features": "Features",
+      "useCases": "Use cases",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "blog": "Blog",
+      "signIn": "Sign in",
+      "getStarted": "Start for free",
+      "dashboard": "Go to dashboard",
+      "menu": "Open menu"
+    },
+    "hero": {
+      "badge": "Vietnamese-first",
+      "title": "Meetings with an AI that listens, speaks and remembers",
+      "subtitle": "Invite AI into your meeting like a teammate: ask it anything out loud, get clean notes minutes later, automatic action items, and a memory of every decision.",
+      "primaryCta": "Start for free",
+      "secondaryCta": "See the demo",
+      "noCard": "No credit card required",
+      "trust1": "Accurate Vietnamese",
+      "trust2": "Encrypted connections",
+      "trust3": "Delete your data any time"
+    },
+    "mock": {
+      "meetingName": "Q4 planning",
+      "recording": "REC",
+      "aiSpeaking": "AI is speaking",
+      "caption": "Mia, what price did we agree for Pro last week?",
+      "answer": "The team agreed on 149k VND a month; Nam updates the pricing page by Friday.",
+      "notesTitle": "Notes ready",
+      "note1": "Pro price set at 149k/month",
+      "note2": "Nam: update pricing page · Friday",
+      "note3": "Open: Q4 ad channels"
+    },
+    "builtWith": "Built on infrastructure from",
+    "problems": {
+      "title": "Lots of meetings, little memory, tasks slip",
+      "subtitle": "Problems every remote team knows.",
+      "items": [
+        {
+          "title": "Note-taking kills focus",
+          "description": "Whoever writes the minutes can barely take part."
+        },
+        {
+          "title": "Decisions get forgotten",
+          "description": "Everyone remembers differently and nobody owns the follow-up."
+        },
+        {
+          "title": "Multilingual meetings are hard",
+          "description": "Overseas clients, remote colleagues, scattered notes."
+        }
+      ],
+      "solutionTitle": "Meet.AI handles that for you",
+      "solution": "The AI joins the meeting, records everything and answers any question about it, even weeks later."
+    },
+    "how": {
+      "title": "Get started in 3 steps",
+      "steps": [
+        {
+          "title": "Pick an AI assistant",
+          "description": "Meeting secretary, interviewer, IELTS examiner… or your own."
+        },
+        {
+          "title": "Invite people",
+          "description": "Share a link. Guests need no account; the host admits them."
+        },
+        {
+          "title": "Get the notes",
+          "description": "Summary, decisions, action items and a transcript synced to video."
+        }
+      ]
+    },
+    "features": {
+      "title": "Everything a productive meeting needs",
+      "subtitle": "More than a recorder: the AI understands, answers and remembers.",
+      "items": [
+        {
+          "title": "AI that joins by voice",
+          "description": "Call the AI by name for instant answers, or let it facilitate and keep time."
+        },
+        {
+          "title": "Clean notes in any format",
+          "description": "6 formats: formal minutes, standup, sales, interview, lecture and more."
+        },
+        {
+          "title": "Automatic action items",
+          "description": "Owners, due dates and the moment in the meeting."
+        },
+        {
+          "title": "Ask AI about the meeting",
+          "description": "Answers come with timestamps that jump the video to the moment."
+        },
+        {
+          "title": "Transcript synced to video",
+          "description": "Click a line to jump there; search and filter by speaker."
+        },
+        {
+          "title": "Meeting analytics",
+          "description": "Talk time, questions asked and filler words per person."
+        }
+      ]
+    },
+    "useCases": {
+      "title": "One assistant, many uses",
+      "subtitle": "From team meetings to interview and IELTS practice.",
+      "learnMore": "Learn more"
+    },
+    "demo": {
+      "title": "Explore real meeting notes",
+      "subtitle": "Click a transcript line, or ask the AI a question.",
+      "transcript": "Transcript",
+      "notes": "Notes",
+      "ask": "Ask AI",
+      "askHint": "Pick a question:",
+      "meetingName": "Launch plan sign-off"
+    },
+    "pricing": {
+      "title": "Simple pricing, free to start",
+      "subtitle": "Upgrade when you need more meetings and more AI minutes.",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "save": "2 months free",
+      "perMonth": "/month",
+      "perSeat": "/seat/month",
+      "comingSoon": "Coming soon",
+      "current": "Start for free",
+      "plans": {
+        "free": {
+          "name": "Free",
+          "description": "To try it out and for personal use.",
+          "cta": "Start for free"
+        },
+        "pro": {
+          "name": "Pro",
+          "description": "For people who meet and practise often.",
+          "cta": "Try Pro"
+        },
+        "team": {
+          "name": "Team",
+          "description": "A shared workspace for your team.",
+          "cta": "Get notified"
+        }
+      },
+      "features": {
+        "meetings5": "5 meetings a month",
+        "agents1": "1 AI assistant",
+        "voice10": "10 AI voice minutes a month",
+        "participants3": "Up to 3 people per room",
+        "notes": "Notes, transcript, action items",
+        "askAi": "Ask AI about meetings",
+        "meetingsUnlimited": "Unlimited meetings",
+        "agentsUnlimited": "Unlimited AI assistants",
+        "voice60": "60 AI voice minutes a month",
+        "participants10": "Up to 10 people per room",
+        "templates": "Every notes format",
+        "share": "Share links, Markdown/PDF export",
+        "priority": "Priority support",
+        "everythingPro": "Everything in Pro",
+        "workspace": "Shared workspace",
+        "sharedMemory": "AI remembers team decisions",
+        "admin": "Member management",
+        "seats": "Per seat, minimum 3"
+      },
+      "creditsTitle": "Need more AI minutes?",
+      "creditsDescription": "Top up with AI voice minute packs, valid for a year.",
+      "creditsPack": "{minutes} minutes",
+      "vat": "Prices exclude VAT. Payments via Polar with international cards."
+    },
+    "security": {
+      "title": "Your data is protected",
+      "subtitle": "Privacy by design, not an add-on.",
+      "items": [
+        {
+          "title": "Recording consent",
+          "description": "Everyone sees the recording and AI notice before joining."
+        },
+        {
+          "title": "Access control",
+          "description": "People only get into meetings they're invited to; hosts admit guests."
+        },
+        {
+          "title": "Expiring links",
+          "description": "Recordings open only through short-lived signed links after an access check."
+        },
+        {
+          "title": "Export and delete",
+          "description": "Download all your data or delete your account from settings."
+        }
+      ],
+      "cta": "Learn about security"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": [
+        {
+          "question": "How is Meet.AI different from a note-taker?",
+          "answer": "The AI doesn't just record: it joins by voice, answers when called by name, and you can ask it about the meeting later with timestamped answers."
+        },
+        {
+          "question": "Does it support Vietnamese?",
+          "answer": "Yes. The interface, the AI voice and the notes all support Vietnamese. Vietnamese transcripts are generated from the recording after the meeting for accurate diacritics."
+        },
+        {
+          "question": "Do participants need an account?",
+          "answer": "No. Guests open the invite link and type their name; the host can admit each person."
+        },
+        {
+          "question": "What does the free plan include?",
+          "answer": "5 meetings and 10 AI voice minutes a month, 1 AI assistant and up to 3 people per room. Notes, transcripts and Ask AI are included."
+        },
+        {
+          "question": "How are AI minutes counted?",
+          "answer": "Only the time the AI speaks counts. Notes, transcripts and text Ask AI don't use AI minutes. In “Silent” mode the AI never speaks, so it uses none."
+        },
+        {
+          "question": "Where is meeting data stored?",
+          "answer": "On the cloud providers listed in our Privacy Policy. You can download or delete your data at any time."
+        },
+        {
+          "question": "Does it work on mobile?",
+          "answer": "Yes. Meet.AI runs in mobile browsers, no app install needed."
+        },
+        {
+          "question": "Can I cancel any time?",
+          "answer": "Yes. Manage or cancel your plan in the billing portal; it stays active until the end of the paid period."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Let AI take the notes at your next meeting",
+      "subtitle": "Create an account in 30 seconds and try a meeting with AI today.",
+      "cta": "Start for free"
+    },
+    "footer": {
+      "tagline": "The AI meeting assistant, Vietnamese-first.",
+      "product": "Product",
+      "solutions": "Solutions",
+      "resources": "Resources",
+      "legal": "Legal",
+      "changelog": "Changelog",
+      "about": "About",
+      "contact": "Contact",
+      "security": "Security",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "cookies": "Cookies",
+      "rights": "© {year} Meet.AI."
+    },
+    "lead": {
+      "name": "Name",
+      "email": "Email",
+      "message": "Message",
+      "submit": "Send",
+      "success": "Thank you! We'll be in touch soon.",
+      "error": "Couldn't send, please try again.",
+      "teamTitle": "Get notified when Team launches",
+      "teamDescription": "Leave your email and we'll tell you first."
+    },
+    "cookie": {
+      "text": "We use essential cookies to keep you signed in, and analytics cookies only with your consent.",
+      "accept": "Accept",
+      "decline": "Essential only",
+      "learnMore": "Learn more"
+    },
+    "pages": {
+      "home": "Home",
+      "pricing": {
+        "metaTitle": "Meet.AI pricing: free to start, Pro from $6/month",
+        "metaDescription": "Compare Meet.AI Free, Pro and Team plans. Pay monthly or yearly, and buy extra AI minutes when you need them.",
+        "faqTitle": "Billing questions",
+        "faq": [
+          {
+            "question": "Do I need a card for the Free plan?",
+            "answer": "No. The Free plan needs no card and has no time limit."
+          },
+          {
+            "question": "What happens when I run out of AI voice minutes?",
+            "answer": "The meeting continues and the AI switches to notes-only. You can buy a minute pack or upgrade."
+          },
+          {
+            "question": "Can I cancel any time?",
+            "answer": "Yes. Cancel in Settings; your plan stays active until the end of the paid period."
+          },
+          {
+            "question": "Do I get invoices?",
+            "answer": "Yes, an invoice is emailed after every payment."
+          }
+        ]
+      },
+      "useCase": {
+        "breadcrumb": "Use cases",
+        "painsTitle": "Sound familiar?",
+        "benefitsTitle": "How Meet.AI helps",
+        "stepsTitle": "How to start",
+        "faqTitle": "Frequently asked questions",
+        "ctaTitle": "Try it free",
+        "ctaSubtitle": "Create an account in 30 seconds, pick a ready-made assistant and start.",
+        "otherTitle": "Other use cases"
+      },
+      "blog": {
+        "metaTitle": "Meet.AI blog: better meetings, speaking practice, AI meeting notes",
+        "metaDescription": "Articles on running better meetings, writing minutes, and practising interviews and IELTS Speaking with an AI assistant.",
+        "title": "Blog",
+        "subtitle": "Tips for better meetings and getting the most out of AI.",
+        "readMore": "Read article",
+        "back": "All articles",
+        "ctaTitle": "Let AI take notes in your next meeting",
+        "ctaSubtitle": "Free to start, no card needed."
+      },
+      "legal": {
+        "updated": "Last updated: {date}",
+        "draft": "Draft: this content is still being finalised and has not been reviewed by a lawyer."
+      },
+      "security": {
+        "metaTitle": "Security and privacy at Meet.AI",
+        "metaDescription": "How Meet.AI protects meetings, recordings and personal data: access control, short-lived signed links, recording consent, data deletion.",
+        "title": "Security at Meet.AI",
+        "subtitle": "Meetings hold sensitive information. Here is how we protect it.",
+        "sections": [
+          {
+            "title": "Access control",
+            "items": [
+              "Only the organizer and invited people can join a meeting.",
+              "Guests go through a waiting room and the host admits each one.",
+              "Video call tokens only work for that meeting and expire within hours."
+            ]
+          },
+          {
+            "title": "Recordings and notes",
+            "items": [
+              "Recordings open only through short-lived signed links after an access check.",
+              "Shared notes links are read-only and can be revoked at any time.",
+              "You can delete a meeting or your whole account in Settings."
+            ]
+          },
+          {
+            "title": "Consent and transparency",
+            "items": [
+              "Everyone sees a recording and AI notice before joining.",
+              "The list of data processors is published in the Privacy Policy.",
+              "Analytics cookies are only enabled with your consent."
+            ]
+          },
+          {
+            "title": "Infrastructure",
+            "items": [
+              "All connections use HTTPS with HSTS and security headers.",
+              "Rate limits on sign-in, meeting creation and costly APIs.",
+              "Webhooks are signature-verified and deduplicated."
+            ]
+          }
+        ],
+        "reportTitle": "Report a vulnerability",
+        "report": "If you find a security issue, please send it through the Contact page. We respond within 72 hours."
+      },
+      "about": {
+        "metaTitle": "About Meet.AI",
+        "metaDescription": "Meet.AI is an AI meeting assistant built Vietnamese-first: it listens, speaks and remembers.",
+        "title": "About Meet.AI",
+        "lead": "We believe meetings are for deciding, not for taking notes.",
+        "body": [
+          "Most note-taking tools are built for English. In Vietnamese, transcripts lose their diacritics, names come out wrong and notes miss the point. Meet.AI started from that problem.",
+          "Meet.AI invites an AI assistant into the meeting like a teammate: it listens, answers when called by name, writes notes the way Vietnamese teams write them, and remembers every decision so you can ask later.",
+          "Beyond team meetings, Meet.AI is an interview practice partner, an IELTS Speaking examiner and a sales coach, available 24/7."
+        ],
+        "valuesTitle": "What we care about",
+        "values": [
+          {
+            "title": "Vietnamese first",
+            "description": "Every feature is designed and tested with Vietnamese."
+          },
+          {
+            "title": "Private by default",
+            "description": "Meeting data is yours and can be deleted at any time."
+          },
+          {
+            "title": "Fair pricing",
+            "description": "Free to start, and Pro costs about a coffee a week."
+          }
+        ]
+      },
+      "contact": {
+        "metaTitle": "Contact Meet.AI",
+        "metaDescription": "Send questions, feedback, partnership or personal data requests to the Meet.AI team.",
+        "title": "Contact",
+        "subtitle": "Questions, feedback, partnerships or data requests: we read and reply to everything.",
+        "emailLabel": "Or email us directly:"
+      },
+      "changelog": {
+        "metaTitle": "Meet.AI changelog",
+        "metaDescription": "The latest features and improvements in Meet.AI.",
+        "title": "Changelog",
+        "subtitle": "What's new in Meet.AI."
+      },
+      "legalLinks": {
+        "privacy": "Privacy Policy"
+      }
+    }
   }
 }

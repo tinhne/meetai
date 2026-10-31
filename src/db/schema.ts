@@ -379,3 +379,22 @@ export const shareLinks = pgTable(
   },
   (table) => [index("share_links_meeting_idx").on(table.meetingId)],
 );
+
+export const leadKind = pgEnum("lead_kind", ["team_waitlist", "contact"]);
+
+// Marketing site forms (Team waitlist, contact).
+export const marketingLeads = pgTable(
+  "marketing_leads",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    kind: leadKind("kind").notNull(),
+    email: text("email").notNull(),
+    name: text("name"),
+    message: text("message"),
+    locale: text("locale").notNull().default("vi"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("marketing_leads_kind_created_idx").on(table.kind, table.createdAt)],
+);

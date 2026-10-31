@@ -57,7 +57,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       type: "website",
       locale: locale === "en" ? "en_US" : "vi_VN",
-      url: "https://meetai-assistant.vercel.app",
       title: t("title"),
       description: t("description"),
       siteName: "Meet.AI",
