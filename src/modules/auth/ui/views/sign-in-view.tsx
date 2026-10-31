@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { OctagonAlertIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -45,7 +46,10 @@ export const SignInView = () => {
     defaultValues: { email: "", password: "" },
   });
 
-  const callbackURL = getPathname({ href: "/dashboard", locale });
+  // Only same-site relative paths, e.g. a meeting join link.
+  const next = useSearchParams().get("next");
+  const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+  const callbackURL = getPathname({ href: target, locale });
 
   const onSocial = (provider: SocialProvider) => {
     setError(null);
@@ -71,7 +75,7 @@ export const SignInView = () => {
       {
         onSuccess: () => {
           setPending(false);
-          router.push("/dashboard");
+          router.push(target);
         },
         onError: ({ error }) => {
           setPending(false);

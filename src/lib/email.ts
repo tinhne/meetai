@@ -23,7 +23,7 @@ function actionEmail(params: {
   url: string;
   outro: string;
 }) {
-  const name = escapeHtml(params.name || "there");
+  const name = escapeHtml(params.name);
   const url = escapeHtml(params.url);
 
   return `<!doctype html>
@@ -31,7 +31,7 @@ function actionEmail(params: {
   <body style="font-family:Arial,Helvetica,sans-serif;background:#f6f7f8;padding:24px;color:#111">
     <table role="presentation" width="100%" style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;padding:32px">
       <tr><td>
-        <p style="font-size:16px">${escapeHtml(params.greeting ?? "Hi")} ${name},</p>
+        <p style="font-size:16px">${escapeHtml(params.greeting ?? "Hi")}${name ? ` ${name}` : ""},</p>
         <p style="font-size:16px;line-height:1.5">${params.intro}</p>
         <p style="margin:28px 0">
           <a href="${url}" style="background:#16a34a;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">${params.actionLabel}</a>
@@ -49,6 +49,7 @@ async function sendEmail(params: {
   subject: string;
   html: string;
   devLink: string;
+  attachments?: { filename: string; content: string }[];
 }) {
   if (!isEmailDeliveryEnabled || !resend || !env.EMAIL_FROM) {
     if (env.NODE_ENV === "development") {
@@ -64,6 +65,7 @@ async function sendEmail(params: {
     to: params.to,
     subject: params.subject,
     html: params.html,
+    attachments: params.attachments,
   });
 
   if (error) {
@@ -146,6 +148,54 @@ export async function sendMeetingReadyEmail(params: {
       greeting: copy.greeting,
       name: params.name,
       intro: copy.intro(params.meetingName),
+      actionLabel: copy.action,
+      url: params.url,
+      outro: copy.outro,
+    }),
+  });
+}
+
+const INVITE_COPY = {
+  vi: {
+    subject: (host: string, meeting: string) => `${host} mời bạn tham gia "${meeting}"`,
+    intro: (host: string, meeting: string, when: string | null) =>
+      `${escapeHtml(host)} mời bạn tham gia cuộc họp "${escapeHtml(meeting)}"${when ? ` lúc ${escapeHtml(when)}` : ""}. Cuộc họp có trợ lý AI ghi chép và trả lời câu hỏi.`,
+    greeting: "Chào",
+    action: "Tham gia cuộc họp",
+    outro: "Không cần tài khoản: bạn có thể vào với tư cách khách.",
+  },
+  en: {
+    subject: (host: string, meeting: string) => `${host} invited you to "${meeting}"`,
+    intro: (host: string, meeting: string, when: string | null) =>
+      `${escapeHtml(host)} invited you to the meeting "${escapeHtml(meeting)}"${when ? ` on ${escapeHtml(when)}` : ""}. An AI assistant will take notes and answer questions.`,
+    greeting: "Hi",
+    action: "Join the meeting",
+    outro: "No account needed: you can join as a guest.",
+  },
+};
+
+export async function sendMeetingInviteEmail(params: {
+  to: string;
+  hostName: string;
+  meetingName: string;
+  url: string;
+  language: string;
+  when: string | null;
+  ics: string | null;
+}) {
+  const copy = INVITE_COPY[params.language === "en" ? "en" : "vi"];
+
+  await sendEmail({
+    to: params.to,
+    subject: copy.subject(params.hostName, params.meetingName),
+    devLink: params.url,
+    attachments: params.ics
+      ? [{ filename: "invite.ics", content: Buffer.from(params.ics).toString("base64") }]
+      : undefined,
+    html: actionEmail({
+      greeting: copy.greeting,
+      name: "",
+      intro: copy.intro(params.hostName, params.meetingName, params.when),
       actionLabel: copy.action,
       url: params.url,
       outro: copy.outro,

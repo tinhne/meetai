@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx scripts/db-migrate.ts"
+    "db:migrate": "tsx scripts/db-migrate.ts",
+    "stream:setup": "tsx scripts/stream-setup.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1161.0",

@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { agents, meetings } from "@/db/schema";
+import { agents, meetingParticipants, meetings } from "@/db/schema";
 import {
   hasMeetingRole,
   resolveMeetingRole,
@@ -35,9 +35,26 @@ export async function getMeetingForUser(
     .from(meetings)
     .where(eq(meetings.id, meetingId));
 
-  const role = meeting ? resolveMeetingRole(meeting, userId) : null;
+  if (!meeting) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found" });
+  }
 
-  if (!meeting || !hasMeetingRole(role, minRole)) {
+  const [participant] =
+    meeting.userId === userId
+      ? []
+      : await db
+          .select({ role: meetingParticipants.role, status: meetingParticipants.status })
+          .from(meetingParticipants)
+          .where(
+            and(
+              eq(meetingParticipants.meetingId, meeting.id),
+              eq(meetingParticipants.userId, userId),
+            ),
+          );
+
+  const role = resolveMeetingRole(meeting, userId, participant);
+
+  if (!hasMeetingRole(role, minRole)) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found" });
   }
 

@@ -19,6 +19,7 @@ import { CancelledState } from "../components/cancelled-state";
 import { ProcessingState } from "../components/processing-state";
 import { CompletedState } from "../components/complete-state";
 import { FailedState } from "../components/failed-state";
+import { InvitePanel } from "../components/invite-panel";
 import { toast } from "sonner";
 
 interface Props {
@@ -123,6 +124,7 @@ export const MeetingIdView = ({ meetingId }: Props) => {
         {isUpcoming && (
           <UpcomingState meetingId={meetingId} scheduledAt={data.scheduledAt} />
         )}
+        {(isUpcoming || isActive) && <InvitePanel meeting={data} />}
       </div>
     </>
   );

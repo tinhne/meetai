@@ -11,6 +11,21 @@ export const MEETING_TEMPLATES = [
 ] as const;
 export type MeetingTemplate = (typeof MEETING_TEMPLATES)[number];
 
+export const AI_MODES = [
+  // Talks naturally, best for 1:1 practice.
+  "conversational",
+  // Only answers when called by name or via the "Ask AI" button.
+  "on_demand",
+  // On-demand plus periodic time checks against the agenda.
+  "facilitator",
+  // Never joins with voice; notes only.
+  "silent",
+] as const;
+export type AiMode = (typeof AI_MODES)[number];
+
+export const JOIN_MODES = ["approval", "open", "locked"] as const;
+export type JoinMode = (typeof JOIN_MODES)[number];
+
 export const REALTIME_VOICES = [
   "alloy",
   "ash",
@@ -36,6 +51,12 @@ export const AI_CONFIG = {
     maxResponseOutputTokens: 400,
     // OpenAI bills ~20 output audio tokens per second of speech.
     outputAudioTokensPerSecond: 20,
+    // Group modes transcribe what people say to detect the agent's name.
+    inputTranscriptionModel: "gpt-4o-mini-transcribe",
+    // Keep the conversation context small in long group meetings (cost).
+    maxConversationItems: 40,
+    addressCooldownMs: 8_000,
+    facilitatorCheckInMinutes: 15,
   },
   transcription: {
     // Recording is re-transcribed by Gemini in windows of this length; short

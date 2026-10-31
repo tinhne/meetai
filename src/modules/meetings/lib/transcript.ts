@@ -1,6 +1,9 @@
 // Pure transcript helpers shared by the processing pipeline and Ask AI.
 
+import { normalizeForSearch } from "@/lib/text";
 import { formatTimestamp } from "@/lib/utils";
+
+export { normalizeForSearch };
 
 export interface StreamTranscriptLine {
   speaker_id: string;
@@ -67,14 +70,6 @@ export function chunkBySize<T>(items: T[], size: number) {
   return chunks;
 }
 
-// Lowercase and strip Vietnamese diacritics so "cuộc họp" matches "cuoc hop".
-export function normalizeForSearch(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/đ/g, "d");
-}
 
 const STOP_WORDS = new Set([
   "the", "a", "an", "and", "or", "of", "to", "in", "is", "are", "was", "what",

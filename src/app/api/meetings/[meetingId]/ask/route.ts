@@ -64,7 +64,7 @@ export async function POST(
 
   let meeting;
   try {
-    ({ meeting } = await getMeetingForUser(userId, meetingId));
+    ({ meeting } = await getMeetingForUser(userId, meetingId, "owner"));
   } catch (error) {
     if (error instanceof TRPCError) return jsonError(404, "Meeting not found");
     throw error;

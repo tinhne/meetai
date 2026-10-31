@@ -1,19 +1,30 @@
-import { CallingState, StreamTheme, useCall } from "@stream-io/video-react-sdk";
-import { useState } from "react";
-import { CallLobby } from "./call-lobby";
-import { CallActive } from "./call-active";
+"use client";
+
+import {
+  CallingState,
+  StreamTheme,
+  useCall,
+  useCallStateHooks,
+} from "@stream-io/video-react-sdk";
+import { useEffect, useState } from "react";
+
 import { CallEnded } from "./call-ended";
+import { CallLobby } from "./call-lobby";
+import { CallRoom } from "./call-room";
 
-interface Props {
-  meetingId: string;
-  meetingName: string;
-  isHost: boolean;
-}
-
-export const CallUI = ({ meetingId, meetingName, isHost }: Props) => {
+export const CallUI = () => {
   const call = useCall();
+  const { useCallCallingState } = useCallStateHooks();
+  const callingState = useCallCallingState();
   const [show, setShow] = useState<"lobby" | "call" | "ended">("lobby");
   const [endedForAll, setEndedForAll] = useState(false);
+
+  // Ended by the host, removed, or disconnected for good.
+  useEffect(() => {
+    if (show === "call" && callingState === CallingState.LEFT) {
+      setShow("ended");
+    }
+  }, [show, callingState]);
 
   const handleJoin = async () => {
     if (!call) return;
@@ -21,13 +32,8 @@ export const CallUI = ({ meetingId, meetingName, isHost }: Props) => {
     setShow("call");
   };
 
-  // The Stream leave button has already called call.leave() at this point.
-  const handleLeave = () => {
-    setShow("ended");
-  };
-
-  const handleEndedForAll = async () => {
-    setEndedForAll(true);
+  const handleLeave = async (forEveryone: boolean) => {
+    if (forEveryone) setEndedForAll(true);
     if (call && call.state.callingState !== CallingState.LEFT) {
       await call.leave();
     }
@@ -37,19 +43,9 @@ export const CallUI = ({ meetingId, meetingName, isHost }: Props) => {
   return (
     <StreamTheme className="h-full">
       {show === "lobby" && <CallLobby onJoin={handleJoin} />}
-      {show === "call" && (
-        <CallActive
-          meetingId={meetingId}
-          meetingName={meetingName}
-          isHost={isHost}
-          onLeave={handleLeave}
-          onEndedForAll={handleEndedForAll}
-        />
-      )}
+      {show === "call" && <CallRoom onLeave={handleLeave} />}
       {show === "ended" && (
         <CallEnded
-          meetingId={meetingId}
-          isHost={isHost}
           endedForAll={endedForAll}
           onEndedForAll={() => setEndedForAll(true)}
         />

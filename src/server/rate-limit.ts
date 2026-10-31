@@ -13,10 +13,12 @@ export interface RateLimitRule {
 
 export const RATE_LIMITS = {
   streamToken: { limit: 30, windowSec: 60 },
-  chatChannel: { limit: 30, windowSec: 60 },
   createMeeting: { limit: 10, windowSec: 60 },
   createAgent: { limit: 10, windowSec: 60 },
   meetingAction: { limit: 20, windowSec: 60 },
+  joinRequest: { limit: 10, windowSec: 60 },
+  askAgent: { limit: 6, windowSec: 60 },
+  invite: { limit: 5, windowSec: 60 * 60 },
 } satisfies Record<string, RateLimitRule>;
 
 // Fixed-window counter stored in Postgres (atomic upsert, no extra service).

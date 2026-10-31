@@ -7,6 +7,7 @@ const input = {
   agentId: "agent-1",
   language: "vi",
   template: "general",
+  aiMode: "conversational",
 };
 
 describe("planMeetingUpdate", () => {
@@ -33,6 +34,7 @@ describe("planMeetingUpdate", () => {
         agentId: "agent-1",
         language: "vi",
         template: "general",
+        aiMode: "conversational",
         agenda: "Roadmap",
         scheduledAt: new Date("2026-11-02T09:00:00.000Z"),
         updatedAt: now,

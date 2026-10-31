@@ -20,7 +20,7 @@ describe("toStreamTranscriptionLanguage", () => {
 
 describe("call cid helpers", () => {
   it("round-trips the meeting id", () => {
-    expect(meetingIdFromCallCid(streamCallCid("abc123"))).toBe("abc123");
+    expect(meetingIdFromCallCid(streamCallCid("meetai", "abc123"))).toBe("abc123");
   });
 
   it("returns null for malformed cids", () => {

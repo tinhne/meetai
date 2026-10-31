@@ -46,11 +46,5 @@ export const CallView = ({ meetingId }: Props) => {
     );
   }
 
-  return (
-    <CallProvider
-      meetingId={data.id}
-      meetingName={data.name}
-      hostId={data.userId}
-    />
-  );
+  return <CallProvider meeting={data} />;
 };

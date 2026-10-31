@@ -1,12 +1,15 @@
 import "server-only";
 
-import { AI_CONFIG } from "@/config/ai";
+import { AI_CONFIG, type AiMode } from "@/config/ai";
 import { remainingVoiceSeconds } from "@/config/plans";
 import { db } from "@/db";
 import { usageEvents } from "@/db/schema";
 import { env } from "@/env";
 import { streamVideo } from "@/lib/stream-video";
-import { startAgentSession } from "@/modules/agents/lib/agent-session";
+import {
+  startAgentSession,
+  type AgentSessionHandle,
+} from "@/modules/agents/lib/agent-session";
 import { signWorkerRequest } from "@/modules/agents/lib/worker-auth";
 import { getMonthlyUsage, getUserPlan } from "@/modules/premium/server/usage";
 
@@ -16,6 +19,8 @@ interface DispatchMeeting {
   name: string;
   agenda: string | null;
   language: string;
+  aiMode: string;
+  callType: string;
 }
 
 interface DispatchAgent {
@@ -24,6 +29,9 @@ interface DispatchAgent {
   instructions: string;
   voice: string;
 }
+
+// Development fallback only: sessions started in this process.
+const localSessions = new Map<string, AgentSessionHandle>();
 
 async function callWorker(path: string, payload: Record<string, unknown>) {
   if (!env.AGENT_WORKER_URL || !env.WORKER_SHARED_SECRET) return;
@@ -56,15 +64,24 @@ export async function recordVoiceUsage(
     { userId, meetingId, kind: "realtime_input_tokens", quantity: usage.inputTokens },
     { userId, meetingId, kind: "realtime_output_tokens", quantity: usage.outputTokens },
   ];
-  await db.insert(usageEvents).values(rows.filter((row) => (row.quantity ?? 0) > 0));
+  const nonEmpty = rows.filter((row) => (row.quantity ?? 0) > 0);
+  if (nonEmpty.length > 0) await db.insert(usageEvents).values(nonEmpty);
 }
 
-// Connects the AI voice agent to a live meeting, respecting the kill switch
-// and the owner's monthly voice quota.
+export function toAiMode(value: string): AiMode {
+  return value === "on_demand" || value === "facilitator" || value === "silent"
+    ? value
+    : "conversational";
+}
+
+// Connects the AI voice agent to a live meeting, respecting the AI mode, the
+// kill switch and the owner's monthly voice quota.
 export async function startAgentForMeeting(
   meeting: DispatchMeeting,
   agent: DispatchAgent,
 ) {
+  const mode = toAiMode(meeting.aiMode);
+  if (mode === "silent") return { started: false, reason: "silent" };
   if (!env.AI_VOICE_ENABLED) return { started: false, reason: "disabled" };
 
   const plan = await getUserPlan(meeting.userId);
@@ -80,16 +97,20 @@ export async function startAgentForMeeting(
     return { started: true, reason: "worker" };
   }
 
+  if (localSessions.has(meeting.id)) return { started: true, reason: "already-running" };
+
   // Development fallback: the connection lives in this serverless function
   // and may drop when the platform freezes it. Use the worker in production.
-  await startAgentSession({
+  const handle = await startAgentSession({
     streamVideo,
+    callType: meeting.callType,
     openAiApiKey: env.OPENAI_API_KEY,
     model: AI_CONFIG.realtime.model,
     meetingId: meeting.id,
     agentId: agent.id,
     voiceSecondsRemaining,
     context: {
+      mode,
       agentName: agent.name,
       agentInstructions: agent.instructions,
       voice: agent.voice,
@@ -100,10 +121,30 @@ export async function startAgentForMeeting(
     onUsage: (usage) => recordVoiceUsage(meeting.userId, meeting.id, usage),
     log: (message) => console.info(message),
   });
+  localSessions.set(meeting.id, handle);
+  void handle.done.then(() => localSessions.delete(meeting.id));
 
   return { started: true, reason: "in-process" };
 }
 
 export async function stopAgentForMeeting(meetingId: string) {
+  localSessions.get(meetingId)?.stop("call ended");
   await callWorker("/sessions/stop", { meetingId });
+}
+
+export async function askAgentInMeeting(meetingId: string, askedBy: string) {
+  localSessions.get(meetingId)?.ask(askedBy);
+  await callWorker("/sessions/ask", { meetingId, askedBy });
+}
+
+// Returns false when no agent session is running (caller may start one).
+export async function setAgentModeInMeeting(meetingId: string, mode: AiMode) {
+  const local = localSessions.get(meetingId);
+  if (local) {
+    local.setMode(mode);
+    return true;
+  }
+  if (!env.AGENT_WORKER_URL) return false;
+  await callWorker("/sessions/mode", { meetingId, mode });
+  return true;
 }

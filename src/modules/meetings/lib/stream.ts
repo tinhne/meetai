@@ -1,6 +1,7 @@
 // Pure helpers shared by meeting procedures, the Stream webhook and jobs.
 
-export const STREAM_CALL_TYPE = "default";
+// Call type of meetings created before the call type became configurable.
+export const DEFAULT_STREAM_CALL_TYPE = "default";
 
 export const MEETING_LANGUAGES = ["vi", "en", "auto"] as const;
 export type MeetingLanguage = (typeof MEETING_LANGUAGES)[number];
@@ -25,8 +26,8 @@ export function toStreamTranscriptionLanguage(
     : "auto";
 }
 
-export function streamCallCid(meetingId: string) {
-  return `${STREAM_CALL_TYPE}:${meetingId}`;
+export function streamCallCid(callType: string, meetingId: string) {
+  return `${callType}:${meetingId}`;
 }
 
 export function meetingIdFromCallCid(callCid: string) {

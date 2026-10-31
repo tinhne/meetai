@@ -8,6 +8,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 
@@ -135,6 +136,17 @@ export const meetings = pgTable(
     recordingKey: text("recording_key"),
     processingAttempts: integer("processing_attempts").notNull().default(0),
     failedReason: text("failed_reason"),
+    // "conversational" | "on_demand" | "facilitator" | "silent"
+    aiMode: text("ai_mode").notNull().default("conversational"),
+    // Join link code (/j/:code). Unique, regenerated to revoke old links.
+    inviteCode: text("invite_code")
+      .notNull()
+      .unique()
+      .$defaultFn(() => nanoid(10)),
+    // "approval" (waiting room) | "open" | "locked"
+    joinMode: text("join_mode").notNull().default("approval"),
+    // Stream call type used when the call was created.
+    callType: text("call_type").notNull().default("default"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
@@ -270,6 +282,75 @@ export const aiChatMessages = pgTable(
     index("ai_chat_messages_meeting_created_idx").on(
       table.meetingId,
       table.createdAt,
+    ),
+  ],
+);
+
+export const participantRole = pgEnum("participant_role", [
+  "host",
+  "cohost",
+  "participant",
+  "guest",
+]);
+
+export const participantStatus = pgEnum("participant_status", [
+  "waiting",
+  "admitted",
+  "denied",
+  "removed",
+]);
+
+export const meetingParticipants = pgTable(
+  "meeting_participants",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    meetingId: text("meeting_id")
+      .notNull()
+      .references(() => meetings.id, { onDelete: "cascade" }),
+    // Null for guests (people without an account).
+    userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+    guestName: text("guest_name"),
+    // Identity used inside the Stream call (user id, or "guest_<id>").
+    streamUserId: text("stream_user_id").notNull(),
+    role: participantRole("role").notNull().default("participant"),
+    status: participantStatus("status").notNull().default("waiting"),
+    // When the person accepted the recording / AI notice in the lobby.
+    consentAt: timestamp("consent_at"),
+    joinedAt: timestamp("joined_at"),
+    leftAt: timestamp("left_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("meeting_participants_meeting_stream_user_idx").on(
+      table.meetingId,
+      table.streamUserId,
+    ),
+    index("meeting_participants_user_idx").on(table.userId),
+  ],
+);
+
+export const meetingFeedback = pgTable(
+  "meeting_feedback",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    meetingId: text("meeting_id")
+      .notNull()
+      .references(() => meetings.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    rating: integer("rating").notNull(),
+    comment: text("comment"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("meeting_feedback_meeting_user_idx").on(
+      table.meetingId,
+      table.userId,
     ),
   ],
 );

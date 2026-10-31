@@ -9,7 +9,7 @@ import { StreamClient } from "@stream-io/node-sdk";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { AI_CONFIG } from "../../src/config/ai";
+import { AI_CONFIG, AI_MODES, type AiMode } from "../../src/config/ai";
 import { agents, meetings, usageEvents } from "../../src/db/schema";
 import {
   startAgentSession,
@@ -31,6 +31,20 @@ const startSchema = z.object({
   voiceSecondsRemaining: z.number().nonnegative(),
 });
 const stopSchema = z.object({ meetingId: z.string().min(1) });
+const askSchema = z.object({
+  meetingId: z.string().min(1),
+  askedBy: z.string().min(1).max(80),
+});
+const modeSchema = z.object({
+  meetingId: z.string().min(1),
+  mode: z.enum(AI_MODES),
+});
+
+function toAiMode(value: string): AiMode {
+  return (AI_MODES as readonly string[]).includes(value)
+    ? (value as AiMode)
+    : "conversational";
+}
 
 const log = (message: string) => console.info(new Date().toISOString(), message);
 
@@ -66,14 +80,19 @@ async function startSession(meetingId: string, voiceSecondsRemaining: number) {
     .where(and(eq(agents.id, meeting.agentId), eq(agents.userId, meeting.userId)));
   if (!agent) return { status: "agent-not-found" };
 
+  const mode = toAiMode(meeting.aiMode);
+  if (mode === "silent") return { status: "silent" };
+
   const handle = await startAgentSession({
     streamVideo,
+    callType: meeting.callType,
     openAiApiKey: env.OPENAI_API_KEY,
     model: env.OPENAI_REALTIME_MODEL || AI_CONFIG.realtime.model,
     meetingId,
     agentId: agent.id,
     voiceSecondsRemaining,
     context: {
+      mode,
       agentName: agent.name,
       agentInstructions: agent.instructions,
       voice: agent.voice,
@@ -130,6 +149,20 @@ const server = createServer(async (req, res) => {
       const { meetingId } = stopSchema.parse(json);
       sessions.get(meetingId)?.stop("call ended");
       return send(res, 200, { status: "stopped" });
+    }
+
+    if (req.url === "/sessions/ask") {
+      const { meetingId, askedBy } = askSchema.parse(json);
+      const handle = sessions.get(meetingId);
+      handle?.ask(askedBy);
+      return send(res, 200, { status: handle ? "asked" : "no-session" });
+    }
+
+    if (req.url === "/sessions/mode") {
+      const { meetingId, mode } = modeSchema.parse(json);
+      const handle = sessions.get(meetingId);
+      handle?.setMode(mode);
+      return send(res, 200, { status: handle ? "updated" : "no-session" });
     }
 
     return send(res, 404, { error: "Not found" });

@@ -3,7 +3,10 @@ interface Props {
 }
 
 const Layout = ({ children }: Props) => {
-  return <div className="h-screen bg-stage text-stage-foreground">{children}</div>;
+  // The call room is always dark, whatever the app theme.
+  return (
+    <div className="dark h-svh bg-stage text-stage-foreground">{children}</div>
+  );
 };
 
 export default Layout;

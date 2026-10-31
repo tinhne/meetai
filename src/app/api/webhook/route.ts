@@ -2,7 +2,7 @@ export const runtime = "nodejs";
 import { createHash } from "node:crypto";
 
 import { db } from "@/db";
-import { agents, meetings, webhookEvents } from "@/db/schema";
+import { agents, meetingParticipants, meetings, webhookEvents } from "@/db/schema";
 import { inngest } from "@/inngest/client";
 import { streamVideo } from "@/lib/stream-video";
 import { meetingIdFromCallCid } from "@/modules/meetings/lib/stream";
@@ -11,6 +11,7 @@ import { startAgentForMeeting, stopAgentForMeeting } from "@/server/agent-dispat
 import {
   CallEndedEvent,
   CallRecordingReadyEvent,
+  CallSessionParticipantJoinedEvent,
   CallSessionParticipantLeftEvent,
   CallSessionStartedEvent,
   CallTranscriptionReadyEvent,
@@ -79,9 +80,34 @@ async function handleSessionStarted(event: CallSessionStartedEvent) {
   }
 }
 
+async function handleParticipantJoined(event: CallSessionParticipantJoinedEvent) {
+  const meetingId = meetingIdFromCallCid(event.call_cid);
+  if (!meetingId) return;
+
+  await db
+    .update(meetingParticipants)
+    .set({ joinedAt: new Date(), leftAt: null })
+    .where(
+      and(
+        eq(meetingParticipants.meetingId, meetingId),
+        eq(meetingParticipants.streamUserId, event.participant.user.id),
+      ),
+    );
+}
+
 async function handleParticipantLeft(event: CallSessionParticipantLeftEvent) {
   const meetingId = meetingIdFromCallCid(event.call_cid);
   if (!meetingId) return;
+
+  await db
+    .update(meetingParticipants)
+    .set({ leftAt: new Date() })
+    .where(
+      and(
+        eq(meetingParticipants.meetingId, meetingId),
+        eq(meetingParticipants.streamUserId, event.participant.user.id),
+      ),
+    );
 
   // Do not end the call here: a single participant (or the agent) leaving,
   // or a page refresh, must not end the meeting for everyone. A debounced
@@ -189,6 +215,11 @@ export async function POST(request: Request) {
     switch (eventType) {
       case "call.session_started":
         await handleSessionStarted(payload as unknown as CallSessionStartedEvent);
+        break;
+      case "call.session_participant_joined":
+        await handleParticipantJoined(
+          payload as unknown as CallSessionParticipantJoinedEvent,
+        );
         break;
       case "call.session_participant_left":
         await handleParticipantLeft(

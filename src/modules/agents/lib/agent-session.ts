@@ -7,9 +7,10 @@
 import type { StreamClient } from "@stream-io/node-sdk";
 import type { RealtimeClient } from "@stream-io/openai-realtime-api";
 
-import { STREAM_CALL_TYPE } from "@/modules/meetings/lib/stream";
+import { AI_CONFIG, type AiMode } from "@/config/ai";
 import {
   buildRealtimeSessionConfig,
+  isAgentAddressed,
   voiceSecondsFromUsage,
   type RealtimeAgentContext,
   type RealtimeUsage,
@@ -27,6 +28,7 @@ export interface AgentUsage {
 
 export interface AgentSessionOptions {
   streamVideo: StreamClient;
+  callType: string;
   openAiApiKey: string;
   model: string;
   meetingId: string;
@@ -39,8 +41,26 @@ export interface AgentSessionOptions {
 
 export interface AgentSessionHandle {
   stop: (reason: string) => void;
+  // Group modes: answer the latest question now ("Ask AI" button).
+  ask: (askedBy: string) => void;
+  setMode: (mode: AiMode) => void;
   done: Promise<void>;
 }
+
+const ASK_MESSAGE: Record<string, (name: string) => string> = {
+  vi: (name) => `${name} vừa bấm nút hỏi bạn. Hãy trả lời ngắn gọn câu hỏi gần nhất trong cuộc họp.`,
+  en: (name) => `${name} pressed the button to ask you. Briefly answer the latest question in the meeting.`,
+};
+
+const ADDRESSED_MESSAGE: Record<string, string> = {
+  vi: "Ai đó vừa gọi tên bạn. Hãy trả lời ngắn gọn điều họ vừa hỏi hoặc nhờ.",
+  en: "Someone just addressed you by name. Briefly answer what they asked.",
+};
+
+const TIME_CHECK_MESSAGE: Record<string, (minutes: number) => string> = {
+  vi: (minutes) => `Đã ${minutes} phút trôi qua. Nhắc giờ thật ngắn: những gì đã bàn và những mục agenda còn lại. Tối đa 2 câu.`,
+  en: (minutes) => `${minutes} minutes have passed. Give a very short time check: what was covered and what agenda items remain. Two sentences max.`,
+};
 
 const QUOTA_MESSAGE: Record<string, string> = {
   vi: "Nói ngắn gọn với mọi người rằng bạn đã dùng hết số phút AI của tháng này và sẽ rời cuộc họp ngay bây giờ. Chào tạm biệt.",
@@ -51,14 +71,21 @@ export async function startAgentSession(
   options: AgentSessionOptions,
 ): Promise<AgentSessionHandle> {
   const log = options.log ?? (() => {});
-  const call = options.streamVideo.video.call(STREAM_CALL_TYPE, options.meetingId);
-  const sessionConfig = buildRealtimeSessionConfig(options.context);
+  const call = options.streamVideo.video.call(options.callType, options.meetingId);
+  const context = { ...options.context };
+  const language = context.language === "en" ? "en" : "vi";
+  const startedAt = Date.now();
 
   let client: RealtimeClient | null = null;
   let stopped = false;
   let reconnects = 0;
   let usedSeconds = 0;
   let pollTimer: ReturnType<typeof setInterval> | null = null;
+  let facilitatorTimer: ReturnType<typeof setInterval> | null = null;
+  let responding = false;
+  let lastTriggeredAt = 0;
+  // Conversation items kept in context; older ones are deleted to bound cost.
+  const itemIds: string[] = [];
   let resolveDone: () => void = () => {};
   const done = new Promise<void>((resolve) => {
     resolveDone = resolve;
@@ -69,6 +96,7 @@ export async function startAgentSession(
     stopped = true;
     log(`[agent ${options.meetingId}] stopping: ${reason}`);
     if (pollTimer) clearInterval(pollTimer);
+    if (facilitatorTimer) clearInterval(facilitatorTimer);
     try {
       client?.disconnect();
     } catch {
@@ -86,16 +114,53 @@ export async function startAgentSession(
     }
   };
 
+  const respond = (instructions: string, force = false) => {
+    if (!client || stopped) return;
+    if (!force && (responding || Date.now() - lastTriggeredAt < AI_CONFIG.realtime.addressCooldownMs)) {
+      return;
+    }
+    lastTriggeredAt = Date.now();
+    client.realtime.send("response.create", { response: { instructions } });
+  };
+
   const sayFarewellAndStop = () => {
-    const language = options.context.language === "en" ? "en" : "vi";
     try {
-      client?.realtime.send("response.create", {
-        response: { instructions: QUOTA_MESSAGE[language] },
-      });
+      respond(QUOTA_MESSAGE[language], true);
     } catch {
       // ignore, we are leaving anyway
     }
     setTimeout(() => stop("voice quota reached"), FAREWELL_DELAY_MS);
+  };
+
+  const applySession = () => {
+    client?.updateSession(
+      buildRealtimeSessionConfig(context) as Parameters<RealtimeClient["updateSession"]>[0],
+    );
+  };
+
+  const scheduleFacilitator = () => {
+    if (facilitatorTimer) clearInterval(facilitatorTimer);
+    facilitatorTimer = null;
+    if (context.mode !== "facilitator") return;
+
+    const intervalMs = AI_CONFIG.realtime.facilitatorCheckInMinutes * 60_000;
+    facilitatorTimer = setInterval(() => {
+      const minutes = Math.round((Date.now() - startedAt) / 60_000);
+      respond(TIME_CHECK_MESSAGE[language](minutes), true);
+    }, intervalMs);
+  };
+
+  const trackItem = (id: string | undefined) => {
+    if (!id || itemIds.includes(id)) return;
+    itemIds.push(id);
+    while (itemIds.length > AI_CONFIG.realtime.maxConversationItems) {
+      const oldest = itemIds.shift();
+      try {
+        if (oldest) client?.deleteItem(oldest);
+      } catch {
+        // item already gone
+      }
+    }
   };
 
   const connect = async () => {
@@ -106,23 +171,48 @@ export async function startAgentSession(
       model: options.model,
     });
 
-    client.updateSession(
-      sessionConfig as Parameters<RealtimeClient["updateSession"]>[0],
-    );
+    itemIds.length = 0;
+    applySession();
 
     client.on("realtime.event", (envelope) => {
       const { source, event } = envelope as {
         source: string;
-        event: { type: string; response?: { usage?: RealtimeUsage }; error?: { message?: string } };
+        event: {
+          type: string;
+          item?: { id?: string };
+          transcript?: string;
+          response?: { usage?: RealtimeUsage };
+          error?: { message?: string };
+        };
       };
       if (source !== "server") return;
 
-      if (event.type === "error") {
-        log(`[agent ${options.meetingId}] realtime error: ${event.error?.message ?? "unknown"}`);
-        return;
+      switch (event.type) {
+        case "error":
+          log(`[agent ${options.meetingId}] realtime error: ${event.error?.message ?? "unknown"}`);
+          return;
+        case "conversation.item.created":
+        case "conversation.item.added":
+          trackItem(event.item?.id);
+          return;
+        case "response.created":
+          responding = true;
+          return;
+        case "conversation.item.input_audio_transcription.completed":
+          if (
+            context.mode !== "conversational" &&
+            event.transcript &&
+            isAgentAddressed(event.transcript, context.agentName)
+          ) {
+            respond(ADDRESSED_MESSAGE[language]);
+          }
+          return;
+        case "response.done":
+          responding = false;
+          break;
+        default:
+          return;
       }
-
-      if (event.type !== "response.done") return;
 
       const usage = event.response?.usage;
       const voiceSeconds = voiceSecondsFromUsage(usage);
@@ -169,6 +259,7 @@ export async function startAgentSession(
   };
 
   await connect();
+  scheduleFacilitator();
 
   // Safety net in case the end-of-call webhook never reaches us.
   pollTimer = setInterval(() => {
@@ -177,5 +268,19 @@ export async function startAgentSession(
     });
   }, CALL_POLL_INTERVAL_MS);
 
-  return { stop, done };
+  const ask = (askedBy: string) => {
+    respond(ASK_MESSAGE[language](askedBy), true);
+  };
+
+  const setMode = (mode: AiMode) => {
+    if (mode === "silent") {
+      stop("AI turned off by host");
+      return;
+    }
+    context.mode = mode;
+    applySession();
+    scheduleFacilitator();
+  };
+
+  return { stop, ask, setMode, done };
 }

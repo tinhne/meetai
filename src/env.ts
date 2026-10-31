@@ -27,6 +27,9 @@ const serverSchema = z.object({
 
   NEXT_PUBLIC_STREAM_VIDEO_API_KEY: z.string().min(1),
   STREAM_VIDEO_SECRET_KEY: z.string().min(1),
+  // Call type for new meetings. "meetai" after running scripts/stream-setup.ts
+  // (locked-down permissions for multi-person calls).
+  STREAM_CALL_TYPE: z.string().min(1).default("default"),
   // Minutes to wait after the last human leaves before ending the call.
   EMPTY_ROOM_TIMEOUT_MIN: z.coerce.number().int().min(1).max(60).default(2),
 

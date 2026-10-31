@@ -32,7 +32,13 @@ import { CommandSelect } from "../../../../components/command-select";
 import { NewAgentDialog } from "@/modules/agents/ui/components/new-agent-dialog";
 import { useRouter } from "@/i18n/navigation";
 import { format } from "date-fns";
-import { MEETING_TEMPLATES, type MeetingTemplate } from "@/config/ai";
+import {
+  AI_MODES,
+  MEETING_TEMPLATES,
+  type AiMode,
+  type MeetingTemplate,
+} from "@/config/ai";
+import { useTranslations } from "next-intl";
 import {
   MEETING_LANGUAGES,
   type MeetingLanguage,
@@ -69,6 +75,7 @@ export const MeetingForm = ({
   initialValues,
 }: MeetingFormProps) => {
   const trpc = useTRPC();
+  const tAi = useTranslations("aiModes");
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -131,6 +138,7 @@ export const MeetingForm = ({
       agentId: initialValues?.agentId ?? "",
       language: (initialValues?.language as MeetingLanguage) ?? "vi",
       template: (initialValues?.template as MeetingTemplate) ?? "general",
+      aiMode: (initialValues?.aiMode as AiMode) ?? "conversational",
       agenda: initialValues?.agenda ?? "",
       scheduledAt: initialValues?.scheduledAt
         ? new Date(initialValues.scheduledAt).toISOString()
@@ -244,6 +252,31 @@ export const MeetingForm = ({
                   The language spoken in the meeting. Used for transcription
                   and the summary.
                 </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="aiMode"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>AI mode</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {AI_MODES.map((mode) => (
+                      <SelectItem key={mode} value={mode}>
+                        {tAi(mode)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>{tAi(`${field.value}Hint`)}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

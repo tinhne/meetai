@@ -17,12 +17,23 @@ import { db } from "@/db";
 import {
   agents,
   aiChatMessages,
+  meetingFeedback,
+  meetingParticipants,
   meetings,
   transcriptSegments,
   usageEvents,
   user,
 } from "@/db/schema";
-import { AI_CONFIG } from "@/config/ai";
+import { AI_CONFIG, AI_MODES, JOIN_MODES } from "@/config/ai";
+import { buildIcsInvite } from "@/lib/ics";
+import { sendMeetingInviteEmail } from "@/lib/email";
+import {
+  askAgentInMeeting,
+  setAgentModeInMeeting,
+  startAgentForMeeting,
+  toAiMode,
+} from "@/server/agent-dispatch";
+import { assertRoomForMore, participantDisplayName } from "@/server/participants";
 import { inngest } from "@/inngest/client";
 import { deleteFromStorage, getSignedDownloadUrl } from "@/server/storage";
 import {
@@ -42,11 +53,8 @@ import {
 } from "../schemas/schemas";
 import { StreamTranscriptItem } from "../types";
 import { canJoinMeeting, planMeetingUpdate } from "../lib/rules";
-import {
-  STREAM_CALL_TYPE,
-  streamCallCid,
-  toStreamTranscriptionLanguage,
-} from "../lib/stream";
+import { streamCallCid, toStreamTranscriptionLanguage } from "../lib/stream";
+import { env } from "@/env";
 
 const STREAM_TOKEN_TTL_SEC = 60 * 60;
 
@@ -76,6 +84,7 @@ export const meetingsRouter = createTRPCRouter({
       const { meeting: existingMeeting } = await getMeetingForUser(
         ctx.auth.user.id,
         input.id,
+        "owner",
       );
 
       const segments = await db
@@ -139,7 +148,11 @@ export const meetingsRouter = createTRPCRouter({
   getRecordingUrl: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id);
+      const { meeting } = await getMeetingForUser(
+        ctx.auth.user.id,
+        input.id,
+        "owner",
+      );
 
       if (meeting.recordingKey) {
         const url = await getSignedDownloadUrl(meeting.recordingKey);
@@ -150,7 +163,7 @@ export const meetingsRouter = createTRPCRouter({
 
       // Stream URLs expire; ask Stream for a fresh one.
       const { recordings } = await streamVideo.video
-        .call(STREAM_CALL_TYPE, meeting.id)
+        .call(meeting.callType, meeting.id)
         .listRecordings()
         .catch(() => ({ recordings: [] as { url: string; end_time?: Date }[] }));
       const latest = recordings.at(-1);
@@ -164,7 +177,7 @@ export const meetingsRouter = createTRPCRouter({
       const { meeting } = await getMeetingForUser(
         ctx.auth.user.id,
         input.id,
-        "host",
+        "owner",
       );
 
       const [updated] = await db
@@ -191,7 +204,11 @@ export const meetingsRouter = createTRPCRouter({
   getAskAiMessages: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id);
+      const { meeting } = await getMeetingForUser(
+        ctx.auth.user.id,
+        input.id,
+        "owner",
+      );
 
       return db
         .select({
@@ -209,6 +226,248 @@ export const meetingsRouter = createTRPCRouter({
         )
         .orderBy(asc(aiChatMessages.createdAt))
         .limit(200);
+    }),
+  // ---- Live meeting: participants and host controls ----
+  getParticipants: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id, "host");
+
+      const rows = await db
+        .select({
+          id: meetingParticipants.id,
+          role: meetingParticipants.role,
+          status: meetingParticipants.status,
+          streamUserId: meetingParticipants.streamUserId,
+          guestName: meetingParticipants.guestName,
+          userName: user.name,
+          createdAt: meetingParticipants.createdAt,
+        })
+        .from(meetingParticipants)
+        .leftJoin(user, eq(user.id, meetingParticipants.userId))
+        .where(eq(meetingParticipants.meetingId, meeting.id))
+        .orderBy(asc(meetingParticipants.createdAt));
+
+      return rows.map((row) => ({
+        id: row.id,
+        role: row.role,
+        status: row.status,
+        streamUserId: row.streamUserId,
+        name: participantDisplayName(row),
+        isGuest: row.role === "guest",
+      }));
+    }),
+  setParticipantStatus: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        participantId: z.string(),
+        status: z.enum(["admitted", "denied", "removed"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await enforceRateLimit("meetingAction", ctx.auth.user.id);
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id, "host");
+
+      const [participant] = await db
+        .select()
+        .from(meetingParticipants)
+        .where(
+          and(
+            eq(meetingParticipants.id, input.participantId),
+            eq(meetingParticipants.meetingId, meeting.id),
+          ),
+        );
+
+      if (!participant || participant.role === "host") {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Participant not found" });
+      }
+
+      if (input.status === "admitted" && participant.status !== "admitted") {
+        await assertRoomForMore(meeting);
+      }
+
+      await db
+        .update(meetingParticipants)
+        .set({ status: input.status })
+        .where(eq(meetingParticipants.id, participant.id));
+
+      if (input.status === "removed") {
+        await streamVideo.video
+          .call(meeting.callType, meeting.id)
+          .kickUser({
+            user_id: participant.streamUserId,
+            block: true,
+            kicked_by_id: ctx.auth.user.id,
+          })
+          .catch(() => undefined);
+      }
+
+      return { id: participant.id, status: input.status };
+    }),
+  muteParticipants: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        // Omit to mute everyone except the host.
+        streamUserId: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await enforceRateLimit("meetingAction", ctx.auth.user.id);
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id, "host");
+
+      await streamVideo.video.call(meeting.callType, meeting.id).muteUsers({
+        audio: true,
+        muted_by_id: ctx.auth.user.id,
+        ...(input.streamUserId
+          ? { user_ids: [input.streamUserId] }
+          : { mute_all_users: true }),
+      });
+
+      return { ok: true };
+    }),
+  setJoinMode: protectedProcedure
+    .input(z.object({ id: z.string(), joinMode: z.enum(JOIN_MODES) }))
+    .mutation(async ({ ctx, input }) => {
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id, "host");
+      await db
+        .update(meetings)
+        .set({ joinMode: input.joinMode })
+        .where(eq(meetings.id, meeting.id));
+      return { joinMode: input.joinMode };
+    }),
+  setAiMode: protectedProcedure
+    .input(z.object({ id: z.string(), aiMode: z.enum(AI_MODES) }))
+    .mutation(async ({ ctx, input }) => {
+      await enforceRateLimit("meetingAction", ctx.auth.user.id);
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id, "host");
+
+      await db
+        .update(meetings)
+        .set({ aiMode: input.aiMode })
+        .where(eq(meetings.id, meeting.id));
+
+      if (meeting.status === "active") {
+        const wasSilent = toAiMode(meeting.aiMode) === "silent";
+        const running = wasSilent
+          ? false
+          : await setAgentModeInMeeting(meeting.id, input.aiMode);
+
+        if (!running && input.aiMode !== "silent") {
+          const [agent] = await db
+            .select()
+            .from(agents)
+            .where(eq(agents.id, meeting.agentId));
+          if (agent) {
+            await startAgentForMeeting({ ...meeting, aiMode: input.aiMode }, agent);
+          }
+        }
+      }
+
+      return { aiMode: input.aiMode };
+    }),
+  askAgent: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await enforceRateLimit("askAgent", ctx.auth.user.id);
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id);
+
+      if (meeting.status !== "active") {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "The meeting is not live.",
+        });
+      }
+
+      await askAgentInMeeting(meeting.id, ctx.auth.user.name || "Someone");
+      return { ok: true };
+    }),
+  regenerateInviteCode: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id, "owner");
+      const [updated] = await db
+        .update(meetings)
+        .set({ inviteCode: nanoid(10) })
+        .where(eq(meetings.id, meeting.id))
+        .returning({ inviteCode: meetings.inviteCode });
+      return updated;
+    }),
+  inviteByEmail: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        emails: z.array(z.email()).min(1).max(10),
+        locale: z.enum(["vi", "en"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await enforceRateLimit("invite", ctx.auth.user.id);
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id, "owner");
+
+      const localePrefix = input.locale === "en" ? "/en" : "";
+      const url = `${env.NEXT_PUBLIC_APP_URL}${localePrefix}/j/${meeting.inviteCode}`;
+      const when = meeting.scheduledAt
+        ? new Intl.DateTimeFormat(input.locale === "en" ? "en-US" : "vi-VN", {
+            dateStyle: "full",
+            timeStyle: "short",
+            timeZone: "Asia/Ho_Chi_Minh",
+          }).format(meeting.scheduledAt)
+        : null;
+      const ics = meeting.scheduledAt
+        ? buildIcsInvite({
+            uid: meeting.id,
+            title: meeting.name,
+            description: meeting.agenda ?? "",
+            url,
+            start: meeting.scheduledAt,
+            durationMinutes: 60,
+          })
+        : null;
+
+      const unique = [...new Set(input.emails.map((email) => email.toLowerCase()))];
+      await Promise.all(
+        unique.map((to) =>
+          sendMeetingInviteEmail({
+            to,
+            hostName: ctx.auth.user.name || "Meet.AI",
+            meetingName: meeting.name,
+            url,
+            language: input.locale,
+            when,
+            ics,
+          }),
+        ),
+      );
+
+      return { sent: unique.length };
+    }),
+  submitFeedback: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        rating: z.number().int().min(1).max(5),
+        comment: z.string().trim().max(1000).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id);
+
+      await db
+        .insert(meetingFeedback)
+        .values({
+          meetingId: meeting.id,
+          userId: ctx.auth.user.id,
+          rating: input.rating,
+          comment: input.comment || null,
+        })
+        .onConflictDoUpdate({
+          target: [meetingFeedback.meetingId, meetingFeedback.userId],
+          set: { rating: input.rating, comment: input.comment || null },
+        });
+
+      return { ok: true };
     }),
   // Issues a call token scoped to this meeting's call only.
   generateToken: protectedProcedure
@@ -239,7 +498,7 @@ export const meetingsRouter = createTRPCRouter({
 
       return streamVideo.generateCallToken({
         user_id: id,
-        call_cids: [streamCallCid(meeting.id)],
+        call_cids: [streamCallCid(meeting.callType, meeting.id)],
         iat: issuedAt,
         exp: issuedAt + 60 + STREAM_TOKEN_TTL_SEC,
       });
@@ -263,7 +522,7 @@ export const meetingsRouter = createTRPCRouter({
         });
       }
 
-      await streamVideo.video.call(STREAM_CALL_TYPE, meeting.id).end();
+      await streamVideo.video.call(meeting.callType, meeting.id).end();
 
       return { id: meeting.id };
     }),
@@ -274,7 +533,7 @@ export const meetingsRouter = createTRPCRouter({
       const { meeting } = await getMeetingForUser(
         ctx.auth.user.id,
         input.id,
-        "host",
+        "owner",
       );
 
       const [cancelledMeeting] = await db
@@ -320,7 +579,7 @@ export const meetingsRouter = createTRPCRouter({
     .input(meetingUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.auth.user.id;
-      const { meeting } = await getMeetingForUser(userId, input.id, "host");
+      const { meeting } = await getMeetingForUser(userId, input.id, "owner");
 
       const plan = planMeetingUpdate(meeting, input);
       if (!plan.ok) {
@@ -333,7 +592,7 @@ export const meetingsRouter = createTRPCRouter({
       }
 
       if (plan.languageChanged) {
-        await streamVideo.video.call(STREAM_CALL_TYPE, meeting.id).update({
+        await streamVideo.video.call(meeting.callType, meeting.id).update({
           settings_override: {
             transcription: transcriptionSettings(input.language),
           },
@@ -366,10 +625,13 @@ export const meetingsRouter = createTRPCRouter({
 
       await upsertAgentStreamUser(agent);
 
-      const call = streamVideo.video.call(STREAM_CALL_TYPE, meetingId);
+      const callType = env.STREAM_CALL_TYPE;
+      const call = streamVideo.video.call(callType, meetingId);
       await call.create({
         data: {
           created_by_id: userId,
+          // Host actions (end, mute, remove) run server-side, so members
+          // only need the call type's basic grants.
           members: [{ user_id: userId }],
           custom: {
             meetingId,
@@ -395,6 +657,8 @@ export const meetingsRouter = createTRPCRouter({
             userId,
             language: input.language,
             template: input.template,
+            aiMode: input.aiMode,
+            callType,
             agenda: input.agenda ? input.agenda : null,
             scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
           })
@@ -402,6 +666,14 @@ export const meetingsRouter = createTRPCRouter({
         db
           .insert(usageEvents)
           .values({ userId, kind: "meeting_created", meetingId }),
+        db.insert(meetingParticipants).values({
+          id: `host_${meetingId}`,
+          meetingId,
+          userId,
+          streamUserId: userId,
+          role: "host",
+          status: "admitted",
+        }),
       ]);
 
       return createdMeeting;

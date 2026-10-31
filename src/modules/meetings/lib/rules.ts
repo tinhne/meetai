@@ -13,6 +13,7 @@ export interface MeetingUpdateInput {
   agentId: string;
   language: string;
   template: string;
+  aiMode: string;
   agenda?: string;
   scheduledAt?: string;
 }
@@ -31,6 +32,7 @@ export type MeetingUpdatePlan =
         agentId: string;
         language: string;
         template: string;
+        aiMode: string;
         agenda: string | null;
         scheduledAt: Date | null;
         updatedAt: Date;
@@ -66,6 +68,7 @@ export function planMeetingUpdate(
       agentId: input.agentId,
       language: input.language,
       template: input.template,
+      aiMode: input.aiMode,
       agenda: input.agenda ? input.agenda : null,
       scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
       updatedAt: now,

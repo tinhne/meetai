@@ -12,6 +12,8 @@ export interface PlanLimits {
   askAiPerHour: number;
   // Minutes of AI speech per calendar month (UTC).
   aiVoiceMinutesPerMonth: number;
+  // People in a call at once, host included (the AI is not counted).
+  maxParticipants: number;
 }
 
 export const PLANS: Record<PlanId, PlanLimits> = {
@@ -21,6 +23,7 @@ export const PLANS: Record<PlanId, PlanLimits> = {
     maxAgents: 1,
     askAiPerHour: 20,
     aiVoiceMinutesPerMonth: 10,
+    maxParticipants: 3,
   },
   pro: {
     id: "pro",
@@ -28,6 +31,7 @@ export const PLANS: Record<PlanId, PlanLimits> = {
     maxAgents: null,
     askAiPerHour: 120,
     aiVoiceMinutesPerMonth: 60,
+    maxParticipants: 10,
   },
 };
 

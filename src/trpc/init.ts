@@ -45,6 +45,15 @@ export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
   });
 });
 
+// For pages usable both signed in and as a guest (meeting join links).
+export const optionalAuthProcedure = baseProcedure.use(async ({ ctx, next }) => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  return next({ ctx: { ...ctx, session } });
+});
+
 export const premiumProcedure = (entity: "meetings" | "agents") =>
   protectedProcedure.use(async ({ ctx, next }) => {
     const userId = ctx.auth.user.id;

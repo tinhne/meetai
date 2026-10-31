@@ -18,7 +18,6 @@ import { env, isStorageEnabled } from "@/env";
 import { sendMeetingReadyEmail } from "@/lib/email";
 import { streamVideo } from "@/lib/stream-video";
 import {
-  STREAM_CALL_TYPE,
   countHumanParticipants,
   toStreamTranscriptionLanguage,
 } from "@/modules/meetings/lib/stream";
@@ -502,7 +501,7 @@ export const meetingsEndIfEmpty = inngest.createFunction(
         return { ended: false, reason: "not-active" };
       }
 
-      const call = streamVideo.video.call(STREAM_CALL_TYPE, meetingId);
+      const call = streamVideo.video.call(meeting.callType, meetingId);
       const { call: callState } = await call.get();
       const participants = callState.session?.participants ?? [];
 
