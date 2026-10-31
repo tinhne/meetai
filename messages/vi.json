@@ -26,7 +26,8 @@
     "toggleSidebar": "Ẩn/hiện thanh bên",
     "search": "Tìm kiếm…",
     "workspace": "Không gian làm việc",
-    "account": "Tài khoản"
+    "account": "Tài khoản",
+    "billing": "Gói & thanh toán"
   },
   "commandPalette": {
     "placeholder": "Tìm cuộc họp, agent hoặc gõ một lệnh…",
@@ -50,7 +51,8 @@
     "freePlan": "Gói miễn phí",
     "agents": "Agents",
     "meetingsThisMonth": "Cuộc họp tháng này",
-    "upgrade": "Nâng cấp"
+    "upgrade": "Nâng cấp",
+    "aiVoice": "Phút AI nói"
   },
   "theme": {
     "label": "Giao diện",
@@ -1023,5 +1025,97 @@
         "privacy": "Chính sách quyền riêng tư"
       }
     }
+  },
+  "billing": {
+    "title": "Gói & thanh toán",
+    "description": "Gói hiện tại, mức sử dụng tháng này và lịch sử thanh toán.",
+    "plans": {
+      "free": "Miễn phí",
+      "pro": "Pro"
+    },
+    "currentPlan": "Gói hiện tại",
+    "status": {
+      "active": "Đang hoạt động",
+      "trialing": "Dùng thử",
+      "past_due": "Chờ thanh toán",
+      "canceled": "Đã huỷ",
+      "unpaid": "Chưa thanh toán"
+    },
+    "renewsOn": "Gia hạn ngày {date}",
+    "endsOn": "Kết thúc ngày {date}",
+    "freeForever": "Miễn phí, không giới hạn thời gian.",
+    "pastDueHint": "Chưa thu được phí gia hạn. Hãy cập nhật phương thức thanh toán để không bị gián đoạn.",
+    "manage": "Quản lý thanh toán",
+    "upgrade": "Nâng cấp lên Pro",
+    "upgradeTo": "Nâng cấp ({price}/{interval})",
+    "interval": {
+      "month": "tháng",
+      "year": "năm",
+      "week": "tuần",
+      "day": "ngày"
+    },
+    "sync": "Đồng bộ",
+    "synced": "Đã cập nhật trạng thái gói.",
+    "syncFailed": "Không đồng bộ được, vui lòng thử lại sau.",
+    "checkoutSuccess": "Thanh toán thành công! Gói của bạn đã được cập nhật.",
+    "usageTitle": "Mức sử dụng tháng này",
+    "usageResets": "Làm mới vào ngày 1 hằng tháng (UTC).",
+    "usage": {
+      "meetings": "Cuộc họp",
+      "recordingMinutes": "Phút ghi hình",
+      "agents": "Agents",
+      "aiVoice": "Phút AI nói",
+      "credits": "Gồm {minutes} phút mua thêm"
+    },
+    "compareTitle": "So sánh gói",
+    "compare": {
+      "feature": "Tính năng",
+      "meetingsPerMonth": "Cuộc họp mỗi tháng",
+      "recordingMinutesPerMonth": "Phút ghi hình mỗi tháng",
+      "aiVoiceMinutesPerMonth": "Phút AI nói mỗi tháng",
+      "maxAgents": "Số agent",
+      "maxParticipants": "Người mỗi phòng",
+      "askAiPerHour": "Câu hỏi AI mỗi giờ",
+      "recordingRetentionDays": "Lưu bản ghi",
+      "knowledgeDocuments": "Tài liệu kiến thức",
+      "unlimited": "Không giới hạn",
+      "days": "{count} ngày",
+      "none": "—"
+    },
+    "packsTitle": "Mua thêm phút AI",
+    "packsDescription": "Dùng khi đã hết phút AI của tháng. Không hết hạn.",
+    "packMinutes": "{minutes} phút AI",
+    "buy": "Mua",
+    "packsUnavailable": "Gói phút AI chưa được mở bán.",
+    "productsError": "Không tải được bảng giá từ cổng thanh toán.",
+    "ordersTitle": "Lịch sử thanh toán",
+    "ordersEmpty": "Chưa có giao dịch nào.",
+    "orders": {
+      "date": "Ngày",
+      "item": "Sản phẩm",
+      "amount": "Số tiền",
+      "status": "Trạng thái"
+    },
+    "orderStatus": {
+      "paid": "Đã thanh toán",
+      "pending": "Đang xử lý",
+      "refunded": "Đã hoàn tiền",
+      "partially_refunded": "Hoàn một phần"
+    },
+    "paymentNote": "Thanh toán được xử lý an toàn bởi Polar. Hỗ trợ chuyển khoản QR trong nước sẽ có sớm.",
+    "loadError": "Không tải được thông tin gói. Vui lòng thử lại."
+  },
+  "quota": {
+    "title": {
+      "meetings": "Bạn đã dùng hết lượt tạo cuộc họp tháng này",
+      "recordingMinutes": "Bạn đã dùng hết phút ghi hình tháng này",
+      "agents": "Gói hiện tại đã đủ số agent",
+      "aiVoice": "Bạn đã dùng hết phút AI nói tháng này",
+      "knowledgeDocuments": "Đã đủ số tài liệu kiến thức"
+    },
+    "description": "Đã dùng {used}/{limit} trên gói {plan}. Nâng cấp lên Pro để tiếp tục{voice, select, yes { hoặc mua thêm phút AI} other {}}.",
+    "upgrade": "Xem gói Pro",
+    "buyMinutes": "Mua thêm phút",
+    "later": "Để sau"
   }
 }

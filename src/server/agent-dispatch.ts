@@ -1,9 +1,7 @@
 import "server-only";
 
 import { AI_CONFIG, type AiMode } from "@/config/ai";
-import { remainingVoiceSeconds } from "@/config/plans";
 import { db } from "@/db";
-import { usageEvents } from "@/db/schema";
 import { env } from "@/env";
 import { streamVideo } from "@/lib/stream-video";
 import {
@@ -11,7 +9,8 @@ import {
   type AgentSessionHandle,
 } from "@/modules/agents/lib/agent-session";
 import { signWorkerRequest } from "@/modules/agents/lib/worker-auth";
-import { getMonthlyUsage, getUserPlan } from "@/modules/premium/server/usage";
+import { getVoiceAllowance, recordVoiceUsage as recordVoiceUsageInLedger } from "@/server/billing/ledger";
+import { getUserPlan } from "@/server/billing/plan";
 
 interface DispatchMeeting {
   id: string;
@@ -59,13 +58,7 @@ export async function recordVoiceUsage(
   meetingId: string,
   usage: { voiceSeconds: number; inputTokens: number; outputTokens: number },
 ) {
-  const rows: (typeof usageEvents.$inferInsert)[] = [
-    { userId, meetingId, kind: "ai_voice_seconds", quantity: Math.ceil(usage.voiceSeconds) },
-    { userId, meetingId, kind: "realtime_input_tokens", quantity: usage.inputTokens },
-    { userId, meetingId, kind: "realtime_output_tokens", quantity: usage.outputTokens },
-  ];
-  const nonEmpty = rows.filter((row) => (row.quantity ?? 0) > 0);
-  if (nonEmpty.length > 0) await db.insert(usageEvents).values(nonEmpty);
+  await recordVoiceUsageInLedger(db, { userId, meetingId, ...usage });
 }
 
 export function toAiMode(value: string): AiMode {
@@ -84,9 +77,9 @@ export async function startAgentForMeeting(
   if (mode === "silent") return { started: false, reason: "silent" };
   if (!env.AI_VOICE_ENABLED) return { started: false, reason: "disabled" };
 
+  // Monthly allowance plus any prepaid voice credits.
   const plan = await getUserPlan(meeting.userId);
-  const used = await getMonthlyUsage(meeting.userId, "ai_voice_seconds");
-  const voiceSecondsRemaining = remainingVoiceSeconds(plan, used);
+  const { remainingSeconds: voiceSecondsRemaining } = await getVoiceAllowance(db, meeting.userId, plan);
 
   if (voiceSecondsRemaining <= 0) {
     return { started: false, reason: "quota" };

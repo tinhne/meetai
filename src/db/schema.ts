@@ -398,3 +398,76 @@ export const marketingLeads = pgTable(
   },
   (table) => [index("marketing_leads_kind_created_idx").on(table.kind, table.createdAt)],
 );
+
+// Local cache of Polar subscriptions, kept current by the Polar webhook (and a
+// manual sync on the billing page). Plan checks read this, never Polar.
+export const subscriptions = pgTable(
+  "subscriptions",
+  {
+    // Polar subscription id
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    productId: text("product_id").notNull(),
+    plan: text("plan").notNull().default("pro"),
+    status: text("status").notNull(),
+    currentPeriodEnd: timestamp("current_period_end"),
+    cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+    endsAt: timestamp("ends_at"),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => [index("subscriptions_user_idx").on(table.userId)],
+);
+
+// One row per user once their Polar state has been pulled at least once, so
+// users who subscribed before the webhook existed are backfilled exactly once.
+export const billingCustomers = pgTable("billing_customers", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  polarCustomerId: text("polar_customer_id"),
+  syncedAt: timestamp("synced_at").notNull().defaultNow(),
+});
+
+// Prepaid AI voice seconds (credit packs, referrals). Spent oldest first, only
+// after the monthly plan allowance is used up.
+export const credits = pgTable(
+  "credits",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    granted: integer("granted").notNull(),
+    remaining: integer("remaining").notNull(),
+    source: text("source").notNull(),
+    // Polar order id for purchases; unique so webhook retries grant once.
+    externalId: text("external_id"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    expiresAt: timestamp("expires_at"),
+  },
+  (table) => [
+    index("credits_user_idx").on(table.userId, table.createdAt),
+    uniqueIndex("credits_external_idx").on(table.externalId),
+  ],
+);
+
+// Lifecycle emails already sent (e.g. one quota warning per user per month).
+export const emailLog = pgTable(
+  "email_log",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    dedupeKey: text("dedupe_key").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("email_log_dedupe_idx").on(table.userId, table.kind, table.dedupeKey)],
+);

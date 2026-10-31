@@ -7,15 +7,18 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { UsageMeter } from "@/components/usage-meter";
 import { Link } from "@/i18n/navigation";
+import { track } from "@/lib/analytics";
 import { useTRPC } from "@/trpc/client";
 
+// Free-plan usage in the sidebar; hidden on paid plans.
 export const DashboardTrial = () => {
   const t = useTranslations("usage");
   const trpc = useTRPC();
 
-  const { data } = useQuery(trpc.premium.getFreeUsage.queryOptions());
+  const { data } = useQuery(trpc.billing.getOverview.queryOptions());
 
-  if (!data) return null;
+  if (!data || data.plan.id !== "free") return null;
+  const { usage } = data;
 
   return (
     <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/40 flex flex-col">
@@ -24,15 +27,16 @@ export const DashboardTrial = () => {
           <RocketIcon className="size-4 text-sidebar-primary" />
           <p className="text-sm font-medium">{t("freePlan")}</p>
         </div>
-        <UsageMeter
-          label={t("agents")}
-          used={data.agentCount}
-          limit={data.agentLimit}
-        />
+        <UsageMeter label={t("agents")} used={usage.agents.used} limit={usage.agents.limit} />
         <UsageMeter
           label={t("meetingsThisMonth")}
-          used={data.meetingCount}
-          limit={data.meetingLimit}
+          used={usage.meetings.used}
+          limit={usage.meetings.limit}
+        />
+        <UsageMeter
+          label={t("aiVoice")}
+          used={usage.aiVoice.usedMinutes}
+          limit={usage.aiVoice.includedMinutes + usage.aiVoice.creditMinutes}
         />
       </div>
       <Button
@@ -40,7 +44,9 @@ export const DashboardTrial = () => {
         size="sm"
         className="m-3 mt-0 bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
       >
-        <Link href="/dashboard/upgrade">{t("upgrade")}</Link>
+        <Link href="/dashboard/billing" onClick={() => track("upgrade_clicked", { source: "sidebar" })}>
+          {t("upgrade")}
+        </Link>
       </Button>
     </div>
   );

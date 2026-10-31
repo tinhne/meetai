@@ -57,7 +57,7 @@ export const MeetingIdView = ({ meetingId }: Props) => {
     trpc.meetings.remove.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
-        queryClient.invalidateQueries(trpc.premium.getFreeUsage.queryOptions());
+        queryClient.invalidateQueries(trpc.billing.getOverview.queryOptions());
         toast.success(t("deleted"));
         router.push("/dashboard/meetings");
       },

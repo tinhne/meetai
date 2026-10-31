@@ -26,7 +26,8 @@
     "toggleSidebar": "Toggle sidebar",
     "search": "Search…",
     "workspace": "Workspace",
-    "account": "Account"
+    "account": "Account",
+    "billing": "Plan & billing"
   },
   "commandPalette": {
     "placeholder": "Find a meeting, an agent, or type a command…",
@@ -50,7 +51,8 @@
     "freePlan": "Free plan",
     "agents": "Agents",
     "meetingsThisMonth": "Meetings this month",
-    "upgrade": "Upgrade"
+    "upgrade": "Upgrade",
+    "aiVoice": "AI voice minutes"
   },
   "theme": {
     "label": "Theme",
@@ -1023,5 +1025,97 @@
         "privacy": "Privacy Policy"
       }
     }
+  },
+  "billing": {
+    "title": "Plan & billing",
+    "description": "Your plan, this month's usage and payment history.",
+    "plans": {
+      "free": "Free",
+      "pro": "Pro"
+    },
+    "currentPlan": "Current plan",
+    "status": {
+      "active": "Active",
+      "trialing": "Trial",
+      "past_due": "Payment due",
+      "canceled": "Canceled",
+      "unpaid": "Unpaid"
+    },
+    "renewsOn": "Renews on {date}",
+    "endsOn": "Ends on {date}",
+    "freeForever": "Free, with no time limit.",
+    "pastDueHint": "Your renewal payment failed. Update your payment method to avoid interruption.",
+    "manage": "Manage billing",
+    "upgrade": "Upgrade to Pro",
+    "upgradeTo": "Upgrade ({price}/{interval})",
+    "interval": {
+      "month": "month",
+      "year": "year",
+      "week": "week",
+      "day": "day"
+    },
+    "sync": "Sync",
+    "synced": "Plan status updated.",
+    "syncFailed": "Could not sync, please try again later.",
+    "checkoutSuccess": "Payment successful! Your plan has been updated.",
+    "usageTitle": "This month's usage",
+    "usageResets": "Resets on the 1st of every month (UTC).",
+    "usage": {
+      "meetings": "Meetings",
+      "recordingMinutes": "Recorded minutes",
+      "agents": "Agents",
+      "aiVoice": "AI voice minutes",
+      "credits": "Includes {minutes} purchased minutes"
+    },
+    "compareTitle": "Compare plans",
+    "compare": {
+      "feature": "Feature",
+      "meetingsPerMonth": "Meetings per month",
+      "recordingMinutesPerMonth": "Recorded minutes per month",
+      "aiVoiceMinutesPerMonth": "AI voice minutes per month",
+      "maxAgents": "Agents",
+      "maxParticipants": "People per room",
+      "askAiPerHour": "AI questions per hour",
+      "recordingRetentionDays": "Recording retention",
+      "knowledgeDocuments": "Knowledge documents",
+      "unlimited": "Unlimited",
+      "days": "{count} days",
+      "none": "—"
+    },
+    "packsTitle": "Buy AI minutes",
+    "packsDescription": "Used after this month's AI minutes run out. They never expire.",
+    "packMinutes": "{minutes} AI minutes",
+    "buy": "Buy",
+    "packsUnavailable": "AI minute packs are not on sale yet.",
+    "productsError": "Could not load prices from the payment provider.",
+    "ordersTitle": "Payment history",
+    "ordersEmpty": "No payments yet.",
+    "orders": {
+      "date": "Date",
+      "item": "Item",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "orderStatus": {
+      "paid": "Paid",
+      "pending": "Pending",
+      "refunded": "Refunded",
+      "partially_refunded": "Partially refunded"
+    },
+    "paymentNote": "Payments are processed securely by Polar. Local QR bank transfers are coming soon.",
+    "loadError": "Could not load your plan. Please try again."
+  },
+  "quota": {
+    "title": {
+      "meetings": "You've used all meetings for this month",
+      "recordingMinutes": "You've used all recorded minutes for this month",
+      "agents": "Your plan's agent limit is reached",
+      "aiVoice": "You've used all AI voice minutes for this month",
+      "knowledgeDocuments": "Knowledge document limit reached"
+    },
+    "description": "Used {used}/{limit} on the {plan} plan. Upgrade to Pro to continue{voice, select, yes { or buy more AI minutes} other {}}.",
+    "upgrade": "See Pro plan",
+    "buyMinutes": "Buy minutes",
+    "later": "Later"
   }
 }

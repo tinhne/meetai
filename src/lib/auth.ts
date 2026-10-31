@@ -1,11 +1,36 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { polar, checkout, portal } from "@polar-sh/better-auth";
+import { polar, checkout, portal, webhooks } from "@polar-sh/better-auth";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 import { env, isEmailDeliveryEnabled } from "@/env";
 import { sendResetPasswordEmail, sendVerificationEmail } from "./email";
 import { polarClient } from "./polar";
+import { sendLifecycleEmail } from "@/server/billing/lifecycle-emails";
+import { handleOrderPaid, handleSubscriptionEvent } from "@/server/billing/polar-sync";
+
+// Keeps the local subscription cache and credit balance current. Registered
+// only when POLAR_WEBHOOK_SECRET is set (endpoint: /api/auth/polar/webhooks).
+const polarWebhooks = env.POLAR_WEBHOOK_SECRET
+  ? [
+      webhooks({
+        secret: env.POLAR_WEBHOOK_SECRET,
+        onSubscriptionCreated: (payload) => handleSubscriptionEvent(payload.data),
+        onSubscriptionUpdated: (payload) => handleSubscriptionEvent(payload.data),
+        onSubscriptionActive: (payload) => handleSubscriptionEvent(payload.data),
+        onSubscriptionCanceled: (payload) => handleSubscriptionEvent(payload.data),
+        onSubscriptionUncanceled: (payload) => handleSubscriptionEvent(payload.data),
+        onSubscriptionRevoked: (payload) => handleSubscriptionEvent(payload.data),
+        onOrderPaid: (payload) => handleOrderPaid(payload.data),
+      }),
+    ]
+  : [];
+
+const sendWelcome = (userId: string) =>
+  sendLifecycleEmail(userId, "welcome", "signup").then(
+    () => undefined,
+    () => undefined,
+  );
 
 const facebookProvider =
   env.FACEBOOK_CLIENT_ID && env.FACEBOOK_CLIENT_SECRET
@@ -54,6 +79,7 @@ export const auth = betterAuth({
     },
   },
   emailVerification: {
+    afterEmailVerification: async (user) => sendWelcome(user.id),
     sendOnSignUp: true,
     sendOnSignIn: true,
     autoSignInAfterVerification: true,
@@ -75,6 +101,17 @@ export const auth = betterAuth({
     },
   }),
 
+  // Social sign-ups arrive verified; email sign-ups get it after verifying.
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          if (user.emailVerified || !isEmailDeliveryEnabled) await sendWelcome(user.id);
+        },
+      },
+    },
+  },
+
   // Setup polar customer deletion when a user is deleted in our system
   user: {
     deleteUser: {
@@ -92,10 +129,12 @@ export const auth = betterAuth({
       createCustomerOnSignUp: true,
       use: [
         checkout({
-          successUrl: "/dashboard/upgrade",
+          successUrl: "/dashboard/billing?checkout_id={CHECKOUT_ID}",
+          returnUrl: "/dashboard/billing",
           authenticatedUsersOnly: true,
         }),
         portal(),
+        ...polarWebhooks,
       ],
     }),
   ],

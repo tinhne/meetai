@@ -30,7 +30,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { CommandSelect } from "../../../../components/command-select";
 import { NewAgentDialog } from "@/modules/agents/ui/components/new-agent-dialog";
-import { useRouter } from "@/i18n/navigation";
+import { getQuotaInfo } from "@/modules/billing/lib/quota-dialog";
 import { format } from "date-fns";
 import {
   AI_MODES,
@@ -68,7 +68,6 @@ export const MeetingForm = ({
   const tLanguages = useTranslations("languages");
   const tTemplates = useTranslations("templates");
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const [openNewAgentDialog, setOpenNewAgentDialog] = useState(false);
   const [agentSearch, setAgentSearch] = useState("");
@@ -86,16 +85,13 @@ export const MeetingForm = ({
         toast.success(t("created"));
 
         queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
-        queryClient.invalidateQueries(trpc.premium.getFreeUsage.queryOptions());
+        queryClient.invalidateQueries(trpc.billing.getOverview.queryOptions());
 
         onSuccess?.(data.id);
       },
       onError: (error) => {
-        toast.error(error.message);
-
-        if (error.data?.code === "FORBIDDEN") {
-          router.push("/dashboard/upgrade");
-        }
+        // Quota errors open the upgrade dialog instead.
+        if (!getQuotaInfo(error)) toast.error(error.message);
       },
     }),
   );

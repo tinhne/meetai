@@ -15,7 +15,7 @@ import {
   formatTranscriptForPrompt,
   selectRelevantSegments,
 } from "@/modules/meetings/lib/transcript";
-import { getUserPlan } from "@/modules/premium/server/usage";
+import { getUserPlan } from "@/server/billing/plan";
 import { gemini } from "@/server/ai/gemini";
 import { askAiSystemPrompt } from "@/server/ai/prompts";
 import type { MeetingInsights } from "@/server/ai/schemas";

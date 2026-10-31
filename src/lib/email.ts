@@ -202,3 +202,25 @@ export async function sendMeetingInviteEmail(params: {
     }),
   });
 }
+
+// Generic notice with one call to action (lifecycle and billing emails).
+// `intro` is trusted HTML built by the caller with escapeHtml'd values.
+export async function sendNoticeEmail(params: {
+  to: string;
+  name: string;
+  subject: string;
+  greeting: string;
+  intro: string;
+  actionLabel: string;
+  url: string;
+  outro: string;
+}) {
+  await sendEmail({
+    to: params.to,
+    subject: params.subject,
+    devLink: params.url,
+    html: actionEmail(params),
+  });
+}
+
+export { escapeHtml };

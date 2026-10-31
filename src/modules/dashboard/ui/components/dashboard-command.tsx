@@ -76,7 +76,7 @@ export const DashboardCommand = ({ open, setOpen }: Props) => {
     { label: tNav("home"), icon: HomeIcon, href: "/dashboard" },
     { label: tNav("meetings"), icon: VideoIcon, href: "/dashboard/meetings" },
     { label: tNav("agents"), icon: BotIcon, href: "/dashboard/agents" },
-    { label: tNav("upgrade"), icon: SparklesIcon, href: "/dashboard/upgrade" },
+    { label: tNav("billing"), icon: SparklesIcon, href: "/dashboard/billing" },
     { label: tNav("settings"), icon: SettingsIcon, href: "/dashboard/settings" },
   ].filter((page) => matches(page.label));
 

@@ -36,7 +36,7 @@ export const AgentViewId = ({ agentId }: Props) => {
       onSuccess: async () => {
         toast.success(t("deleted"));
         await queryClient.invalidateQueries(trpc.agents.getMany.queryOptions({}));
-        await queryClient.invalidateQueries(trpc.premium.getFreeUsage.queryOptions());
+        await queryClient.invalidateQueries(trpc.billing.getOverview.queryOptions());
         router.push("/dashboard/agents");
       },
       onError: (error) => toast.error(error.message),

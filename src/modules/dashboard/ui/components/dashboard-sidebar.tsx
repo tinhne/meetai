@@ -28,7 +28,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { DashboardUserButton } from "./dashboard-user-button";
 import { DashboardTrial } from "./dashboard-trial";
 
-type NavKey = "home" | "meetings" | "agents" | "upgrade" | "settings";
+type NavKey = "home" | "meetings" | "agents" | "billing" | "settings";
 
 interface NavItem {
   key: NavKey;
@@ -44,7 +44,7 @@ const mainItems: NavItem[] = [
 ];
 
 const accountItems: NavItem[] = [
-  { key: "upgrade", href: "/dashboard/upgrade", icon: SparklesIcon },
+  { key: "billing", href: "/dashboard/billing", icon: SparklesIcon },
   { key: "settings", href: "/dashboard/settings", icon: SettingsIcon },
 ];
 

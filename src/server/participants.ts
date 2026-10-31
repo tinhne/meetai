@@ -6,7 +6,7 @@ import { and, count, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { meetingParticipants } from "@/db/schema";
 import { hasRoomForMore } from "@/modules/meetings/lib/participants";
-import { getUserPlan } from "@/modules/premium/server/usage";
+import { getUserPlan } from "@/server/billing/plan";
 
 // Throws when admitting one more person would exceed the owner's plan.
 export async function assertRoomForMore(meeting: { id: string; userId: string }) {

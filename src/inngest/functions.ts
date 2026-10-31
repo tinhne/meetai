@@ -16,6 +16,7 @@ import {
 } from "@/db/schema";
 import { env, isStorageEnabled } from "@/env";
 import { sendMeetingReadyEmail } from "@/lib/email";
+import { warnIfNearQuota } from "@/server/billing/quota";
 import { streamVideo } from "@/lib/stream-video";
 import {
   countHumanParticipants,
@@ -460,6 +461,9 @@ export const meetingsProcessing = inngest.createFunction(
         url: `${env.NEXT_PUBLIC_APP_URL}${localePrefix}/dashboard/meetings/${meetingId}`,
       });
     });
+
+    // AI minutes were spent during the call; warn at 80% of the month's quota.
+    await step.run("quota-warning", () => warnIfNearQuota(meeting.userId, ["aiVoice"]));
 
     return insights;
   },

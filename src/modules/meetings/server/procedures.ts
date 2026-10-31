@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import {
   and,
   asc,
@@ -30,6 +31,7 @@ import {
 import { AI_CONFIG, AI_MODES, JOIN_MODES } from "@/config/ai";
 import { buildIcsInvite } from "@/lib/ics";
 import { sendMeetingInviteEmail } from "@/lib/email";
+import { warnIfNearQuota } from "@/server/billing/quota";
 import {
   askAgentInMeeting,
   setAgentModeInMeeting,
@@ -143,6 +145,9 @@ async function createMeetingForUser(userId: string, input: MeetingCreateInput) {
       status: "admitted",
     }),
   ]);
+
+  // Free plans get an email when 80% of the month's meetings are used.
+  after(() => warnIfNearQuota(userId, ["meetings"]));
 
   return createdMeeting;
 }

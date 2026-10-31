@@ -21,6 +21,7 @@ export const RATE_LIMITS = {
   invite: { limit: 5, windowSec: 60 * 60 },
   agentTestChat: { limit: 20, windowSec: 60 * 60 },
   marketingLead: { limit: 5, windowSec: 60 * 60 },
+  billingSync: { limit: 6, windowSec: 60 },
 } satisfies Record<string, RateLimitRule>;
 
 // Fixed-window counter stored in Postgres (atomic upsert, no extra service).

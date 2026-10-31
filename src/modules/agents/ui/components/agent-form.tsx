@@ -28,8 +28,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { REALTIME_VOICES } from "@/config/ai";
-import { useRouter } from "@/i18n/navigation";
 import { useTRPC } from "@/trpc/client";
+import { getQuotaInfo } from "@/modules/billing/lib/quota-dialog";
 import { agentInsertSchema } from "../../schemas/schemas";
 import { AgentGetOne } from "../../types";
 
@@ -57,11 +57,10 @@ export const AgentForm = ({
   const tForm = useTranslations("agents.form");
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const invalidate = async (id?: string) => {
     await queryClient.invalidateQueries(trpc.agents.getMany.queryOptions({}));
-    await queryClient.invalidateQueries(trpc.premium.getFreeUsage.queryOptions());
+    await queryClient.invalidateQueries(trpc.billing.getOverview.queryOptions());
     await queryClient.invalidateQueries(trpc.dashboard.getOverview.queryOptions());
     if (id) await queryClient.invalidateQueries(trpc.agents.getOne.queryOptions({ id }));
   };
@@ -74,8 +73,8 @@ export const AgentForm = ({
         onSuccess?.(agent.id);
       },
       onError: (error) => {
-        toast.error(error.message);
-        if (error.data?.code === "FORBIDDEN") router.push("/dashboard/upgrade");
+        // Quota errors open the upgrade dialog instead.
+        if (!getQuotaInfo(error)) toast.error(error.message);
       },
     }),
   );

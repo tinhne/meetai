@@ -1,10 +1,6 @@
 import { auth } from "@/lib/auth";
-import { isWithinLimit } from "@/config/plans";
-import {
-  getAgentCount,
-  getMonthlyUsage,
-  getUserPlan,
-} from "@/modules/premium/server/usage";
+import { assertQuota } from "@/server/billing/quota";
+import { QuotaExceededError } from "@/server/billing/quota-rules";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { headers } from "next/headers";
 import { cache } from "react";
@@ -23,6 +19,16 @@ const t = initTRPC.create({
    * @see https://trpc.io/docs/server/data-transformers
    */
   // transformer: superjson,
+  // Quota errors carry their context so the client can open the upgrade dialog.
+  errorFormatter({ shape, error }) {
+    return {
+      ...shape,
+      data: {
+        ...shape.data,
+        quota: error.cause instanceof QuotaExceededError ? error.cause.info : null,
+      },
+    };
+  },
 });
 // Base router and procedure helpers
 export const createTRPCRouter = t.router;
@@ -54,28 +60,12 @@ export const optionalAuthProcedure = baseProcedure.use(async ({ ctx, next }) => 
   return next({ ctx: { ...ctx, session } });
 });
 
+// Creating meetings/agents checks the plan quota first (FORBIDDEN + quota info).
 export const premiumProcedure = (entity: "meetings" | "agents") =>
   protectedProcedure.use(async ({ ctx, next }) => {
-    const userId = ctx.auth.user.id;
-    const plan = await getUserPlan(userId);
-
-    if (entity === "meetings") {
-      const used = await getMonthlyUsage(userId, "meeting_created");
-      if (!isWithinLimit(plan.meetingsPerMonth, used)) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: `You have used all ${plan.meetingsPerMonth} meetings included this month. Please upgrade to create more.`,
-        });
-      }
-    } else {
-      const used = await getAgentCount(userId);
-      if (!isWithinLimit(plan.maxAgents, used)) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: `Your plan includes ${plan.maxAgents} agent(s). Please upgrade to create more.`,
-        });
-      }
-    }
-
+    const plan = await assertQuota(
+      ctx.auth.user.id,
+      entity === "meetings" ? ["meetings", "recordingMinutes"] : ["agents"],
+    );
     return next({ ctx: { ...ctx, plan } });
   });

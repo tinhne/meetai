@@ -51,6 +51,8 @@ const serverSchema = z.object({
 
   POLAR_ACCESS_TOKEN: z.string().min(1),
   POLAR_SERVER: z.enum(["sandbox", "production"]).default("sandbox"),
+  // Signing secret of the Polar webhook pointing at /api/auth/polar/webhooks.
+  POLAR_WEBHOOK_SECRET: optionalString,
 
   // Transactional email (verification, password reset). Optional in dev:
   // when missing, links are printed to the server console instead.

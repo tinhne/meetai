@@ -1,32 +1,14 @@
-import { requireSession } from "@/server/session";
-import {
-  UpgradeView,
-  UpgradeViewError,
-  UpgradeViewLoading,
-} from "@/modules/premium/ui/view/upgrade-view";
-import { getQueryClient, trpc } from "@/trpc/server";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { redirect } from "@/i18n/navigation";
+import { toAppLocale } from "@/i18n/routing";
 
-const Page = async () => {
-  await requireSession();
+interface Props {
+  params: Promise<{ locale: string }>;
+}
 
-  const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(
-    trpc.premium.getCurrentSubscription.queryOptions(),
-  );
-  void queryClient.prefetchQuery(trpc.premium.getProducts.queryOptions());
-
-  return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <Suspense fallback={<UpgradeViewLoading />}>
-        <ErrorBoundary fallback={<UpgradeViewError />}>
-          <UpgradeView />
-        </ErrorBoundary>
-      </Suspense>
-    </HydrationBoundary>
-  );
+// Old URL (emails, bookmarks) → billing page.
+const Page = async ({ params }: Props) => {
+  const { locale } = await params;
+  redirect({ href: "/dashboard/billing", locale: toAppLocale(locale) });
 };
 
 export default Page;

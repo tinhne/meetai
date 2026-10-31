@@ -22,6 +22,7 @@ import { AGENT_TEMPLATES, type AgentPurpose } from "@/config/agent-templates";
 import { useRouter } from "@/i18n/navigation";
 import { TemplateIcon } from "@/modules/agents/ui/components/template-icon";
 import { useTRPC } from "@/trpc/client";
+import { getQuotaInfo } from "@/modules/billing/lib/quota-dialog";
 
 const PURPOSES: AgentPurpose[] = ["team", "interview", "ielts", "learning", "sales"];
 const TOTAL_STEPS = 3;
@@ -49,7 +50,7 @@ export const OnboardingWizard = ({ onDone }: { onDone: () => void }) => {
       onSuccess: (agent) => {
         setAgentId(agent.id);
         setStep(3);
-        void queryClient.invalidateQueries(trpc.premium.getFreeUsage.queryOptions());
+        void queryClient.invalidateQueries(trpc.billing.getOverview.queryOptions());
       },
       onError: (error) => toast.error(error.message),
     }),
@@ -58,7 +59,9 @@ export const OnboardingWizard = ({ onDone }: { onDone: () => void }) => {
   const startCall = useMutation(
     trpc.meetings.createInstant.mutationOptions({
       onSuccess: (meeting) => router.push(`/call/${meeting.id}`),
-      onError: (error) => toast.error(error.message),
+      onError: (error) => {
+        if (!getQuotaInfo(error)) toast.error(error.message);
+      },
     }),
   );
 

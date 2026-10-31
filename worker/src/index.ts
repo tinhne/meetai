@@ -10,12 +10,13 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { AI_CONFIG, AI_MODES, type AiMode } from "../../src/config/ai";
-import { agents, meetings, usageEvents } from "../../src/db/schema";
+import { agents, meetings } from "../../src/db/schema";
 import {
   startAgentSession,
   type AgentSessionHandle,
 } from "../../src/modules/agents/lib/agent-session";
 import { verifyWorkerRequest } from "../../src/modules/agents/lib/worker-auth";
+import { recordVoiceUsage } from "../../src/server/billing/ledger";
 import { db } from "./db";
 import { env } from "./env";
 
@@ -100,15 +101,7 @@ async function startSession(meetingId: string, voiceSecondsRemaining: number) {
       agenda: meeting.agenda,
       language: meeting.language,
     },
-    onUsage: async (usage) => {
-      const rows: (typeof usageEvents.$inferInsert)[] = [
-        { userId: meeting.userId, meetingId, kind: "ai_voice_seconds", quantity: Math.ceil(usage.voiceSeconds) },
-        { userId: meeting.userId, meetingId, kind: "realtime_input_tokens", quantity: usage.inputTokens },
-        { userId: meeting.userId, meetingId, kind: "realtime_output_tokens", quantity: usage.outputTokens },
-      ];
-      const nonEmpty = rows.filter((row) => (row.quantity ?? 0) > 0);
-      if (nonEmpty.length > 0) await db.insert(usageEvents).values(nonEmpty);
-    },
+    onUsage: (usage) => recordVoiceUsage(db, { userId: meeting.userId, meetingId, ...usage }),
     log,
   });
 

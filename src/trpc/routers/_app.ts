@@ -1,7 +1,7 @@
 import { agentsRouter } from "@/modules/agents/server/procedures";
 import { createTRPCRouter } from "../init";
 import { meetingsRouter } from "@/modules/meetings/server/procedures";
-import { premiumRouter } from "@/modules/premium/server/procedure";
+import { billingRouter } from "@/modules/billing/server/procedures";
 import { joinRouter } from "@/modules/join/server/procedures";
 import { shareRouter } from "@/modules/share/server/procedures";
 import { dashboardRouter } from "@/modules/dashboard/server/procedures";
@@ -10,7 +10,7 @@ import { marketingRouter } from "@/modules/marketing/server/procedures";
 export const appRouter = createTRPCRouter({
   agents: agentsRouter,
   meetings: meetingsRouter,
-  premium: premiumRouter,
+  billing: billingRouter,
   join: joinRouter,
   share: shareRouter,
   dashboard: dashboardRouter,

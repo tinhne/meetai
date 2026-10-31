@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@/i18n/navigation";
 import { useTRPC } from "@/trpc/client";
+import { getQuotaInfo } from "@/modules/billing/lib/quota-dialog";
 
 interface Props extends Omit<ComponentProps<typeof Button>, "onClick"> {
   agentId?: string;
@@ -26,7 +27,7 @@ export const InstantMeetingButton = ({ agentId, name, children, ...props }: Prop
   const create = useMutation(
     trpc.meetings.createInstant.mutationOptions({
       onSuccess: (meeting) => {
-        void queryClient.invalidateQueries(trpc.premium.getFreeUsage.queryOptions());
+        void queryClient.invalidateQueries(trpc.billing.getOverview.queryOptions());
         router.push(`/call/${meeting.id}`);
       },
       onError: (error) => {
@@ -35,8 +36,7 @@ export const InstantMeetingButton = ({ agentId, name, children, ...props }: Prop
           router.push("/dashboard/agents?new=1");
           return;
         }
-        toast.error(error.message);
-        if (error.data?.code === "FORBIDDEN") router.push("/dashboard/upgrade");
+        if (!getQuotaInfo(error)) toast.error(error.message);
       },
     }),
   );
