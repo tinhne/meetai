@@ -10,6 +10,8 @@ export interface PlanLimits {
   // Agents that can exist at the same time.
   maxAgents: number | null;
   askAiPerHour: number;
+  // Minutes of AI speech per calendar month (UTC).
+  aiVoiceMinutesPerMonth: number;
 }
 
 export const PLANS: Record<PlanId, PlanLimits> = {
@@ -18,12 +20,14 @@ export const PLANS: Record<PlanId, PlanLimits> = {
     meetingsPerMonth: 5,
     maxAgents: 1,
     askAiPerHour: 20,
+    aiVoiceMinutesPerMonth: 10,
   },
   pro: {
     id: "pro",
     meetingsPerMonth: null,
     maxAgents: null,
     askAiPerHour: 120,
+    aiVoiceMinutesPerMonth: 60,
   },
 };
 
@@ -33,4 +37,8 @@ export function isWithinLimit(limit: number | null, used: number) {
 
 export function startOfUtcMonth(now: Date = new Date()) {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+}
+
+export function remainingVoiceSeconds(plan: PlanLimits, usedSeconds: number) {
+  return Math.max(0, plan.aiVoiceMinutesPerMonth * 60 - usedSeconds);
 }

@@ -3,6 +3,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -79,6 +80,8 @@ export const agents = pgTable("agents", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   instructions: text("instructions").notNull(),
+  // OpenAI Realtime voice used when the agent speaks
+  voice: text("voice").notNull().default("alloy"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -123,6 +126,14 @@ export const meetings = pgTable(
     transcriptUrl: text("transcript_url"),
     recordingUrl: text("recording_url"),
     summary: text("summary"),
+    // Output template for the summary: "general" | "minutes" | "standup" | ...
+    template: text("template").notNull().default("general"),
+    recordingEnabled: boolean("recording_enabled").notNull().default(true),
+    // Structured AI output (see src/server/ai/schemas.ts)
+    insights: jsonb("insights"),
+    transcriptKey: text("transcript_key"),
+    recordingKey: text("recording_key"),
+    processingAttempts: integer("processing_attempts").notNull().default(0),
     failedReason: text("failed_reason"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -139,6 +150,10 @@ export const meetings = pgTable(
 export const usageKind = pgEnum("usage_kind", [
   "meeting_created",
   "agent_created",
+  // Seconds of AI speech (OpenAI Realtime output audio)
+  "ai_voice_seconds",
+  "realtime_input_tokens",
+  "realtime_output_tokens",
 ]);
 
 // Append-only ledger used for quotas. Rows are never deleted when the
@@ -179,3 +194,82 @@ export const appRateLimits = pgTable("app_rate_limits", {
   count: integer("count").notNull(),
   windowStart: timestamp("window_start").notNull(),
 });
+
+export const transcriptSource = pgEnum("transcript_source", [
+  "stream",
+  "gemini",
+]);
+
+export const transcriptSegments = pgTable(
+  "transcript_segments",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    meetingId: text("meeting_id")
+      .notNull()
+      .references(() => meetings.id, { onDelete: "cascade" }),
+    position: integer("position").notNull(),
+    speakerId: text("speaker_id"),
+    speakerName: text("speaker_name").notNull(),
+    startMs: integer("start_ms").notNull(),
+    endMs: integer("end_ms").notNull(),
+    text: text("text").notNull(),
+    // Cleaned-up text from the AI correction / re-transcription pass
+    textCorrected: text("text_corrected"),
+    source: transcriptSource("source").notNull().default("stream"),
+  },
+  (table) => [
+    index("transcript_segments_meeting_position_idx").on(
+      table.meetingId,
+      table.position,
+    ),
+  ],
+);
+
+export const actionItemStatus = pgEnum("action_item_status", ["open", "done"]);
+
+export const actionItems = pgTable(
+  "action_items",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    meetingId: text("meeting_id")
+      .notNull()
+      .references(() => meetings.id, { onDelete: "cascade" }),
+    text: text("text").notNull(),
+    owner: text("owner"),
+    dueDate: text("due_date"),
+    sourceMs: integer("source_ms"),
+    status: actionItemStatus("status").notNull().default("open"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("action_items_meeting_idx").on(table.meetingId)],
+);
+
+export const chatRole = pgEnum("chat_role", ["user", "assistant"]);
+
+export const aiChatMessages = pgTable(
+  "ai_chat_messages",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    meetingId: text("meeting_id")
+      .notNull()
+      .references(() => meetings.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    role: chatRole("role").notNull(),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("ai_chat_messages_meeting_created_idx").on(
+      table.meetingId,
+      table.createdAt,
+    ),
+  ],
+);

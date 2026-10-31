@@ -5,6 +5,7 @@ import {
   MIN_PAGE_SIZE,
 } from "@/constants";
 import { z } from "zod";
+import { MEETING_TEMPLATES } from "@/config/ai";
 import { MEETING_LANGUAGES } from "../lib/stream";
 import { MeetingStatus } from "../types";
 
@@ -12,6 +13,7 @@ export const meetingInsertSchema = z.object({
   name: z.string().trim().min(1, { message: "Name is required" }).max(100),
   agentId: z.string().min(1, { message: "Agent ID is required" }),
   language: z.enum(MEETING_LANGUAGES),
+  template: z.enum(MEETING_TEMPLATES),
   agenda: z
     .string()
     .trim()

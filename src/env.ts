@@ -27,8 +27,6 @@ const serverSchema = z.object({
 
   NEXT_PUBLIC_STREAM_VIDEO_API_KEY: z.string().min(1),
   STREAM_VIDEO_SECRET_KEY: z.string().min(1),
-  NEXT_PUBLIC_STREAM_CHAT_API_KEY: z.string().min(1),
-  STREAM_CHAT_SECRET_KEY: z.string().min(1),
   // Minutes to wait after the last human leaves before ending the call.
   EMPTY_ROOM_TIMEOUT_MIN: z.coerce.number().int().min(1).max(60).default(2),
 
@@ -36,6 +34,17 @@ const serverSchema = z.object({
   OPENAI_API_KEY: z.string().min(1),
   // Kill switch for the realtime voice agent (OpenAI cost control).
   AI_VOICE_ENABLED: z.stringbool().default(true),
+  // Long-running agent worker (worker/). When unset, the agent is connected
+  // from the webhook itself, which is fine for local development only.
+  AGENT_WORKER_URL: optionalString.pipe(z.url().optional()),
+  WORKER_SHARED_SECRET: optionalString.pipe(z.string().min(32).optional()),
+
+  // Cloudflare R2 (S3 compatible). Optional: without it recordings are
+  // served through fresh Stream URLs.
+  R2_ACCOUNT_ID: optionalString,
+  R2_ACCESS_KEY_ID: optionalString,
+  R2_SECRET_ACCESS_KEY: optionalString,
+  R2_BUCKET: optionalString,
 
   POLAR_ACCESS_TOKEN: z.string().min(1),
   POLAR_SERVER: z.enum(["sandbox", "production"]).default("sandbox"),
@@ -51,6 +60,10 @@ export type ServerEnv = z.infer<typeof serverSchema>;
 function loadEnv(): ServerEnv {
   const result = serverSchema.safeParse(process.env);
 
+  if (result.success && result.data.AGENT_WORKER_URL && !result.data.WORKER_SHARED_SECRET) {
+    throw new Error("WORKER_SHARED_SECRET is required when AGENT_WORKER_URL is set");
+  }
+
   if (!result.success) {
     const invalidKeys = result.error.issues
       .map((issue) => issue.path.join("."))
@@ -62,6 +75,13 @@ function loadEnv(): ServerEnv {
 }
 
 export const env = loadEnv();
+
+export const isStorageEnabled = Boolean(
+  env.R2_ACCOUNT_ID &&
+    env.R2_ACCESS_KEY_ID &&
+    env.R2_SECRET_ACCESS_KEY &&
+    env.R2_BUCKET,
+);
 
 export const isEmailDeliveryEnabled = Boolean(
   env.RESEND_API_KEY && env.EMAIL_FROM,

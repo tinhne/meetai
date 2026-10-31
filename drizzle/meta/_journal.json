@@ -15,6 +15,13 @@
       "when": 1793475468734,
       "tag": "0001_phase0_security_core_flow",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793480622030,
+      "tag": "0002_phase2_ai_pipeline",
+      "breakpoints": true
     }
   ]
 }

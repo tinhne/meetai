@@ -32,10 +32,20 @@ import { CommandSelect } from "../../../../components/command-select";
 import { NewAgentDialog } from "@/modules/agents/ui/components/new-agent-dialog";
 import { useRouter } from "@/i18n/navigation";
 import { format } from "date-fns";
+import { MEETING_TEMPLATES, type MeetingTemplate } from "@/config/ai";
 import {
   MEETING_LANGUAGES,
   type MeetingLanguage,
 } from "../../lib/stream";
+
+const TEMPLATE_LABELS: Record<MeetingTemplate, string> = {
+  general: "General summary",
+  minutes: "Formal minutes (Biên bản họp)",
+  standup: "Daily standup",
+  sales: "Sales call",
+  interview: "Interview scorecard",
+  lecture: "Lecture / study notes",
+};
 
 const LANGUAGE_LABELS: Record<MeetingLanguage, string> = {
   vi: "Vietnamese",
@@ -120,6 +130,7 @@ export const MeetingForm = ({
       name: initialValues?.name ?? "",
       agentId: initialValues?.agentId ?? "",
       language: (initialValues?.language as MeetingLanguage) ?? "vi",
+      template: (initialValues?.template as MeetingTemplate) ?? "general",
       agenda: initialValues?.agenda ?? "",
       scheduledAt: initialValues?.scheduledAt
         ? new Date(initialValues.scheduledAt).toISOString()
@@ -233,6 +244,30 @@ export const MeetingForm = ({
                   The language spoken in the meeting. Used for transcription
                   and the summary.
                 </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="template"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Summary format</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a format" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {MEETING_TEMPLATES.map((template) => (
+                      <SelectItem key={template} value={template}>
+                        {TEMPLATE_LABELS[template]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

@@ -1,5 +1,6 @@
 import {
   and,
+  asc,
   count,
   desc,
   eq,
@@ -13,7 +14,17 @@ import { z } from "zod";
 import JSONL from "jsonl-parse-stringify";
 
 import { db } from "@/db";
-import { agents, meetings, usageEvents, user } from "@/db/schema";
+import {
+  agents,
+  aiChatMessages,
+  meetings,
+  transcriptSegments,
+  usageEvents,
+  user,
+} from "@/db/schema";
+import { AI_CONFIG } from "@/config/ai";
+import { inngest } from "@/inngest/client";
+import { deleteFromStorage, getSignedDownloadUrl } from "@/server/storage";
 import {
   createTRPCRouter,
   premiumProcedure,
@@ -30,7 +41,6 @@ import {
   meetingUpdateSchema,
 } from "../schemas/schemas";
 import { StreamTranscriptItem } from "../types";
-import { streamChat } from "@/lib/stream-chat";
 import { canJoinMeeting, planMeetingUpdate } from "../lib/rules";
 import {
   STREAM_CALL_TYPE,
@@ -60,83 +70,6 @@ function transcriptionSettings(language: string) {
 }
 
 export const meetingsRouter = createTRPCRouter({
-  generateChatToken: protectedProcedure.mutation(async ({ ctx }) => {
-    const { id, name, image } = ctx.auth.user;
-    await enforceRateLimit("streamToken", id);
-
-    await streamChat.upsertUsers([
-      {
-        id,
-        name,
-        image: image ?? generateAvatar(name, "initials"),
-        role: "user",
-      },
-    ]);
-
-    return streamChat.createToken(
-      id,
-      Math.floor(Date.now() / 1000) + STREAM_TOKEN_TTL_SEC,
-    );
-  }),
-  // Creates the Ask AI channel server-side so members are controlled here,
-  // not by the client.
-  ensureChatChannel: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.auth.user.id;
-      await enforceRateLimit("chatChannel", userId);
-
-      const { meeting } = await getMeetingForUser(userId, input.id, "host");
-
-      if (meeting.status !== "completed") {
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Ask AI is available once the meeting summary is ready.",
-        });
-      }
-
-      const [agent] = await db
-        .select()
-        .from(agents)
-        .where(eq(agents.id, meeting.agentId));
-
-      if (agent) {
-        await streamChat.upsertUser({
-          id: agent.id,
-          name: agent.name,
-          image: generateAvatar(agent.name, "botttsNeutral"),
-          role: "user",
-        });
-      }
-
-      const allowedMembers = agent ? [userId, agent.id] : [userId];
-      const channel = streamChat.channel("messaging", meeting.id, {
-        created_by_id: userId,
-        members: allowedMembers,
-      });
-      await channel.create();
-
-      const { members } = await channel.queryMembers({});
-      const currentMembers = members
-        .map((member) => member.user_id)
-        .filter((id): id is string => !!id);
-
-      const unexpected = currentMembers.filter(
-        (id) => !allowedMembers.includes(id),
-      );
-      const missing = allowedMembers.filter(
-        (id) => !currentMembers.includes(id),
-      );
-
-      if (unexpected.length > 0) {
-        await channel.removeMembers(unexpected);
-      }
-      if (missing.length > 0) {
-        await channel.addMembers(missing);
-      }
-
-      return { channelId: meeting.id };
-    }),
   getTranscription: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -145,59 +78,137 @@ export const meetingsRouter = createTRPCRouter({
         input.id,
       );
 
-      if (!existingMeeting.transcriptUrl) {
-        return [];
-      }
+      const segments = await db
+        .select()
+        .from(transcriptSegments)
+        .where(eq(transcriptSegments.meetingId, existingMeeting.id))
+        .orderBy(asc(transcriptSegments.position));
 
-      const transcriptResponse = await fetch(existingMeeting.transcriptUrl)
-        .then((res) => res.text())
-        .then((text) => JSONL.parse<StreamTranscriptItem>(text))
-        .catch(() => []);
+      // Meetings processed before transcripts were stored in the database.
+      const items: StreamTranscriptItem[] =
+        segments.length > 0
+          ? segments.map((segment) => ({
+              speaker_id: segment.speakerId ?? segment.speakerName,
+              type: "speech",
+              text: segment.textCorrected ?? segment.text,
+              start_ts: segment.startMs,
+              end_ts: segment.endMs,
+              user: { name: segment.speakerName, image: "" },
+            }))
+          : existingMeeting.transcriptUrl
+            ? await fetch(existingMeeting.transcriptUrl)
+                .then((res) => res.text())
+                .then((text) => JSONL.parse<StreamTranscriptItem>(text))
+                .catch(() => [])
+            : [];
 
-      const speakerIds = [
-        ...new Set(transcriptResponse.map((item) => item.speaker_id)),
-      ];
-      if (speakerIds.length === 0) return transcriptResponse;
+      const speakerIds = [...new Set(items.map((item) => item.speaker_id))];
+      if (speakerIds.length === 0) return items;
 
       const [userRows, agentRows] = await Promise.all([
         db.select().from(user).where(inArray(user.id, speakerIds)),
         db.select().from(agents).where(inArray(agents.id, speakerIds)),
       ]);
 
-      const speakersMap = new Map<
-        string,
-        { id: string; name: string; image: string }
-      >();
-
-      // Đưa User vào Map
+      const speakersMap = new Map<string, { name: string; image: string }>();
       userRows.forEach((u) => {
         speakersMap.set(u.id, {
-          id: u.id,
           name: u.name,
           image: u.image ?? generateAvatar(u.name, "initials"),
         });
       });
-
       agentRows.forEach((a) => {
         speakersMap.set(a.id, {
-          id: a.id,
           name: a.name,
           image: generateAvatar(a.name, "botttsNeutral"),
         });
       });
 
-      const transcriptWithSpeakers = transcriptResponse.map((item) => {
-        const speaker = speakersMap.get(item.speaker_id);
-
+      return items.map((item) => {
+        const fallbackName = item.user?.name || "Unknown Speaker";
         return {
           ...item,
-          user: speaker ?? {
-            name: "Unknown Speaker",
-            image: generateAvatar("Unknown Speaker", "initials"),
+          user: speakersMap.get(item.speaker_id) ?? {
+            name: fallbackName,
+            image: generateAvatar(fallbackName, "initials"),
           },
         };
       });
-      return transcriptWithSpeakers;
+    }),
+  // Short-lived URL for the recording, only after the access check.
+  getRecordingUrl: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id);
+
+      if (meeting.recordingKey) {
+        const url = await getSignedDownloadUrl(meeting.recordingKey);
+        if (url) return { url };
+      }
+
+      if (!meeting.recordingUrl) return { url: null };
+
+      // Stream URLs expire; ask Stream for a fresh one.
+      const { recordings } = await streamVideo.video
+        .call(STREAM_CALL_TYPE, meeting.id)
+        .listRecordings()
+        .catch(() => ({ recordings: [] as { url: string; end_time?: Date }[] }));
+      const latest = recordings.at(-1);
+
+      return { url: latest?.url ?? meeting.recordingUrl };
+    }),
+  retryProcessing: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await enforceRateLimit("meetingAction", ctx.auth.user.id);
+      const { meeting } = await getMeetingForUser(
+        ctx.auth.user.id,
+        input.id,
+        "host",
+      );
+
+      const [updated] = await db
+        .update(meetings)
+        .set({ status: "processing", failedReason: null, processingAttempts: 0 })
+        .where(and(eq(meetings.id, meeting.id), eq(meetings.status, "failed")))
+        .returning({ id: meetings.id });
+
+      if (!updated) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Only failed meetings can be processed again.",
+        });
+      }
+
+      await inngest.send({
+        id: `meeting-processing-${meeting.id}-retry-${Date.now()}`,
+        name: "meetings/processing",
+        data: { meetingId: meeting.id },
+      });
+
+      return updated;
+    }),
+  getAskAiMessages: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { meeting } = await getMeetingForUser(ctx.auth.user.id, input.id);
+
+      return db
+        .select({
+          id: aiChatMessages.id,
+          role: aiChatMessages.role,
+          content: aiChatMessages.content,
+          createdAt: aiChatMessages.createdAt,
+        })
+        .from(aiChatMessages)
+        .where(
+          and(
+            eq(aiChatMessages.meetingId, meeting.id),
+            eq(aiChatMessages.userId, ctx.auth.user.id),
+          ),
+        )
+        .orderBy(asc(aiChatMessages.createdAt))
+        .limit(200);
     }),
   // Issues a call token scoped to this meeting's call only.
   generateToken: protectedProcedure
@@ -298,6 +309,11 @@ export const meetingsRouter = createTRPCRouter({
         });
       }
 
+      await deleteFromStorage([
+        removedMeeting.recordingKey,
+        removedMeeting.transcriptKey,
+      ]).catch(() => undefined);
+
       return removedMeeting;
     }),
   update: protectedProcedure
@@ -363,7 +379,7 @@ export const meetingsRouter = createTRPCRouter({
             transcription: transcriptionSettings(input.language),
             recording: {
               mode: "auto-on",
-              quality: "1080p",
+              quality: AI_CONFIG.recordingQuality,
             },
           },
         },
@@ -378,6 +394,7 @@ export const meetingsRouter = createTRPCRouter({
             agentId: agent.id,
             userId,
             language: input.language,
+            template: input.template,
             agenda: input.agenda ? input.agenda : null,
             scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
           })

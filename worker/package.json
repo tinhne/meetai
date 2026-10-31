@@ -1,0 +1,21 @@
+{
+  "name": "meetai-agent-worker",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Long-running process that keeps Meet.AI voice agents connected to calls",
+  "scripts": {
+    "start": "tsx worker/src/index.ts"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0",
+    "@stream-io/node-sdk": "^0.8.15",
+    "@stream-io/openai-realtime-api": "^0.4.2",
+    "drizzle-orm": "^0.45.4",
+    "nanoid": "^5.1.16",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.7"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

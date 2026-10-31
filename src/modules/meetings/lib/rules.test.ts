@@ -6,6 +6,7 @@ const input = {
   name: "Weekly sync",
   agentId: "agent-1",
   language: "vi",
+  template: "general",
 };
 
 describe("planMeetingUpdate", () => {
@@ -31,6 +32,7 @@ describe("planMeetingUpdate", () => {
         name: "Weekly sync",
         agentId: "agent-1",
         language: "vi",
+        template: "general",
         agenda: "Roadmap",
         scheduledAt: new Date("2026-11-02T09:00:00.000Z"),
         updatedAt: now,

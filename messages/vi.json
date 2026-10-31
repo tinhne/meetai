@@ -164,5 +164,24 @@
     "title": "Không tìm thấy trang",
     "description": "Trang bạn tìm không tồn tại hoặc đã được chuyển đi.",
     "home": "Về trang chủ"
+  },
+  "askAi": {
+    "title": "Hỏi AI về cuộc họp",
+    "placeholder": "Hỏi bất cứ điều gì đã được nói trong cuộc họp…",
+    "send": "Gửi",
+    "emptyTitle": "Hỏi AI về cuộc họp này",
+    "emptyDescription": "AI trả lời dựa trên biên bản và transcript, kèm mốc thời gian để bạn đối chiếu.",
+    "suggestion1": "Tóm tắt các quyết định chính",
+    "suggestion2": "Ai cần làm gì và khi nào?",
+    "suggestion3": "Còn câu hỏi nào chưa được giải quyết?",
+    "you": "Bạn",
+    "thinking": "AI đang trả lời…",
+    "rateLimited": "Bạn đã hỏi quá nhiều trong giờ này. Vui lòng thử lại sau {minutes} phút hoặc nâng cấp gói.",
+    "error": "AI đang bận. Vui lòng thử lại sau ít phút."
+  },
+  "meetingDetail": {
+    "recordingUnavailable": "Cuộc họp này không có bản ghi hình.",
+    "retryProcessing": "Xử lý lại",
+    "retryStarted": "Đang xử lý lại cuộc họp…"
   }
 }

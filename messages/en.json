@@ -164,5 +164,24 @@
     "title": "Page not found",
     "description": "The page you are looking for doesn't exist or has moved.",
     "home": "Back to home"
+  },
+  "askAi": {
+    "title": "Ask AI about this meeting",
+    "placeholder": "Ask anything that was said in the meeting…",
+    "send": "Send",
+    "emptyTitle": "Ask AI about this meeting",
+    "emptyDescription": "Answers come from the summary and transcript, with timestamps so you can check them.",
+    "suggestion1": "Summarize the key decisions",
+    "suggestion2": "Who needs to do what, and by when?",
+    "suggestion3": "Which questions are still open?",
+    "you": "You",
+    "thinking": "AI is answering…",
+    "rateLimited": "You've asked a lot this hour. Try again in {minutes} minutes or upgrade your plan.",
+    "error": "The AI is busy right now. Please try again shortly."
+  },
+  "meetingDetail": {
+    "recordingUnavailable": "The recording is not available for this meeting.",
+    "retryProcessing": "Process again",
+    "retryStarted": "Processing the meeting again…"
   }
 }

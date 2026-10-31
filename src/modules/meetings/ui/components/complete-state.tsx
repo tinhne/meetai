@@ -15,7 +15,8 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { formatDuration } from "@/lib/utils";
 import { Transcript } from "./transcript";
-import { ChatProvider } from "./chat-provider";
+import { AskAiPanel } from "./ask-ai-panel";
+import { RecordingPlayer } from "./recording-player";
 
 interface Props {
   data: MeetingGetOne;
@@ -61,25 +62,13 @@ export const CompletedState = ({ data }: Props) => {
           </ScrollArea>
         </div>
         <TabsContent value="chat">
-          <ChatProvider meetingId={data.id} />
+          <AskAiPanel meetingId={data.id} />
         </TabsContent>
         <TabsContent value="transcript">
           <Transcript meetingid={data.id} />
         </TabsContent>
         <TabsContent value="recording">
-          <div className="bg-card rounded-xl border px-4 py-5">
-            {data.recordingUrl ? (
-              <video
-                src={data.recordingUrl}
-                controls
-                className="w-full rounded-lg"
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-10">
-                The recording is not available for this meeting.
-              </p>
-            )}
-          </div>
+          <RecordingPlayer meetingId={data.id} />
         </TabsContent>
         <TabsContent value="summary">
           <div className="bg-card rounded-xl border">

@@ -3,15 +3,12 @@ import { createHash } from "node:crypto";
 
 import { db } from "@/db";
 import { agents, meetings, webhookEvents } from "@/db/schema";
-import { env } from "@/env";
 import { inngest } from "@/inngest/client";
 import { streamVideo } from "@/lib/stream-video";
-import { STREAM_CALL_TYPE, meetingIdFromCallCid } from "@/modules/meetings/lib/stream";
-import { getUserPlan } from "@/modules/premium/server/usage";
-import { consumeRateLimit } from "@/server/rate-limit";
+import { meetingIdFromCallCid } from "@/modules/meetings/lib/stream";
+import { startAgentForMeeting, stopAgentForMeeting } from "@/server/agent-dispatch";
 
 import {
-  MessageNewEvent,
   CallEndedEvent,
   CallRecordingReadyEvent,
   CallSessionParticipantLeftEvent,
@@ -60,11 +57,6 @@ async function handleSessionStarted(event: CallSessionStartedEvent) {
     return;
   }
 
-  if (!env.AI_VOICE_ENABLED) {
-    console.info("[Webhook] AI voice disabled, skipping agent for", meeting.id);
-    return;
-  }
-
   const [agent] = await db
     .select()
     .from(agents)
@@ -76,20 +68,12 @@ async function handleSessionStarted(event: CallSessionStartedEvent) {
   }
 
   try {
-    const call = streamVideo.video.call(STREAM_CALL_TYPE, meeting.id);
-    const realtimeClient = await streamVideo.video.connectOpenAi({
-      call,
-      openAiApiKey: env.OPENAI_API_KEY,
-      agentUserId: agent.id,
-    });
-
-    realtimeClient.updateSession({
-      instructions: agent.instructions,
-    });
+    const result = await startAgentForMeeting(meeting, agent);
+    console.info("[Webhook] Agent dispatch:", meeting.id, result.reason);
   } catch (error) {
     // The meeting continues without the voice agent.
     console.error(
-      "[Webhook] Failed to connect agent:",
+      "[Webhook] Failed to start agent:",
       error instanceof Error ? error.message : "unknown error",
     );
   }
@@ -112,10 +96,24 @@ async function handleSessionEnded(event: CallEndedEvent) {
   const meetingId = meetingIdFromCallCid(event.call_cid);
   if (!meetingId) return;
 
-  await db
+  const [meeting] = await db
     .update(meetings)
     .set({ status: "processing", endedAt: new Date() })
-    .where(and(eq(meetings.id, meetingId), eq(meetings.status, "active")));
+    .where(and(eq(meetings.id, meetingId), eq(meetings.status, "active")))
+    .returning({ id: meetings.id });
+
+  await stopAgentForMeeting(meetingId).catch((error: unknown) =>
+    console.error("[Webhook] Failed to stop agent:", String(error)),
+  );
+
+  if (!meeting) return;
+
+  // The pipeline waits for the transcript / recording events itself.
+  await inngest.send({
+    id: `meeting-processing-${meetingId}`,
+    name: "meetings/processing",
+    data: { meetingId },
+  });
 }
 
 async function handleTranscriptionReady(event: CallTranscriptionReadyEvent) {
@@ -131,12 +129,8 @@ async function handleTranscriptionReady(event: CallTranscriptionReadyEvent) {
   if (!updatedMeeting) return;
 
   await inngest.send({
-    id: `meeting-processing-${meetingId}`,
-    name: "meetings/processing",
-    data: {
-      meetingId: updatedMeeting.id,
-      transcriptUrl: event.call_transcription.url,
-    },
+    name: "meetings/transcription.ready",
+    data: { meetingId, transcriptUrl: event.call_transcription.url },
   });
 }
 
@@ -144,57 +138,17 @@ async function handleRecordingReady(event: CallRecordingReadyEvent) {
   const meetingId = meetingIdFromCallCid(event.call_cid);
   if (!meetingId) return;
 
-  await db
+  const [updatedMeeting] = await db
     .update(meetings)
     .set({ recordingUrl: event.call_recording.url })
-    .where(eq(meetings.id, meetingId));
-}
+    .where(eq(meetings.id, meetingId))
+    .returning({ id: meetings.id });
 
-async function handleMessageNew(event: MessageNewEvent) {
-  const userId = event.user?.id ?? event.message?.user?.id;
-  const channelId = event.channel_id;
-  const text = event.message?.text;
-  const messageType = event.message?.type;
-  const messageId = event.message?.id;
-
-  if (!userId || !channelId || !text || !messageId) return;
-  if (messageType !== "regular") return;
-
-  const [existingMeeting] = await db
-    .select()
-    .from(meetings)
-    .where(and(eq(meetings.id, channelId), eq(meetings.status, "completed")));
-
-  // Only the meeting owner can ask the agent about this meeting.
-  if (!existingMeeting || existingMeeting.userId !== userId) return;
-
-  const [existingAgent] = await db
-    .select()
-    .from(agents)
-    .where(eq(agents.id, existingMeeting.agentId));
-
-  if (!existingAgent || userId === existingAgent.id) return;
-
-  const plan = await getUserPlan(userId);
-  const limit = await consumeRateLimit(`askAi:${userId}`, {
-    limit: plan.askAiPerHour,
-    windowSec: 60 * 60,
-  });
+  if (!updatedMeeting) return;
 
   await inngest.send({
-    id: `chat-message-${messageId}`,
-    name: "chat/message.new",
-    data: {
-      messageId,
-      userId,
-      channelId,
-      text,
-      agentId: existingAgent.id,
-      agentName: existingAgent.name,
-      agentInstructions: existingAgent.instructions,
-      meetingSummary: existingMeeting.summary,
-      rateLimited: !limit.allowed,
-    },
+    name: "meetings/recording.ready",
+    data: { meetingId, recordingUrl: event.call_recording.url },
   });
 }
 
@@ -253,9 +207,6 @@ export async function POST(request: Request) {
         await handleRecordingReady(
           payload as unknown as CallRecordingReadyEvent,
         );
-        break;
-      case "message.new":
-        await handleMessageNew(payload as unknown as MessageNewEvent);
         break;
     }
   } catch (error) {

@@ -43,9 +43,12 @@ export const MeetingIdView = ({ meetingId }: Props) => {
     { destructive: true },
   );
 
-  const { data } = useSuspenseQuery(
-    trpc.meetings.getOne.queryOptions({ id: meetingId }),
-  );
+  const { data } = useSuspenseQuery({
+    ...trpc.meetings.getOne.queryOptions({ id: meetingId }),
+    // Pick up the summary as soon as processing finishes.
+    refetchInterval: (query) =>
+      query.state.data?.status === "processing" ? 10_000 : false,
+  });
 
   const removeMeeting = useMutation(
     trpc.meetings.remove.mutationOptions({
@@ -114,7 +117,9 @@ export const MeetingIdView = ({ meetingId }: Props) => {
         {isCompleted && <CompletedState data={data} />}
         {isProcessing && <ProcessingState />}
         {isActive && <ActiveState meetingId={meetingId} />}
-        {isFailed && <FailedState reason={data.failedReason} />}
+        {isFailed && (
+          <FailedState meetingId={meetingId} reason={data.failedReason} />
+        )}
         {isUpcoming && (
           <UpcomingState meetingId={meetingId} scheduledAt={data.scheduledAt} />
         )}

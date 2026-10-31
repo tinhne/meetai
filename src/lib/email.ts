@@ -16,6 +16,7 @@ function escapeHtml(value: string) {
 }
 
 function actionEmail(params: {
+  greeting?: string;
   name: string;
   intro: string;
   actionLabel: string;
@@ -30,7 +31,7 @@ function actionEmail(params: {
   <body style="font-family:Arial,Helvetica,sans-serif;background:#f6f7f8;padding:24px;color:#111">
     <table role="presentation" width="100%" style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;padding:32px">
       <tr><td>
-        <p style="font-size:16px">Hi ${name},</p>
+        <p style="font-size:16px">${escapeHtml(params.greeting ?? "Hi")} ${name},</p>
         <p style="font-size:16px;line-height:1.5">${params.intro}</p>
         <p style="margin:28px 0">
           <a href="${url}" style="background:#16a34a;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">${params.actionLabel}</a>
@@ -105,6 +106,49 @@ export async function sendResetPasswordEmail(params: {
       actionLabel: "Reset password",
       url: params.url,
       outro: "If you did not request a password reset, you can ignore this email.",
+    }),
+  });
+}
+
+const MEETING_READY_COPY = {
+  vi: {
+    subject: (meetingName: string) => `Biên bản "${meetingName}" đã sẵn sàng`,
+    intro: (meetingName: string) =>
+      `Biên bản, tóm tắt và danh sách việc cần làm của cuộc họp "${escapeHtml(meetingName)}" đã sẵn sàng.`,
+    greeting: "Chào",
+    action: "Xem biên bản",
+    outro: "Bạn có thể hỏi AI bất cứ điều gì về cuộc họp ngay trên trang này.",
+  },
+  en: {
+    subject: (meetingName: string) => `Your notes for "${meetingName}" are ready`,
+    intro: (meetingName: string) =>
+      `The summary, transcript and action items for "${escapeHtml(meetingName)}" are ready.`,
+    greeting: "Hi",
+    action: "View meeting notes",
+    outro: "You can ask the AI anything about the meeting from that page.",
+  },
+};
+
+export async function sendMeetingReadyEmail(params: {
+  to: string;
+  name: string;
+  meetingName: string;
+  url: string;
+  language: string;
+}) {
+  const copy = MEETING_READY_COPY[params.language === "en" ? "en" : "vi"];
+
+  await sendEmail({
+    to: params.to,
+    subject: copy.subject(params.meetingName),
+    devLink: params.url,
+    html: actionEmail({
+      greeting: copy.greeting,
+      name: params.name,
+      intro: copy.intro(params.meetingName),
+      actionLabel: copy.action,
+      url: params.url,
+      outro: copy.outro,
     }),
   });
 }
