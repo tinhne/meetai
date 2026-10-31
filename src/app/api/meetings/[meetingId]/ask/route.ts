@@ -11,13 +11,21 @@ import { AI_CONFIG } from "@/config/ai";
 import { db } from "@/db";
 import { agents, aiChatMessages, transcriptSegments } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { formatTimestamp } from "@/lib/utils";
 import {
   formatTranscriptForPrompt,
   selectRelevantSegments,
 } from "@/modules/meetings/lib/transcript";
 import { getUserPlan } from "@/server/billing/plan";
 import { gemini } from "@/server/ai/gemini";
+import { embedQuery } from "@/server/ai/embeddings";
 import { askAiSystemPrompt } from "@/server/ai/prompts";
+import {
+  formatBackground,
+  searchKnowledge,
+  searchMeetingChunks,
+  searchMemories,
+} from "@/server/memory/search";
 import type { MeetingInsights } from "@/server/ai/schemas";
 import { getMeetingForUser } from "@/server/authz";
 import { consumeRateLimit } from "@/server/rate-limit";
@@ -116,10 +124,33 @@ export async function POST(
     text: segment.textCorrected ?? segment.text,
   }));
   const fullTranscript = formatTranscriptForPrompt(lines);
-  const transcript =
-    fullTranscript.length <= AI_CONFIG.askAi.fullTranscriptChars
-      ? fullTranscript
-      : formatTranscriptForPrompt(selectRelevantSegments(lines, question, 400));
+  const isLong = fullTranscript.length > AI_CONFIG.askAi.fullTranscriptChars;
+  let transcript = isLong
+    ? formatTranscriptForPrompt(selectRelevantSegments(lines, question, 400))
+    : fullTranscript;
+
+  // RAG: semantically closest transcript windows (long meetings), plus the
+  // agent's memories and knowledge documents. Keyword selection above is the
+  // fallback when embeddings are unavailable.
+  let background = "";
+  try {
+    const vector = await embedQuery(question);
+    const [memoryHits, knowledgeHits, chunkHits] = await Promise.all([
+      searchMemories({ userId, agentId: meeting.agentId, vector, limit: 4 }),
+      searchKnowledge({ userId, agentId: meeting.agentId, vector, limit: 3 }),
+      isLong ? searchMeetingChunks({ userId, vector, limit: 6, meetingId: meeting.id }) : [],
+    ]);
+    background = formatBackground(memoryHits, knowledgeHits);
+    if (chunkHits.length > 0) {
+      const windows = chunkHits
+        .sort((a, b) => a.startMs - b.startMs)
+        .map((chunk) => `[${formatTimestamp(chunk.startMs)}]\n${chunk.content}`)
+        .join("\n\n");
+      transcript = `${windows}\n\n${transcript}`;
+    }
+  } catch (error) {
+    console.warn("[ask-ai] retrieval skipped:", error instanceof Error ? error.name : "unknown");
+  }
 
   const insights = meeting.insights as MeetingInsights | null;
   const summary = insights?.summaryMarkdown ?? meeting.summary ?? "";
@@ -140,6 +171,7 @@ export async function POST(
           text: [
             `<summary>\n${summary}\n</summary>`,
             `<transcript>\n${transcript || "(no transcript)"}\n</transcript>`,
+            background,
             `Question: ${question}`,
           ].join("\n"),
         },

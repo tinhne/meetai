@@ -43,6 +43,29 @@ export const AI_CONFIG = {
   gemini: {
     textModel: process.env.GEMINI_TEXT_MODEL || "gemini-flash-latest",
     fastModel: process.env.GEMINI_FAST_MODEL || "gemini-flash-lite-latest",
+    // Free tier; 768 dims keeps pgvector indexes small (see EMBEDDING_DIMENSIONS).
+    embedModel: process.env.GEMINI_EMBED_MODEL || "gemini-embedding-001",
+    embedBatchSize: 50,
+  },
+  memory: {
+    // Cosine similarity above which a new memory updates an existing one.
+    dedupeSimilarity: 0.92,
+    maxPerMeeting: 12,
+    // Memories / open action items put into the agent's instructions.
+    briefingMemories: 15,
+    briefingActionItems: 8,
+    briefingMaxChars: 3_000,
+  },
+  knowledge: {
+    // Vercel caps request bodies at 4.5 MB.
+    maxFileBytes: 4 * 1024 * 1024,
+    maxContentChars: 200_000,
+    chunkChars: 2_000,
+    chunkOverlapChars: 250,
+  },
+  search: {
+    meetingChunkChars: 1_200,
+    topK: 8,
   },
   realtime: {
     model: process.env.OPENAI_REALTIME_MODEL || "gpt-realtime-mini",

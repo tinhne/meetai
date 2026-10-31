@@ -5,7 +5,7 @@ import { and, count, eq, gte, sql } from "drizzle-orm";
 
 import { monthKey, QUOTA_WARNING_RATIO, startOfUtcMonth, type PlanLimits } from "@/config/plans";
 import { db } from "@/db";
-import { agents, meetings } from "@/db/schema";
+import { agents, knowledgeDocuments, meetings } from "@/db/schema";
 import { sendLifecycleEmail } from "./lifecycle-emails";
 import { getMonthlyUsage, getVoiceAllowance } from "./ledger";
 import { getUserPlan } from "./plan";
@@ -51,9 +51,13 @@ async function measure(userId: string, kind: QuotaKind, plan: PlanLimits): Promi
         limit: Math.floor((voice.includedSeconds + voice.creditSeconds) / 60),
       };
     }
-    case "knowledgeDocuments":
-      // Counted by the knowledge base module when it exists.
-      return { ...base, used: 0, limit: plan.knowledgeDocuments };
+    case "knowledgeDocuments": {
+      const [row] = await db
+        .select({ count: count(knowledgeDocuments.id) })
+        .from(knowledgeDocuments)
+        .where(eq(knowledgeDocuments.userId, userId));
+      return { ...base, used: row?.count ?? 0, limit: plan.knowledgeDocuments };
+    }
   }
 }
 

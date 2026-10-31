@@ -27,7 +27,9 @@
     "search": "Search…",
     "workspace": "Workspace",
     "account": "Account",
-    "billing": "Plan & billing"
+    "billing": "Plan & billing",
+    "memory": "AI memory",
+    "searchPage": "Search"
   },
   "commandPalette": {
     "placeholder": "Find a meeting, an agent, or type a command…",
@@ -39,7 +41,8 @@
     "newAgent": "New agent",
     "toggleTheme": "Toggle light/dark mode",
     "noMeetings": "No meetings found.",
-    "noAgents": "No agents found."
+    "noAgents": "No agents found.",
+    "searchEverywhere": "Search meetings for “{query}”"
   },
   "userMenu": {
     "unnamed": "User",
@@ -1117,5 +1120,87 @@
     "upgrade": "See Pro plan",
     "buyMinutes": "Buy minutes",
     "later": "Later"
+  },
+  "memory": {
+    "title": "AI memory",
+    "description": "What the AI has learned from your meetings. Edit, archive or delete anything; deleted items are never brought up again.",
+    "types": {
+      "all": "All",
+      "decision": "Decisions",
+      "fact": "Facts",
+      "preference": "Preferences",
+      "todo": "Open items",
+      "glossary": "Glossary"
+    },
+    "searchPlaceholder": "Filter by text…",
+    "showArchived": "Show archived",
+    "empty": "Nothing remembered yet",
+    "emptyDescription": "After each meeting the AI remembers key decisions, facts and terms.",
+    "from": "From meeting {name}",
+    "shared": "Shared",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "archive": "Archive",
+    "restore": "Restore",
+    "delete": "Delete",
+    "deleteTitle": "Delete this memory?",
+    "deleteDescription": "The AI will no longer bring this up. This cannot be undone.",
+    "add": "Add to memory",
+    "addPlaceholder": "E.g. The team holds sprint review on Friday afternoon",
+    "definition": "Definition",
+    "saved": "Saved",
+    "deleted": "Deleted",
+    "toggleLabel": "Learn from meetings",
+    "toggleHint": "When on, the AI extracts what to remember after each meeting and is briefed before the next one.",
+    "tabs": {
+      "memory": "Memory",
+      "knowledge": "Knowledge"
+    },
+    "archived": "Archived"
+  },
+  "knowledge": {
+    "title": "Knowledge base",
+    "description": "Documents the agent uses to answer: PDF, TXT, Markdown, web pages or pasted text.",
+    "upload": "Upload file",
+    "uploadHint": "PDF, TXT, MD up to 4 MB. Only the text is kept.",
+    "addUrl": "Add web page",
+    "urlPlaceholder": "https://…",
+    "addText": "Paste text",
+    "textTitle": "Title",
+    "textBody": "Content",
+    "add": "Add",
+    "status": {
+      "processing": "Processing",
+      "ready": "Ready",
+      "failed": "Failed"
+    },
+    "chunks": "{count} chunks",
+    "empty": "No documents yet",
+    "emptyDescription": "Add product docs, processes or price lists so the AI answers accurately.",
+    "locked": "Knowledge base is part of Pro",
+    "lockedDescription": "Upgrade to add up to {count} documents for your agents.",
+    "upgrade": "See Pro plan",
+    "added": "Added, processing…",
+    "removed": "Document removed",
+    "remove": "Remove",
+    "usage": "{used}/{limit} documents"
+  },
+  "search": {
+    "title": "Search",
+    "description": "Search by meaning across all meetings, or ask the AI one question across them.",
+    "placeholder": "E.g. what price did we settle on for Pro?",
+    "search": "Search",
+    "ask": "Ask AI",
+    "asking": "The AI is reading your meetings…",
+    "answer": "Answer",
+    "noAnswer": "Nothing relevant found in your meetings yet.",
+    "moments": "Relevant moments",
+    "memories": "From memory",
+    "empty": "No results",
+    "emptyDescription": "Try other words. Only processed meetings are searchable.",
+    "hint": "Type at least 2 characters and press Enter.",
+    "openAt": "Open at {time}",
+    "sources": "Sources"
   }
 }

@@ -1,7 +1,9 @@
 import { serve } from "inngest/next";
 import { inngest } from "@/inngest/client";
 import {
+  knowledgeProcess,
   meetingsEndIfEmpty,
+  memoryBackfill,
   meetingsProcessing,
   meetingsStoreRecording,
   meetingsWatchdog,
@@ -17,5 +19,7 @@ export const { GET, POST, PUT } = serve({
     meetingsStoreRecording,
     meetingsEndIfEmpty,
     meetingsWatchdog,
+    knowledgeProcess,
+    memoryBackfill,
   ],
 });

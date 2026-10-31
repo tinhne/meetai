@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useEffect,
   useCallback,
   useContext,
   useMemo,
@@ -39,6 +40,15 @@ export const MeetingPlayerProvider = ({ children }: { children: ReactNode }) => 
     video.scrollIntoView({ behavior: "smooth", block: "nearest" });
     void video.play().catch(() => undefined);
   }, []);
+
+  // Deep links from search results: /dashboard/meetings/:id?t=<seconds>.
+  const startHandled = useRef(false);
+  useEffect(() => {
+    if (!hasMedia || startHandled.current) return;
+    startHandled.current = true;
+    const startSec = Number(new URLSearchParams(window.location.search).get("t"));
+    if (Number.isFinite(startSec) && startSec > 0) seek(startSec * 1000);
+  }, [hasMedia, seek]);
 
   const onTimeUpdate = useCallback(() => {
     const video = videoRef.current;

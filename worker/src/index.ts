@@ -17,6 +17,7 @@ import {
 } from "../../src/modules/agents/lib/agent-session";
 import { verifyWorkerRequest } from "../../src/modules/agents/lib/worker-auth";
 import { recordVoiceUsage } from "../../src/server/billing/ledger";
+import { buildBriefing } from "../../src/server/memory/briefing";
 import { db } from "./db";
 import { env } from "./env";
 
@@ -84,6 +85,8 @@ async function startSession(meetingId: string, voiceSecondsRemaining: number) {
   const mode = toAiMode(meeting.aiMode);
   if (mode === "silent") return { status: "silent" };
 
+  const briefing = await buildBriefing(db, { userId: meeting.userId, agentId: agent.id }).catch(() => null);
+
   const handle = await startAgentSession({
     streamVideo,
     callType: meeting.callType,
@@ -100,6 +103,7 @@ async function startSession(meetingId: string, voiceSecondsRemaining: number) {
       meetingName: meeting.name,
       agenda: meeting.agenda,
       language: meeting.language,
+      briefing,
     },
     onUsage: (usage) => recordVoiceUsage(db, { userId: meeting.userId, meetingId, ...usage }),
     log,

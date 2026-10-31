@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useRouter } from "@/i18n/navigation";
 import { InstantMeetingButton } from "@/modules/meetings/ui/components/instant-meeting-button";
+import { AgentLearning } from "@/modules/memory/ui/components/agent-learning";
 import { useTRPC } from "@/trpc/client";
 import { AgentIdViewHeader } from "../components/agent-id-view-header";
 import { AgentTestChat } from "../components/agent-test-chat";
@@ -96,6 +97,7 @@ export const AgentViewId = ({ agentId }: Props) => {
           </section>
           <AgentTestChat agentId={data.id} />
         </div>
+        <AgentLearning agentId={data.id} memoryEnabled={data.memoryEnabled} />
       </div>
     </>
   );

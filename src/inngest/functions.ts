@@ -17,6 +17,12 @@ import {
 import { env, isStorageEnabled } from "@/env";
 import { sendMeetingReadyEmail } from "@/lib/email";
 import { warnIfNearQuota } from "@/server/billing/quota";
+import { failKnowledgeDocument, processKnowledgeDocument } from "@/server/memory/knowledge";
+import {
+  extractMeetingMemories,
+  findUnindexedMeetings,
+  indexMeetingTranscript,
+} from "@/server/memory/store";
 import { streamVideo } from "@/lib/stream-video";
 import {
   countHumanParticipants,
@@ -465,6 +471,45 @@ export const meetingsProcessing = inngest.createFunction(
     // AI minutes were spent during the call; warn at 80% of the month's quota.
     await step.run("quota-warning", () => warnIfNearQuota(meeting.userId, ["aiVoice"]));
 
+    // 4. Long-term memory: searchable transcript windows + learned facts.
+    // Runs after the notes are delivered, so a failure here never blocks them.
+    if (!insights.empty) {
+      await step.run("index-transcript", () =>
+        indexMeetingTranscript({ meetingId, userId: meeting.userId }),
+      );
+
+      await step.run("extract-memories", async () => {
+        const [agent] = await db
+          .select({ memoryEnabled: agents.memoryEnabled })
+          .from(agents)
+          .where(eq(agents.id, meeting.agentId));
+        if (!agent?.memoryEnabled) return { skipped: "memory disabled" };
+
+        const [row] = await db
+          .select({ summary: meetings.summary })
+          .from(meetings)
+          .where(eq(meetings.id, meetingId));
+        const segments = await loadSegments(meetingId);
+        const transcript = formatTranscriptForPrompt(
+          segments.map((segment) => ({
+            speakerName: segment.speakerName,
+            startMs: segment.startMs,
+            text: segment.textCorrected ?? segment.text,
+          })),
+        );
+
+        return extractMeetingMemories({
+          meetingId,
+          meetingName: meeting.name,
+          language: meeting.language,
+          userId: meeting.userId,
+          agentId: meeting.agentId,
+          summary: row?.summary ?? "",
+          transcript: transcript.slice(0, MAX_TRANSCRIPT_CHARS),
+        });
+      });
+    }
+
     return insights;
   },
 );
@@ -628,5 +673,45 @@ export const meetingsWatchdog = inngest.createFunction(
       failed: toFail.length,
       checkedCalls: longCalls.length,
     };
+  },
+);
+
+// Knowledge base ingestion: extract text (PDF via Gemini, web pages via a
+// guarded fetch), chunk and embed. Throttled for the Gemini free tier.
+export const knowledgeProcess = inngest.createFunction(
+  {
+    id: "knowledge/process",
+    concurrency: { limit: 2 },
+    throttle: { limit: 10, period: "1m" },
+    retries: 3,
+    onFailure: async ({ event, error }) => {
+      const documentId = event.data.event.data.documentId as string;
+      await failKnowledgeDocument(documentId, error.message);
+    },
+  },
+  { event: "knowledge/document.created" },
+  async ({ event, step }) => {
+    const documentId: string = event.data.documentId;
+    return step.run("ingest", () => processKnowledgeDocument(documentId));
+  },
+);
+
+// Indexes a user's older completed meetings (before Phase 7) for search.
+// Throttled for the Gemini free-tier embedding quota.
+export const memoryBackfill = inngest.createFunction(
+  {
+    id: "memory/backfill",
+    concurrency: { limit: 1, key: "event.data.userId" },
+    throttle: { limit: 1, period: "1h", key: "event.data.userId" },
+    retries: 2,
+  },
+  { event: "memory/backfill.requested" },
+  async ({ event, step }) => {
+    const userId: string = event.data.userId;
+    const pending = await step.run("find-unindexed", () => findUnindexedMeetings(userId, 30));
+    for (const meetingId of pending) {
+      await step.run(`index-${meetingId}`, () => indexMeetingTranscript({ meetingId, userId }));
+    }
+    return { indexed: pending.length };
   },
 );

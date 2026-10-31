@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   BotIcon,
+  BrainIcon,
   HomeIcon,
   PlusIcon,
+  SearchIcon,
   SettingsIcon,
   SparklesIcon,
   SunMoonIcon,
@@ -72,10 +74,22 @@ export const DashboardCommand = ({ open, setOpen }: Props) => {
     },
   ].filter((action) => matches(action.label));
 
+  // Semantic search across meetings for whatever was typed.
+  const query = search.trim();
+  if (query.length >= 2) {
+    actions.unshift({
+      label: t("searchEverywhere", { query }),
+      icon: SearchIcon,
+      onSelect: () => router.push(`/dashboard/search?q=${encodeURIComponent(query)}`),
+    });
+  }
+
   const pages = [
     { label: tNav("home"), icon: HomeIcon, href: "/dashboard" },
     { label: tNav("meetings"), icon: VideoIcon, href: "/dashboard/meetings" },
     { label: tNav("agents"), icon: BotIcon, href: "/dashboard/agents" },
+    { label: tNav("searchPage"), icon: SearchIcon, href: "/dashboard/search" },
+    { label: tNav("memory"), icon: BrainIcon, href: "/dashboard/memory" },
     { label: tNav("billing"), icon: SparklesIcon, href: "/dashboard/billing" },
     { label: tNav("settings"), icon: SettingsIcon, href: "/dashboard/settings" },
   ].filter((page) => matches(page.label));

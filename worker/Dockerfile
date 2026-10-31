@@ -17,6 +17,7 @@ COPY src/server/ai/prompts.ts ./src/server/ai/prompts.ts
 COPY src/modules/agents/lib ./src/modules/agents/lib
 COPY src/modules/meetings/lib/stream.ts ./src/modules/meetings/lib/stream.ts
 COPY src/server/billing/ledger.ts ./src/server/billing/ledger.ts
+COPY src/server/memory/briefing.ts ./src/server/memory/briefing.ts
 COPY worker/src ./worker/src
 
 ENV NODE_ENV=production

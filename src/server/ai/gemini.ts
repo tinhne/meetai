@@ -98,6 +98,30 @@ export async function generateJson<T extends z.ZodType>(params: {
   throw lastError;
 }
 
+// Plain-text answer with the same model fallback as generateJson (used
+// outside Inngest, so rate limits surface as errors to the caller).
+export async function generateText(params: { system: string; prompt: string; maxOutputTokens?: number }) {
+  let lastError: unknown;
+  for (const model of [AI_CONFIG.gemini.textModel, AI_CONFIG.gemini.fastModel]) {
+    try {
+      const response = await gemini.models.generateContent({
+        model,
+        contents: [{ role: "user", parts: [{ text: params.prompt }] }],
+        config: {
+          systemInstruction: params.system,
+          maxOutputTokens: params.maxOutputTokens ?? 2_000,
+          temperature: 0.2,
+        },
+      });
+      return response.text ?? "";
+    } catch (error) {
+      lastError = error;
+      if (!isRetryable(error)) break;
+    }
+  }
+  throw lastError;
+}
+
 // Streams a remote file (e.g. a Stream recording) into the Gemini Files API
 // without buffering it in memory.
 export async function uploadFileFromUrl(params: {

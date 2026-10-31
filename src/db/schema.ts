@@ -9,6 +9,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  vector,
 } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 
@@ -83,6 +84,8 @@ export const agents = pgTable("agents", {
   instructions: text("instructions").notNull(),
   // OpenAI Realtime voice used when the agent speaks
   voice: text("voice").notNull().default("alloy"),
+  // Learn from meetings (memories) and brief the agent before each call.
+  memoryEnabled: boolean("memory_enabled").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -470,4 +473,117 @@ export const emailLog = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [uniqueIndex("email_log_dedupe_idx").on(table.userId, table.kind, table.dedupeKey)],
+);
+
+// Gemini embeddings (gemini-embedding-001 truncated to 768 dimensions).
+export const EMBEDDING_DIMENSIONS = 768;
+
+export const memoryType = pgEnum("memory_type", ["decision", "fact", "preference", "todo", "glossary"]);
+
+// What the AI has learned from meetings. Users can edit, archive or delete
+// every row; archived rows are never used in prompts.
+export const memories = pgTable(
+  "memories",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    // null = shared by all of the user's agents
+    agentId: text("agent_id").references(() => agents.id, { onDelete: "cascade" }),
+    type: memoryType("type").notNull(),
+    content: text("content").notNull(),
+    // Glossary definition / extra context
+    detail: text("detail"),
+    sourceMeetingId: text("source_meeting_id").references(() => meetings.id, { onDelete: "set null" }),
+    embedding: vector("embedding", { dimensions: EMBEDDING_DIMENSIONS }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    archivedAt: timestamp("archived_at"),
+  },
+  (table) => [
+    index("memories_user_idx").on(table.userId, table.agentId, table.createdAt),
+    index("memories_embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops")),
+  ],
+);
+
+export const knowledgeStatus = pgEnum("knowledge_status", ["processing", "ready", "failed"]);
+
+// Documents an agent can use (uploaded files, web pages, pasted text). Only
+// the extracted text is kept, never the original file.
+export const knowledgeDocuments = pgTable(
+  "knowledge_documents",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    agentId: text("agent_id").references(() => agents.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    sourceType: text("source_type").notNull(),
+    sourceUrl: text("source_url"),
+    mimeType: text("mime_type"),
+    sizeBytes: integer("size_bytes").notNull().default(0),
+    status: knowledgeStatus("status").notNull().default("processing"),
+    error: text("error"),
+    // Gemini Files API name while a PDF waits for text extraction (48h TTL).
+    pendingFile: text("pending_file"),
+    content: text("content"),
+    chunkCount: integer("chunk_count").notNull().default(0),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("knowledge_documents_user_idx").on(table.userId, table.agentId)],
+);
+
+export const knowledgeChunks = pgTable(
+  "knowledge_chunks",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    documentId: text("document_id")
+      .notNull()
+      .references(() => knowledgeDocuments.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    agentId: text("agent_id"),
+    position: integer("position").notNull(),
+    content: text("content").notNull(),
+    embedding: vector("embedding", { dimensions: EMBEDDING_DIMENSIONS }).notNull(),
+  },
+  (table) => [
+    index("knowledge_chunks_doc_idx").on(table.documentId),
+    index("knowledge_chunks_embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops")),
+  ],
+);
+
+// Transcript windows (about a minute each) for semantic search and Ask AI
+// across meetings.
+export const meetingChunks = pgTable(
+  "meeting_chunks",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    meetingId: text("meeting_id")
+      .notNull()
+      .references(() => meetings.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    startMs: integer("start_ms").notNull(),
+    endMs: integer("end_ms").notNull(),
+    content: text("content").notNull(),
+    embedding: vector("embedding", { dimensions: EMBEDDING_DIMENSIONS }).notNull(),
+  },
+  (table) => [
+    index("meeting_chunks_meeting_idx").on(table.meetingId),
+    index("meeting_chunks_user_idx").on(table.userId),
+    index("meeting_chunks_embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops")),
+  ],
 );

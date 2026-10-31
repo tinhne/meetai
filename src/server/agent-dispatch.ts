@@ -11,6 +11,7 @@ import {
 import { signWorkerRequest } from "@/modules/agents/lib/worker-auth";
 import { getVoiceAllowance, recordVoiceUsage as recordVoiceUsageInLedger } from "@/server/billing/ledger";
 import { getUserPlan } from "@/server/billing/plan";
+import { buildBriefing } from "@/server/memory/briefing";
 
 interface DispatchMeeting {
   id: string;
@@ -94,6 +95,8 @@ export async function startAgentForMeeting(
 
   // Development fallback: the connection lives in this serverless function
   // and may drop when the platform freezes it. Use the worker in production.
+  const briefing = await buildBriefing(db, { userId: meeting.userId, agentId: agent.id }).catch(() => null);
+
   const handle = await startAgentSession({
     streamVideo,
     callType: meeting.callType,
@@ -110,6 +113,7 @@ export async function startAgentForMeeting(
       meetingName: meeting.name,
       agenda: meeting.agenda,
       language: meeting.language,
+      briefing,
     },
     onUsage: (usage) => recordVoiceUsage(meeting.userId, meeting.id, usage),
     log: (message) => console.info(message),

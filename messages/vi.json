@@ -27,7 +27,9 @@
     "search": "Tìm kiếm…",
     "workspace": "Không gian làm việc",
     "account": "Tài khoản",
-    "billing": "Gói & thanh toán"
+    "billing": "Gói & thanh toán",
+    "memory": "Bộ nhớ AI",
+    "searchPage": "Tìm kiếm"
   },
   "commandPalette": {
     "placeholder": "Tìm cuộc họp, agent hoặc gõ một lệnh…",
@@ -39,7 +41,8 @@
     "newAgent": "Tạo agent",
     "toggleTheme": "Đổi giao diện sáng/tối",
     "noMeetings": "Không tìm thấy cuộc họp.",
-    "noAgents": "Không tìm thấy agent."
+    "noAgents": "Không tìm thấy agent.",
+    "searchEverywhere": "Tìm theo ý nghĩa: “{query}”"
   },
   "userMenu": {
     "unnamed": "Người dùng",
@@ -1117,5 +1120,87 @@
     "upgrade": "Xem gói Pro",
     "buyMinutes": "Mua thêm phút",
     "later": "Để sau"
+  },
+  "memory": {
+    "title": "Bộ nhớ của AI",
+    "description": "Những gì AI đã học từ các cuộc họp. Bạn có thể sửa, lưu trữ hoặc xoá bất cứ lúc nào; mục đã xoá sẽ không được nhắc lại.",
+    "types": {
+      "all": "Tất cả",
+      "decision": "Quyết định",
+      "fact": "Sự thật",
+      "preference": "Sở thích",
+      "todo": "Việc còn mở",
+      "glossary": "Thuật ngữ"
+    },
+    "searchPlaceholder": "Lọc theo nội dung…",
+    "showArchived": "Hiện mục đã lưu trữ",
+    "empty": "Chưa có gì trong bộ nhớ",
+    "emptyDescription": "Sau mỗi cuộc họp, AI sẽ tự ghi nhớ quyết định, sự thật và thuật ngữ quan trọng.",
+    "from": "Từ cuộc họp {name}",
+    "shared": "Dùng chung",
+    "edit": "Sửa",
+    "save": "Lưu",
+    "cancel": "Huỷ",
+    "archive": "Lưu trữ",
+    "restore": "Khôi phục",
+    "delete": "Xoá",
+    "deleteTitle": "Xoá mục này khỏi bộ nhớ?",
+    "deleteDescription": "AI sẽ không nhắc lại thông tin này nữa. Không thể hoàn tác.",
+    "add": "Thêm vào bộ nhớ",
+    "addPlaceholder": "VD: Team họp sprint review vào chiều thứ Sáu",
+    "definition": "Định nghĩa",
+    "saved": "Đã lưu",
+    "deleted": "Đã xoá",
+    "toggleLabel": "Ghi nhớ từ các cuộc họp",
+    "toggleHint": "Khi bật, AI rút ra điều cần nhớ sau mỗi cuộc họp và được nhắc lại trước cuộc họp tiếp theo.",
+    "tabs": {
+      "memory": "Bộ nhớ",
+      "knowledge": "Kiến thức"
+    },
+    "archived": "Đã lưu trữ"
+  },
+  "knowledge": {
+    "title": "Kho kiến thức",
+    "description": "Tài liệu agent dùng để trả lời: PDF, TXT, Markdown, trang web hoặc văn bản dán vào.",
+    "upload": "Tải tệp lên",
+    "uploadHint": "PDF, TXT, MD tối đa 4 MB. Chỉ phần chữ được lưu lại.",
+    "addUrl": "Thêm trang web",
+    "urlPlaceholder": "https://…",
+    "addText": "Dán văn bản",
+    "textTitle": "Tiêu đề",
+    "textBody": "Nội dung",
+    "add": "Thêm",
+    "status": {
+      "processing": "Đang xử lý",
+      "ready": "Sẵn sàng",
+      "failed": "Lỗi"
+    },
+    "chunks": "{count} đoạn",
+    "empty": "Chưa có tài liệu",
+    "emptyDescription": "Thêm tài liệu sản phẩm, quy trình hoặc bảng giá để AI trả lời chính xác hơn.",
+    "locked": "Kho kiến thức có trong gói Pro",
+    "lockedDescription": "Nâng cấp để thêm tối đa {count} tài liệu cho agent.",
+    "upgrade": "Xem gói Pro",
+    "added": "Đã thêm, đang xử lý…",
+    "removed": "Đã xoá tài liệu",
+    "remove": "Xoá",
+    "usage": "{used}/{limit} tài liệu"
+  },
+  "search": {
+    "title": "Tìm kiếm",
+    "description": "Tìm theo ý nghĩa trên mọi cuộc họp, hoặc hỏi AI một câu xuyên suốt các cuộc họp.",
+    "placeholder": "VD: giá gói Pro đã chốt bao nhiêu?",
+    "search": "Tìm",
+    "ask": "Hỏi AI",
+    "asking": "AI đang đọc các cuộc họp…",
+    "answer": "Câu trả lời",
+    "noAnswer": "Chưa tìm thấy thông tin liên quan trong các cuộc họp.",
+    "moments": "Đoạn hội thoại liên quan",
+    "memories": "Từ bộ nhớ",
+    "empty": "Không có kết quả",
+    "emptyDescription": "Thử từ khoá khác. Chỉ những cuộc họp đã xử lý xong mới tìm được.",
+    "hint": "Nhập ít nhất 2 ký tự rồi nhấn Enter.",
+    "openAt": "Mở tại {time}",
+    "sources": "Nguồn"
   }
 }
