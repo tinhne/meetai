@@ -1,5 +1,13 @@
-import { index } from "drizzle-orm/pg-core";
-import { pgTable, text, timestamp, boolean, pgEnum } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  boolean,
+  index,
+  integer,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 
 export const user = pgTable("user", {
@@ -75,12 +83,21 @@ export const agents = pgTable("agents", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Better Auth rate limiting (rateLimit.storage = "database")
+export const rateLimit = pgTable("rate_limit", {
+  id: text("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  count: integer("count").notNull(),
+  lastRequest: bigint("last_request", { mode: "number" }).notNull(),
+});
+
 export const meetingStatus = pgEnum("meeting_status", [
   "upcoming",
   "active",
   "completed",
   "processing",
   "cancelled",
+  "failed",
 ]);
 
 export const meetings = pgTable(
@@ -97,11 +114,16 @@ export const meetings = pgTable(
       .notNull()
       .references(() => agents.id, { onDelete: "cascade" }),
     status: meetingStatus("status").notNull().default("upcoming"),
+    // Spoken language of the meeting: "vi" | "en" | "auto"
+    language: text("language").notNull().default("vi"),
+    scheduledAt: timestamp("scheduled_at"),
+    agenda: text("agenda"),
     startedAt: timestamp("started_at"),
     endedAt: timestamp("ended_at"),
     transcriptUrl: text("transcript_url"),
     recordingUrl: text("recording_url"),
     summary: text("summary"),
+    failedReason: text("failed_reason"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
@@ -113,3 +135,47 @@ export const meetings = pgTable(
     };
   },
 );
+
+export const usageKind = pgEnum("usage_kind", [
+  "meeting_created",
+  "agent_created",
+]);
+
+// Append-only ledger used for quotas. Rows are never deleted when the
+// related meeting/agent is deleted, so deleting does not refund quota.
+export const usageEvents = pgTable(
+  "usage_events",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    kind: usageKind("kind").notNull(),
+    quantity: integer("quantity").notNull().default(1),
+    meetingId: text("meeting_id"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("usage_events_user_kind_created_idx").on(
+      table.userId,
+      table.kind,
+      table.createdAt,
+    ),
+  ],
+);
+
+// Idempotency for incoming webhooks (Stream retries deliveries).
+export const webhookEvents = pgTable("webhook_events", {
+  id: text("id").primaryKey(),
+  type: text("type").notNull(),
+  receivedAt: timestamp("received_at").notNull().defaultNow(),
+});
+
+// Fixed-window rate limiting for app endpoints (tRPC, webhooks).
+export const appRateLimits = pgTable("app_rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull(),
+  windowStart: timestamp("window_start").notNull(),
+});

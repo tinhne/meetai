@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  BanIcon,
   ChevronRightIcon,
   MoreVerticalIcon,
   PencilIcon,
@@ -25,6 +26,7 @@ interface Props {
   meetingName: string;
   onEdit: () => void;
   onDelete: () => void;
+  onCancel?: () => void;
 }
 
 export const MeetingIdViewHeader = ({
@@ -32,6 +34,7 @@ export const MeetingIdViewHeader = ({
   meetingName,
   onEdit,
   onDelete,
+  onCancel,
 }: Props) => {
   return (
     <div className="flex items-center justify-between">
@@ -66,6 +69,12 @@ export const MeetingIdViewHeader = ({
             <PencilIcon className="size-4 text-black" />
             Edit
           </DropdownMenuItem>
+          {onCancel && (
+            <DropdownMenuItem onClick={onCancel}>
+              <BanIcon className="size-4 text-black" />
+              Cancel meeting
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={onDelete}>
             <TrashIcon className="size-4 text-black" />
             Delete

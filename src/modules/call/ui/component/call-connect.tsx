@@ -21,6 +21,7 @@ interface Props {
   userId: string;
   userName: string;
   userImage: string;
+  isHost: boolean;
 }
 
 export const CallConnect = ({
@@ -29,6 +30,7 @@ export const CallConnect = ({
   userId,
   userName,
   userImage,
+  isHost,
 }: Props) => {
   const trpc = useTRPC();
   const { mutateAsync: generateToken } = useMutation(
@@ -44,15 +46,17 @@ export const CallConnect = ({
         name: userName,
         image: userImage,
       },
-      tokenProvider: generateToken,
+      tokenProvider: () => generateToken({ meetingId }),
     });
+    // The client is an external resource owned by this effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setClient(myClient);
 
     return () => {
       myClient.disconnectUser();
       setClient(undefined);
     };
-  }, [userId, userName, userImage, generateToken]);
+  }, [meetingId, userId, userName, userImage, generateToken]);
 
   const [call, setCall] = useState<Call>();
 
@@ -61,14 +65,16 @@ export const CallConnect = ({
     const myCall = client.call("default", meetingId);
     myCall.camera.disable();
     myCall.microphone.disable();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCall(myCall);
 
+    // Unmounting (navigation, refresh) only leaves the call. Ending it for
+    // everyone is an explicit host action.
     return () => {
       if (myCall.state.callingState !== CallingState.LEFT) {
         myCall.leave();
-        myCall.endCall();
-        setCall(undefined);
       }
+      setCall(undefined);
     };
   }, [client, meetingId]);
 
@@ -83,7 +89,7 @@ export const CallConnect = ({
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <CallUI meetingName={meetingName} />
+        <CallUI meetingId={meetingId} meetingName={meetingName} isHost={isHost} />
       </StreamCall>
     </StreamVideo>
   );

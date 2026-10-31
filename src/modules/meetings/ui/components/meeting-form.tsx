@@ -8,6 +8,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { GeneratedAvatar } from "@/components/generated-avatar";
 import {
   Form,
@@ -23,6 +31,21 @@ import { useState } from "react";
 import { CommandSelect } from "../../../../components/command-select";
 import { NewAgentDialog } from "@/modules/agents/ui/components/new-agent-dialog";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import {
+  MEETING_LANGUAGES,
+  type MeetingLanguage,
+} from "../../lib/stream";
+
+const LANGUAGE_LABELS: Record<MeetingLanguage, string> = {
+  vi: "Vietnamese",
+  en: "English",
+  auto: "Auto-detect",
+};
+
+// <input type="datetime-local"> works in local time; the API expects UTC ISO.
+const toLocalInputValue = (iso?: string | null) =>
+  iso ? format(new Date(iso), "yyyy-MM-dd'T'HH:mm") : "";
 
 interface MeetingFormProps {
   onSuccess?: (id?: string) => void;
@@ -96,10 +119,17 @@ export const MeetingForm = ({
     defaultValues: {
       name: initialValues?.name ?? "",
       agentId: initialValues?.agentId ?? "",
+      language: (initialValues?.language as MeetingLanguage) ?? "vi",
+      agenda: initialValues?.agenda ?? "",
+      scheduledAt: initialValues?.scheduledAt
+        ? new Date(initialValues.scheduledAt).toISOString()
+        : undefined,
     },
   });
 
   const isEdit = !!initialValues?.id;
+  // Agent and language are locked once the meeting has started.
+  const isLocked = isEdit && initialValues?.status !== "upcoming";
   const isPending = createMeeting.isPending || updateMeeting.isPending;
 
   const onSubmit = async (values: z.infer<typeof meetingInsertSchema>) => {
@@ -139,6 +169,7 @@ export const MeetingForm = ({
                 <FormLabel>Agent</FormLabel>
                 <FormControl>
                   <CommandSelect
+                    disabled={isLocked}
                     options={(agents.data?.items ?? []).map((agent) => ({
                       id: agent.id,
                       value: agent.id,
@@ -170,6 +201,77 @@ export const MeetingForm = ({
                     Create new agent
                   </Button>
                 </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="language"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Meeting language</FormLabel>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isLocked}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a language" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {MEETING_LANGUAGES.map((language) => (
+                      <SelectItem key={language} value={language}>
+                        {LANGUAGE_LABELS[language]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  The language spoken in the meeting. Used for transcription
+                  and the summary.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="scheduledAt"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Scheduled for (optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="datetime-local"
+                    value={toLocalInputValue(field.value)}
+                    onChange={(event) =>
+                      field.onChange(
+                        event.target.value
+                          ? new Date(event.target.value).toISOString()
+                          : undefined,
+                      )
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="agenda"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Agenda (optional)</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="What should this meeting cover?"
+                    {...field}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

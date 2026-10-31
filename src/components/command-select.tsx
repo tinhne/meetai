@@ -22,6 +22,7 @@ interface Props {
   placeholder?: string;
   isSearchable?: boolean;
   className?: string;
+  disabled?: boolean;
 }
 
 export const CommandSelect = ({
@@ -31,6 +32,7 @@ export const CommandSelect = ({
   value,
   placeholder = "select and options...",
   className,
+  disabled,
 }: Props) => {
   const [open, setOpen] = useState(false);
   const selectedOption = options.find((option) => option.value === value);
@@ -45,6 +47,7 @@ export const CommandSelect = ({
       <Button
         onClick={() => setOpen(true)}
         type="button"
+        disabled={disabled}
         variant="outline"
         className={cn(
           "h-9 justify-between font-normal px-2",

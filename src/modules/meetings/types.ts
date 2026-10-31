@@ -13,6 +13,7 @@ export enum MeetingStatus {
   Completed = "completed",
   Processing = "processing",
   Cancelled = "cancelled",
+  Failed = "failed",
 }
 
 export type StreamTranscriptItem = {

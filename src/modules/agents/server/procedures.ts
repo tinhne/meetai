@@ -1,5 +1,6 @@
 import { db } from "@/db";
-import { agents, meetings } from "@/db/schema";
+import { agents, meetings, usageEvents } from "@/db/schema";
+import { enforceRateLimit } from "@/server/rate-limit";
 import {
   createTRPCRouter,
   premiumProcedure,
@@ -20,7 +21,11 @@ export const agentsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const [updatedAgent] = await db
         .update(agents)
-        .set(input)
+        .set({
+          name: input.name,
+          instructions: input.instructions,
+          updatedAt: new Date(),
+        })
         .where(
           and(
             eq(agents.id, input.id),
@@ -123,13 +128,19 @@ export const agentsRouter = createTRPCRouter({
   create: premiumProcedure("agents")
     .input(agentInsertSchema)
     .mutation(async ({ ctx, input }) => {
-      const [createdAgent] = await db
-        .insert(agents)
-        .values({
-          ...input,
-          userId: ctx.auth.user.id,
-        })
-        .returning();
+      const userId = ctx.auth.user.id;
+      await enforceRateLimit("createAgent", userId);
+
+      const [[createdAgent]] = await db.batch([
+        db
+          .insert(agents)
+          .values({
+            ...input,
+            userId,
+          })
+          .returning(),
+        db.insert(usageEvents).values({ userId, kind: "agent_created" }),
+      ]);
 
       return createdAgent;
     }),

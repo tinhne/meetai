@@ -1,8 +1,14 @@
 export const runtime = "nodejs";
+import { createHash } from "node:crypto";
+
 import { db } from "@/db";
-import { agents, meetings } from "@/db/schema";
+import { agents, meetings, webhookEvents } from "@/db/schema";
+import { env } from "@/env";
 import { inngest } from "@/inngest/client";
 import { streamVideo } from "@/lib/stream-video";
+import { STREAM_CALL_TYPE, meetingIdFromCallCid } from "@/modules/meetings/lib/stream";
+import { getUserPlan } from "@/modules/premium/server/usage";
+import { consumeRateLimit } from "@/server/rate-limit";
 
 import {
   MessageNewEvent,
@@ -12,11 +18,184 @@ import {
   CallSessionStartedEvent,
   CallTranscriptionReadyEvent,
 } from "@stream-io/node-sdk";
-import { and, eq, not } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 function verifySignatureWithSDK(body: string, signature: string): boolean {
   return streamVideo.verifyWebhook(body, signature);
+}
+
+// Stream retries deliveries with the same body, so the body hash is a stable
+// idempotency key. Returns false when the event was already processed.
+async function claimWebhookEvent(id: string, type: string) {
+  const inserted = await db
+    .insert(webhookEvents)
+    .values({ id, type })
+    .onConflictDoNothing()
+    .returning({ id: webhookEvents.id });
+
+  return inserted.length > 0;
+}
+
+async function releaseWebhookEvent(id: string) {
+  await db.delete(webhookEvents).where(eq(webhookEvents.id, id));
+}
+
+async function handleSessionStarted(event: CallSessionStartedEvent) {
+  const meetingId = event.call.custom?.meetingId;
+
+  if (typeof meetingId !== "string" || !meetingId) {
+    return;
+  }
+
+  // Atomic transition: only one delivery can move upcoming -> active, so the
+  // agent is never connected twice.
+  const [meeting] = await db
+    .update(meetings)
+    .set({ status: "active", startedAt: new Date() })
+    .where(and(eq(meetings.id, meetingId), eq(meetings.status, "upcoming")))
+    .returning();
+
+  if (!meeting) {
+    return;
+  }
+
+  if (!env.AI_VOICE_ENABLED) {
+    console.info("[Webhook] AI voice disabled, skipping agent for", meeting.id);
+    return;
+  }
+
+  const [agent] = await db
+    .select()
+    .from(agents)
+    .where(and(eq(agents.id, meeting.agentId), eq(agents.userId, meeting.userId)));
+
+  if (!agent) {
+    console.error("[Webhook] Agent not found for meeting", meeting.id);
+    return;
+  }
+
+  try {
+    const call = streamVideo.video.call(STREAM_CALL_TYPE, meeting.id);
+    const realtimeClient = await streamVideo.video.connectOpenAi({
+      call,
+      openAiApiKey: env.OPENAI_API_KEY,
+      agentUserId: agent.id,
+    });
+
+    realtimeClient.updateSession({
+      instructions: agent.instructions,
+    });
+  } catch (error) {
+    // The meeting continues without the voice agent.
+    console.error(
+      "[Webhook] Failed to connect agent:",
+      error instanceof Error ? error.message : "unknown error",
+    );
+  }
+}
+
+async function handleParticipantLeft(event: CallSessionParticipantLeftEvent) {
+  const meetingId = meetingIdFromCallCid(event.call_cid);
+  if (!meetingId) return;
+
+  // Do not end the call here: a single participant (or the agent) leaving,
+  // or a page refresh, must not end the meeting for everyone. A debounced
+  // job ends the call once no human has been in the room for a while.
+  await inngest.send({
+    name: "meetings/participant.left",
+    data: { meetingId },
+  });
+}
+
+async function handleSessionEnded(event: CallEndedEvent) {
+  const meetingId = meetingIdFromCallCid(event.call_cid);
+  if (!meetingId) return;
+
+  await db
+    .update(meetings)
+    .set({ status: "processing", endedAt: new Date() })
+    .where(and(eq(meetings.id, meetingId), eq(meetings.status, "active")));
+}
+
+async function handleTranscriptionReady(event: CallTranscriptionReadyEvent) {
+  const meetingId = meetingIdFromCallCid(event.call_cid);
+  if (!meetingId) return;
+
+  const [updatedMeeting] = await db
+    .update(meetings)
+    .set({ transcriptUrl: event.call_transcription.url })
+    .where(eq(meetings.id, meetingId))
+    .returning();
+
+  if (!updatedMeeting) return;
+
+  await inngest.send({
+    id: `meeting-processing-${meetingId}`,
+    name: "meetings/processing",
+    data: {
+      meetingId: updatedMeeting.id,
+      transcriptUrl: event.call_transcription.url,
+    },
+  });
+}
+
+async function handleRecordingReady(event: CallRecordingReadyEvent) {
+  const meetingId = meetingIdFromCallCid(event.call_cid);
+  if (!meetingId) return;
+
+  await db
+    .update(meetings)
+    .set({ recordingUrl: event.call_recording.url })
+    .where(eq(meetings.id, meetingId));
+}
+
+async function handleMessageNew(event: MessageNewEvent) {
+  const userId = event.user?.id ?? event.message?.user?.id;
+  const channelId = event.channel_id;
+  const text = event.message?.text;
+  const messageType = event.message?.type;
+  const messageId = event.message?.id;
+
+  if (!userId || !channelId || !text || !messageId) return;
+  if (messageType !== "regular") return;
+
+  const [existingMeeting] = await db
+    .select()
+    .from(meetings)
+    .where(and(eq(meetings.id, channelId), eq(meetings.status, "completed")));
+
+  // Only the meeting owner can ask the agent about this meeting.
+  if (!existingMeeting || existingMeeting.userId !== userId) return;
+
+  const [existingAgent] = await db
+    .select()
+    .from(agents)
+    .where(eq(agents.id, existingMeeting.agentId));
+
+  if (!existingAgent || userId === existingAgent.id) return;
+
+  const plan = await getUserPlan(userId);
+  const limit = await consumeRateLimit(`askAi:${userId}`, {
+    limit: plan.askAiPerHour,
+    windowSec: 60 * 60,
+  });
+
+  await inngest.send({
+    id: `chat-message-${messageId}`,
+    name: "chat/message.new",
+    data: {
+      messageId,
+      userId,
+      channelId,
+      text,
+      agentId: existingAgent.id,
+      agentName: existingAgent.name,
+      agentInstructions: existingAgent.instructions,
+      meetingSummary: existingMeeting.summary,
+      rateLimited: !limit.allowed,
+    },
+  });
 }
 
 export async function POST(request: Request) {
@@ -35,7 +214,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
-  let payload: unknown;
+  let payload: Record<string, unknown>;
   try {
     payload = JSON.parse(body) as Record<string, unknown>;
   } catch {
@@ -45,193 +224,49 @@ export async function POST(request: Request) {
     );
   }
 
-  const eventType = (payload as Record<string, unknown>)?.type;
+  const eventType = typeof payload.type === "string" ? payload.type : "";
+  const eventId = createHash("sha256").update(body).digest("hex");
 
-  if (eventType === "call.session_started") {
-    const event = payload as CallSessionStartedEvent;
-    const meetingId = event.call.custom?.meetingId;
-
-    if (!meetingId) {
-      return NextResponse.json(
-        { error: "Missing meetingId in call custom data" },
-        { status: 400 },
-      );
-    }
-
-    const [existingMeeting] = await db
-      .select()
-      .from(meetings)
-      .where(
-        and(
-          eq(meetings.id, meetingId),
-          not(eq(meetings.status, "completed")),
-          not(eq(meetings.status, "active")),
-          not(eq(meetings.status, "cancelled")),
-          not(eq(meetings.status, "processing")),
-        ),
-      );
-
-    if (!existingMeeting) {
-      return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
-    }
-
-    await db
-      .update(meetings)
-      .set({ status: "active", startedAt: new Date() })
-      .where(eq(meetings.id, existingMeeting.id));
-
-    console.log("[Webhook] Session started for meeting:", meetingId);
-
-    const [existingAgent] = await db
-      .select()
-      .from(agents)
-      .where(eq(agents.id, existingMeeting.agentId));
-
-    if (!existingAgent) {
-      console.error("[Webhook] Agent not found for meeting:", meetingId);
-      return NextResponse.json({ error: "Agent not found" }, { status: 404 });
-    }
-
-    const openAiApiKey = process.env.OPENAI_API_KEY;
-    if (!openAiApiKey) {
-      console.error("[Webhook] OPENAI_API_KEY is missing");
-      return NextResponse.json(
-        { error: "OPENAI_API_KEY is missing" },
-        { status: 500 },
-      );
-    }
-
-    try {
-      const call = streamVideo.video.call("default", meetingId);
-      console.log("[Webhook] Connecting OpenAI agent:", existingAgent.id);
-      
-      const realtimeClient = await streamVideo.video.connectOpenAi({
-        call,
-        openAiApiKey: openAiApiKey,
-        agentUserId: existingAgent.id,
-      });
-
-      console.log("[Webhook] OpenAI agent connected. Updating session instructions.");
-      
-      realtimeClient.updateSession({
-        instructions: existingAgent.instructions,
-      });
-      
-      console.log("[Webhook] Session instructions updated successfully.");
-    } catch (error) {
-      console.error("[Webhook] Error connecting OpenAI agent:", error);
-      return NextResponse.json(
-        { error: "Failed to connect OpenAI agent" },
-        { status: 500 },
-      );
-    }
-  } else if (eventType === "call.session_participant_left") {
-    const event = payload as CallSessionParticipantLeftEvent;
-    const meetingId = event.call_cid.split(":")[1];
-
-    if (!meetingId) {
-      return NextResponse.json(
-        { error: "Missing meetingId in call CID" },
-        { status: 400 },
-      );
-    }
-
-    const call = streamVideo.video.call("default", meetingId);
-    await call.end();
-  } else if (eventType === "call.session_ended") {
-    const event = payload as CallEndedEvent;
-    const meetingId = event.call_cid.split(":")[1];
-
-    if (!meetingId) {
-      return NextResponse.json({ error: "Missing meetingId" }, { status: 400 });
-    }
-
-    await db
-      .update(meetings)
-      .set({ status: "processing", endedAt: new Date() })
-      .where(and(eq(meetings.id, meetingId), eq(meetings.status, "active")));
-  } else if (eventType === "call.transcription_ready") {
-    const event = payload as CallTranscriptionReadyEvent;
-    const meetingId = event.call_cid.split(":")[1];
-
-    const [updateMeeting] = await db
-      .update(meetings)
-      .set({ transcriptUrl: event.call_transcription.url })
-      .where(eq(meetings.id, meetingId))
-      .returning();
-
-    if (!updateMeeting) {
-      return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
-    }
-    await inngest.send({
-      id: `meeting-processing-${meetingId}`,
-      name: "meetings/processing",
-      data: {
-        meetingId: updateMeeting.id,
-        transcriptUrl: updateMeeting.transcriptUrl!,
-      },
-    });
-  } else if (eventType === "call.recording_ready") {
-    const event = payload as CallRecordingReadyEvent;
-    const meetingId = event.call_cid.split(":")[1];
-
-    await db
-      .update(meetings)
-      .set({ recordingUrl: event.call_recording.url })
-      .where(eq(meetings.id, meetingId));
-  } else if (eventType === "message.new") {
-    const event = payload as MessageNewEvent;
-
-    const userId = event.user?.id ?? event.message?.user?.id;
-    const channelId = event.channel_id;
-    const text = event.message?.text;
-    const messageType = event.message?.type;
-    const messageId = event.message?.id; //
-
-    if (!userId || !channelId || !text || !messageId) {
-      return NextResponse.json({ status: "ok" });
-    }
-
-    if (messageType !== "regular") {
-      return NextResponse.json({ status: "ok" });
-    }
-
-    const [existingMeeting] = await db
-      .select()
-      .from(meetings)
-      .where(and(eq(meetings.id, channelId), eq(meetings.status, "completed")));
-
-    if (!existingMeeting) {
-      return NextResponse.json({ status: "ok" }); // ← Trả 200 thay vì 404
-    }
-
-    const [existingAgent] = await db
-      .select()
-      .from(agents)
-      .where(eq(agents.id, existingMeeting.agentId));
-
-    if (!existingAgent) {
-      return NextResponse.json({ status: "ok" });
-    }
-
-    if (userId === existingAgent.id) {
-      return NextResponse.json({ status: "ok" });
-    }
-
-    await inngest.send({
-      id: `chat-message-${messageId}`,
-      name: "chat/message.new",
-      data: {
-        messageId,
-        userId,
-        channelId,
-        text,
-        agentId: existingAgent.id,
-        agentName: existingAgent.name,
-        agentInstructions: existingAgent.instructions,
-        meetingSummary: existingMeeting.summary,
-      },
-    });
+  if (!(await claimWebhookEvent(eventId, eventType))) {
+    return NextResponse.json({ status: "duplicate" });
   }
+
+  try {
+    switch (eventType) {
+      case "call.session_started":
+        await handleSessionStarted(payload as unknown as CallSessionStartedEvent);
+        break;
+      case "call.session_participant_left":
+        await handleParticipantLeft(
+          payload as unknown as CallSessionParticipantLeftEvent,
+        );
+        break;
+      case "call.session_ended":
+        await handleSessionEnded(payload as unknown as CallEndedEvent);
+        break;
+      case "call.transcription_ready":
+        await handleTranscriptionReady(
+          payload as unknown as CallTranscriptionReadyEvent,
+        );
+        break;
+      case "call.recording_ready":
+        await handleRecordingReady(
+          payload as unknown as CallRecordingReadyEvent,
+        );
+        break;
+      case "message.new":
+        await handleMessageNew(payload as unknown as MessageNewEvent);
+        break;
+    }
+  } catch (error) {
+    // Let Stream retry: forget the claim so the retry is processed.
+    await releaseWebhookEvent(eventId);
+    console.error(
+      `[Webhook] Failed to process ${eventType}:`,
+      error instanceof Error ? error.message : "unknown error",
+    );
+    return NextResponse.json({ error: "Processing failed" }, { status: 500 });
+  }
+
   return NextResponse.json({ status: "Webhook processed successfully" });
 }

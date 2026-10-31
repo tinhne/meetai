@@ -6,10 +6,9 @@ import { ChatUI } from "./chat-ui";
 
 interface Props {
   meetingId: string;
-  meetingName: string;
 }
 
-export const ChatProvider = ({ meetingId, meetingName }: Props) => {
+export const ChatProvider = ({ meetingId }: Props) => {
   const { data, isPending } = authClient.useSession();
 
   // 1. Trạng thái đang tải
@@ -29,10 +28,9 @@ export const ChatProvider = ({ meetingId, meetingName }: Props) => {
   return (
     <ChatUI
       meetingId={meetingId}
-      meetingName={meetingName}
       userId={data.user.id}
       userName={data.user.name}
-      userImage={data.user.image || "undefined"}
+      userImage={data.user.image ?? undefined}
     />
   );
 };

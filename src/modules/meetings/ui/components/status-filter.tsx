@@ -5,6 +5,7 @@ import {
   CircleCheckIcon,
   CircleXIcon,
   ClockArrowUpIcon,
+  TriangleAlertIcon,
   LoaderCircleIcon,
   VideoIcon,
 } from "lucide-react";
@@ -57,6 +58,16 @@ const options = [
       <div className="flex items-center gap-x-2 capitalize">
         <CircleXIcon />
         {MeetingStatus.Cancelled}
+      </div>
+    ),
+  },
+  {
+    id: MeetingStatus.Failed,
+    value: MeetingStatus.Failed,
+    children: (
+      <div className="flex items-center gap-x-2 capitalize">
+        <TriangleAlertIcon />
+        {MeetingStatus.Failed}
       </div>
     ),
   },

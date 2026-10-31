@@ -35,7 +35,7 @@ const firstSection = [
 const secondSection = [
   {
     icon: StarIcon,
-    label: "Uprade",
+    label: "Upgrade",
     href: "/dashboard/upgrade",
   },
 ];

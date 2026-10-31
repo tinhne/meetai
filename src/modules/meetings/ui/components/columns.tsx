@@ -10,6 +10,7 @@ import {
   ClockFadingIcon,
   CornerDownRightIcon,
   LoaderIcon,
+  TriangleAlertIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -30,6 +31,7 @@ const statusIconMap = {
   completed: CircleCheckIcon,
   processing: LoaderIcon,
   cancelled: CircleXIcon,
+  failed: TriangleAlertIcon,
 };
 
 const statusColorMap = {
@@ -38,6 +40,7 @@ const statusColorMap = {
   completed: "bg-emerald-500/20 text-emerald-800 border-emerald-800/2",
   processing: "bg-gray-500/20 text-gray-800 border-gray-800/2",
   cancelled: "bg-rose-500/20 text-rose-800 border-rose-800/2",
+  failed: "bg-orange-500/20 text-orange-800 border-orange-800/2",
 };
 
 export const columns: ColumnDef<MeetingGetMany[number]>[] = [

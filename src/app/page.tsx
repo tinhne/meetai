@@ -7,8 +7,15 @@ import {
   ZapIcon,
 } from "lucide-react";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export default async function Home() {
   const session = await auth.api.getSession({
@@ -171,8 +178,8 @@ export default async function Home() {
                 Ready to transform your meetings?
               </h2>
               <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                Join thousands of productive teams who have upgraded their
-                workflow with Meet.AI.
+                Invite an AI agent to your next meeting and get a summary,
+                transcript, and answers the moment it ends.
               </p>
               {session ? (
                 <Link
@@ -234,22 +241,8 @@ export default async function Home() {
       {/* Footer */}
       <footer className="w-full py-6 flex flex-col sm:flex-row items-center justify-between px-4 lg:px-6 border-t border-border/10 flex-shrink-0">
         <p className="text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} Meet.AI Inc. All rights reserved.
+          &copy; {new Date().getFullYear()} Meet.AI. All rights reserved.
         </p>
-        <nav className="flex gap-4 sm:gap-6 mt-4 sm:mt-0">
-          <Link
-            className="text-xs hover:underline underline-offset-4 text-muted-foreground"
-            href="#"
-          >
-            Terms of Service
-          </Link>
-          <Link
-            className="text-xs hover:underline underline-offset-4 text-muted-foreground"
-            href="#"
-          >
-            Privacy Policy
-          </Link>
-        </nav>
       </footer>
     </div>
   );

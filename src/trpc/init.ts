@@ -1,20 +1,18 @@
-import { db } from "@/db";
-import { agents, meetings } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { polarClient } from "@/lib/polar";
+import { isWithinLimit } from "@/config/plans";
 import {
-  MAX_FREE_AGENTS,
-  MAX_FREE_MEETINGS,
-} from "@/modules/premium/constants";
+  getAgentCount,
+  getMonthlyUsage,
+  getUserPlan,
+} from "@/modules/premium/server/usage";
 import { initTRPC, TRPCError } from "@trpc/server";
-import { count, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { cache } from "react";
 export const createTRPCContext = cache(async () => {
   /**
    * @see: https://trpc.io/docs/server/context
    */
-  return { userId: "user_123" };
+  return {};
 });
 // Avoid exporting the entire t-object
 // since it's not very descriptive.
@@ -49,42 +47,26 @@ export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
 
 export const premiumProcedure = (entity: "meetings" | "agents") =>
   protectedProcedure.use(async ({ ctx, next }) => {
-    const customer = await polarClient.customers.getStateExternal({
-      externalId: ctx.auth.user.id,
-    });
+    const userId = ctx.auth.user.id;
+    const plan = await getUserPlan(userId);
 
-    const [userMeetings, userAgents] = await Promise.all([
-      db
-        .select({
-          count: count(meetings.id),
-        })
-        .from(meetings)
-        .where(eq(meetings.userId, ctx.auth.user.id))
-        .then((res) => res[0]),
-      db
-        .select({
-          count: count(agents.id),
-        })
-        .from(agents)
-        .where(eq(agents.userId, ctx.auth.user.id))
-        .then((res) => res[0]),
-    ]);
-
-    const isPremium = customer.activeSubscriptions.length > 0;
-    const isFreeAgentLimitReached = userAgents.count >= MAX_FREE_AGENTS;
-    const isFreeMeetingLimitReached = userMeetings.count >= MAX_FREE_MEETINGS;
-
-    const shouldThrewMeetingError =
-      entity === "meetings" && !isPremium && isFreeMeetingLimitReached;
-    const shouldThrewAgentError =
-      entity === "agents" && !isPremium && isFreeAgentLimitReached;
-
-    if (shouldThrewMeetingError || shouldThrewAgentError) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: `You have reached the free ${entity} limit. Please upgrade to create more.`,
-      });
+    if (entity === "meetings") {
+      const used = await getMonthlyUsage(userId, "meeting_created");
+      if (!isWithinLimit(plan.meetingsPerMonth, used)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `You have used all ${plan.meetingsPerMonth} meetings included this month. Please upgrade to create more.`,
+        });
+      }
+    } else {
+      const used = await getAgentCount(userId);
+      if (!isWithinLimit(plan.maxAgents, used)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `Your plan includes ${plan.maxAgents} agent(s). Please upgrade to create more.`,
+        });
+      }
     }
 
-    return next({ ctx: { ...ctx, customer } });
+    return next({ ctx: { ...ctx, plan } });
   });

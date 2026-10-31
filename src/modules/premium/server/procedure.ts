@@ -1,8 +1,6 @@
-import { db } from "@/db";
-import { agents, meetings } from "@/db/schema";
 import { polarClient } from "@/lib/polar";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { count, eq } from "drizzle-orm";
+import { getAgentCount, getMonthlyUsage, getUserPlan } from "./usage";
 
 export const premiumRouter = createTRPCRouter({
   getCurrentSubscription: protectedProcedure.query(async ({ ctx }) => {
@@ -31,36 +29,22 @@ export const premiumRouter = createTRPCRouter({
     return products.result.items;
   }),
   getFreeUsage: protectedProcedure.query(async ({ ctx }) => {
-    const customer = await polarClient.customers.getStateExternal({
-      externalId: ctx.auth.user.id,
-    });
+    const plan = await getUserPlan(ctx.auth.user.id);
 
-    const subscription = customer.activeSubscriptions[0];
-
-    if (subscription) {
+    if (plan.id !== "free") {
       return null;
     }
 
-    const [userMeetings, userAgents] = await Promise.all([
-      db
-        .select({
-          count: count(meetings.id),
-        })
-        .from(meetings)
-        .where(eq(meetings.userId, ctx.auth.user.id))
-        .then((res) => res[0]),
-      db
-        .select({
-          count: count(agents.id),
-        })
-        .from(agents)
-        .where(eq(agents.userId, ctx.auth.user.id))
-        .then((res) => res[0]),
+    const [meetingCount, agentCount] = await Promise.all([
+      getMonthlyUsage(ctx.auth.user.id, "meeting_created"),
+      getAgentCount(ctx.auth.user.id),
     ]);
 
     return {
-      meetingCount: userMeetings.count,
-      agentCount: userAgents.count,
+      meetingCount,
+      meetingLimit: plan.meetingsPerMonth,
+      agentCount,
+      agentLimit: plan.maxAgents,
     };
   }),
 });

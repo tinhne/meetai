@@ -5,10 +5,14 @@ import { db } from "@/db";
 import { agents, meetings, user } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { createAgent, gemini, TextMessage } from "@inngest/agent-kit";
+import { env } from "@/env";
 import { generateAvatar } from "@/lib/avatar";
 import { streamChat } from "@/lib/stream-chat";
-// import OpenAI from "openai";
-// import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import { streamVideo } from "@/lib/stream-video";
+import {
+  STREAM_CALL_TYPE,
+  countHumanParticipants,
+} from "@/modules/meetings/lib/stream";
 
 const summarizer = createAgent({
   name: "Summarizer",
@@ -35,12 +39,26 @@ Example:
   `.trim(),
   model: gemini({
     model: "gemini-2.5-flash",
-    apiKey: process.env.GOOGLE_AI_API_KEY,
+    apiKey: env.GOOGLE_AI_API_KEY,
   }),
 });
 
 export const meetingsProcessing = inngest.createFunction(
-  { id: "meetings/processing" },
+  {
+    id: "meetings/processing",
+    onFailure: async ({ event }) => {
+      const meetingId = event.data.event.data.meetingId;
+      if (typeof meetingId !== "string") return;
+
+      await db
+        .update(meetings)
+        .set({
+          status: "failed",
+          failedReason: "We could not generate the summary for this meeting.",
+        })
+        .where(eq(meetings.id, meetingId));
+    },
+  },
   { event: "meetings/processing" },
   async ({ event, step }) => {
     const response = await step.run("fetch-transcript", async () => {
@@ -111,6 +129,7 @@ export const meetingsProcessing = inngest.createFunction(
         .set({
           summary: (output[0] as TextMessage).content as string,
           status: "completed",
+          failedReason: null,
         })
         .where(eq(meetings.id, event.data.meetingId));
     });
@@ -122,7 +141,7 @@ const chatAgent = createAgent({
   system: "You are a helpful AI assistant.",
   model: gemini({
     model: "gemini-2.5-flash",
-    apiKey: process.env.GOOGLE_AI_API_KEY,
+    apiKey: env.GOOGLE_AI_API_KEY,
   }),
 });
 
@@ -137,9 +156,19 @@ export const chatMessageProcessing = inngest.createFunction(
       agentName,
       agentInstructions,
       meetingSummary,
+      rateLimited,
     } = event.data;
 
     const channel = streamChat.channel("messaging", channelId);
+
+    if (rateLimited) {
+      await channel.sendMessage({
+        text: "You have reached the Ask AI limit for this hour. Please try again later or upgrade your plan.",
+        user_id: agentId,
+      });
+      return;
+    }
+
     await channel.watch();
 
     const previousMessages = channel.state.messages
@@ -169,7 +198,7 @@ ${previousMessages.map((m) => `${m.role === "assistant" ? "Assistant" : "User"}:
     const GPTResponseText = (output[0] as TextMessage).content as string;
     if (!GPTResponseText) return;
 
-    const avatarUrl = generateAvatar(agentName, "initials");
+    const avatarUrl = generateAvatar(agentName, "botttsNeutral");
 
     await streamChat.upsertUser({
       id: agentId,
@@ -180,6 +209,45 @@ ${previousMessages.map((m) => `${m.role === "assistant" ? "Assistant" : "User"}:
     await channel.sendMessage({
       text: GPTResponseText,
       user_id: agentId,
+    });
+  },
+);
+
+// Ends the call once no human has been in the room for EMPTY_ROOM_TIMEOUT_MIN.
+// Debounced per meeting, so quick leave/rejoin (page refresh, network blips)
+// never ends the meeting.
+export const meetingsEndIfEmpty = inngest.createFunction(
+  {
+    id: "meetings/end-if-empty",
+    debounce: {
+      key: "event.data.meetingId",
+      period: `${env.EMPTY_ROOM_TIMEOUT_MIN}m`,
+    },
+  },
+  { event: "meetings/participant.left" },
+  async ({ event, step }) => {
+    const meetingId: string = event.data.meetingId;
+
+    await step.run("end-call-if-empty", async () => {
+      const [meeting] = await db
+        .select()
+        .from(meetings)
+        .where(eq(meetings.id, meetingId));
+
+      if (!meeting || meeting.status !== "active") {
+        return { ended: false, reason: "not-active" };
+      }
+
+      const call = streamVideo.video.call(STREAM_CALL_TYPE, meetingId);
+      const { call: callState } = await call.get();
+      const participants = callState.session?.participants ?? [];
+
+      if (countHumanParticipants(participants, [meeting.agentId]) > 0) {
+        return { ended: false, reason: "humans-present" };
+      }
+
+      await call.end();
+      return { ended: true };
     });
   },
 );

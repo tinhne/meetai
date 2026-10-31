@@ -7,6 +7,7 @@ import { useState } from "react";
 import { OctagonAlertIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ const formSchema = z.object({
 });
 
 export const SignInView = () => {
+  const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>();
 
@@ -73,13 +75,17 @@ export const SignInView = () => {
         callbackURL: "/dashboard",
       },
       {
-        onSuccess: async () => {
+        onSuccess: () => {
           setPending(false);
-          await authClient.getSession();
+          router.push("/dashboard");
         },
         onError: ({ error }) => {
           setPending(false);
-          setError(error.message);
+          setError(
+            error.status === 403
+              ? "Please verify your email first. We have sent you a new verification link."
+              : error.message,
+          );
         },
       }
     );
@@ -123,7 +129,15 @@ export const SignInView = () => {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Password</FormLabel>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Password</FormLabel>
+                          <Link
+                            href="/forgot-password"
+                            className="text-sm underline-offset-4 hover:underline"
+                          >
+                            Forgot password?
+                          </Link>
+                        </div>
                         <FormControl>
                           <Input
                             type="password"
@@ -184,8 +198,7 @@ export const SignInView = () => {
         </CardContent>
       </Card>
       <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our <a href="#">Terms of service</a>{" "}
-        and <a href="#">Privacy policy</a>.
+        By continuing, you agree to our Terms of Service and Privacy Policy.
       </div>
     </div>
   );

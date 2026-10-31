@@ -1,10 +1,10 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { generateAvatar } from "@/lib/avatar";
+import { formatTimestamp } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { SearchIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import Highlighter from "react-highlight-words";
@@ -44,9 +44,9 @@ export const Transcript = ({ meetingid }: Props) => {
       </div>
       <ScrollArea>
         <div className="flex flex-col gap-y-3 pr-2">
-          {filtered.map((item) => (
+          {filtered.map((item, index) => (
             <div
-              key={item.start_ts}
+              key={`${item.speaker_id}-${item.start_ts}-${index}`}
               className="flex flex-col gap-y-2 hover:bg-muted p-4 rounded-md border"
             >
               <div className="flex gap-x-2 items-center">
@@ -64,7 +64,7 @@ export const Transcript = ({ meetingid }: Props) => {
                 </Avatar>
                 <p className="text-sm font-medium">{item.user?.name}</p>
                 <p className="text-sm font-medium">
-                  {format(new Date(0, 0, 0, 0, 0, 0, item.start_ts), "mm:ss")}
+                  {formatTimestamp(item.start_ts)}
                 </p>
               </div>
               <Highlighter

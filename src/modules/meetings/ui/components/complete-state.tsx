@@ -24,16 +24,16 @@ interface Props {
 export const CompletedState = ({ data }: Props) => {
   return (
     <div className="flex flex-col gap-y-4">
-      <Tabs defaultValue="sumary">
+      <Tabs defaultValue="summary">
         <div className="bg-white rounded-lg border px-3">
           <ScrollArea>
             <TabsList className="p-0 bg-background justify-start rounded-none h-13">
               <TabsTrigger
-                value="sumary"
+                value="summary"
                 className="text-muted-foreground rounded-none bg-background data:[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:text-accent-foreground h-full hover:text-accent-foreground"
               >
                 <BookOpenTextIcon className="mr-2" />
-                Sumary
+                Summary
               </TabsTrigger>
               <TabsTrigger
                 value="transcript"
@@ -61,21 +61,27 @@ export const CompletedState = ({ data }: Props) => {
           </ScrollArea>
         </div>
         <TabsContent value="chat">
-          <ChatProvider meetingId={data.id} meetingName={data.name} />
+          <ChatProvider meetingId={data.id} />
         </TabsContent>
         <TabsContent value="transcript">
           <Transcript meetingid={data.id} />
         </TabsContent>
         <TabsContent value="recording">
           <div className="bg-white rounded-lg border px-4 py-5">
-            <video
-              src={data.recordingUrl!}
-              controls
-              className="w-full rounded-lg"
-            />
+            {data.recordingUrl ? (
+              <video
+                src={data.recordingUrl}
+                controls
+                className="w-full rounded-lg"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-10">
+                The recording is not available for this meeting.
+              </p>
+            )}
           </div>
         </TabsContent>
-        <TabsContent value="sumary">
+        <TabsContent value="summary">
           <div className="bg-white rounded-lg border">
             <div className="px-4 py-5 gap-y-5 flex flex-col col-span-5">
               <h2 className="text-2xl font-medium capitalize">{data.name}</h2>

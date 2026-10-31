@@ -2,6 +2,7 @@ import { LoadingState } from "@/components/loading-state";
 import { useTRPC } from "@/trpc/client";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import type { Channel as StreamChannel } from "stream-chat";
 import {
   Chat,
@@ -17,7 +18,6 @@ import "stream-chat-react/dist/css/v2/index.css";
 
 interface Props {
   meetingId: string;
-  meetingName: string;
   userId: string;
   userName: string;
   userImage: string | undefined;
@@ -25,7 +25,6 @@ interface Props {
 
 export const ChatUI = ({
   meetingId,
-  meetingName,
   userId,
   userName,
   userImage,
@@ -33,6 +32,9 @@ export const ChatUI = ({
   const trpc = useTRPC();
   const { mutateAsync: generateChatToken } = useMutation(
     trpc.meetings.generateChatToken.mutationOptions(),
+  );
+  const { mutateAsync: ensureChatChannel } = useMutation(
+    trpc.meetings.ensureChatChannel.mutationOptions(),
   );
 
   const [channel, setChannel] = useState<StreamChannel>();
@@ -50,13 +52,25 @@ export const ChatUI = ({
   useEffect(() => {
     if (!client) return;
 
-    const channel = client.channel("messaging", meetingId, {
-      members: [userId],
-    });
-    setChannel(channel);
-  }, [client, meetingId, userId, meetingName]);
+    let cancelled = false;
 
-  if (!client) {
+    // The channel and its members are created on the server; the client only
+    // watches it.
+    ensureChatChannel({ id: meetingId })
+      .then(({ channelId }) => {
+        if (cancelled) return;
+        setChannel(client.channel("messaging", channelId));
+      })
+      .catch((error: Error) => {
+        if (!cancelled) toast.error(error.message);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client, meetingId, ensureChatChannel]);
+
+  if (!client || !channel) {
     return (
       <LoadingState
         title="Loading chat"

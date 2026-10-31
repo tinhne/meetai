@@ -40,6 +40,9 @@ export const SignUpView = () => {
   const router = useRouter();  
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>();
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(
+    null,
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -84,9 +87,14 @@ export const SignUpView = () => {
         callbackURL: "/dashboard",
       },
       {
-        onSuccess: () => {
+        onSuccess: ({ data: result }) => {
           setPending(false);
-          router.push("/");
+          // No session token means the email must be verified first.
+          if (result?.token) {
+            router.push("/dashboard");
+          } else {
+            setVerificationEmail(data.email);
+          }
         },
         onError: ({ error }) => {
           setPending(false);
@@ -95,6 +103,26 @@ export const SignUpView = () => {
       }
     );
   };
+
+  if (verificationEmail) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+          <h1 className="text-2xl font-bold">Check your inbox</h1>
+          <p className="text-muted-foreground text-balance">
+            We sent a verification link to{" "}
+            <span className="font-medium text-foreground">
+              {verificationEmail}
+            </span>
+            . Open it to activate your account.
+          </p>
+          <Button asChild variant="outline">
+            <Link href="/sign-in">Back to sign in</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -234,8 +262,7 @@ export const SignUpView = () => {
         </CardContent>
       </Card>
       <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our <a href="#">Terms of service</a>{" "}
-        and <a href="#">Privacy policy</a>.
+        By continuing, you agree to our Terms of Service and Privacy Policy.
       </div>
     </div>
   );

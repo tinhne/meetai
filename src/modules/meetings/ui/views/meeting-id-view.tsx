@@ -18,6 +18,8 @@ import { ActiveState } from "../components/active-state";
 import { CancelledState } from "../components/cancelled-state";
 import { ProcessingState } from "../components/processing-state";
 import { CompletedState } from "../components/complete-state";
+import { FailedState } from "../components/failed-state";
+import { toast } from "sonner";
 
 interface Props {
   meetingId: string;
@@ -34,6 +36,10 @@ export const MeetingIdView = ({ meetingId }: Props) => {
     "Are you sure?",
     "The following action will remove this meeting",
   );
+  const [CancelConfirmation, confirmCancel] = useConfirm(
+    "Cancel this meeting?",
+    "Nobody will be able to join it anymore.",
+  );
 
   const { data } = useSuspenseQuery(
     trpc.meetings.getOne.queryOptions({ id: meetingId }),
@@ -48,6 +54,25 @@ export const MeetingIdView = ({ meetingId }: Props) => {
       },
     }),
   );
+
+  const cancelMeeting = useMutation(
+    trpc.meetings.cancel.mutationOptions({
+      onSuccess: () => {
+        toast.success("Meeting cancelled");
+        queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
+        queryClient.invalidateQueries(
+          trpc.meetings.getOne.queryOptions({ id: meetingId }),
+        );
+      },
+      onError: (error) => toast.error(error.message),
+    }),
+  );
+
+  const handleCancelMeeting = async () => {
+    const ok = await confirmCancel();
+    if (!ok) return;
+    cancelMeeting.mutate({ id: meetingId });
+  };
 
   const handleRemoveMeeting = async () => {
     const ok = await conFirmRemove();
@@ -64,10 +89,12 @@ export const MeetingIdView = ({ meetingId }: Props) => {
   const isCancelled = data.status === "cancelled";
   const isProcessing = data.status === "processing";
   const isUpcoming = data.status === "upcoming";
+  const isFailed = data.status === "failed";
 
   return (
     <>
       <RemoveConfirmation />
+      <CancelConfirmation />
       <UpdateMeetingDialog
         open={updateMeetingDialogOpen}
         onOpenChange={setUpdateMeetingDialogOpen}
@@ -79,12 +106,16 @@ export const MeetingIdView = ({ meetingId }: Props) => {
           meetingName={data.name}
           onEdit={() => setUpdateMeetingDialogOpen(true)}
           onDelete={handleRemoveMeeting}
+          onCancel={isUpcoming ? handleCancelMeeting : undefined}
         />
         {isCancelled && <CancelledState />}
         {isCompleted && <CompletedState data={data} />}
         {isProcessing && <ProcessingState />}
         {isActive && <ActiveState meetingId={meetingId} />}
-        {isUpcoming && <UpcomingState meetingId={meetingId} />}
+        {isFailed && <FailedState reason={data.failedReason} />}
+        {isUpcoming && (
+          <UpcomingState meetingId={meetingId} scheduledAt={data.scheduledAt} />
+        )}
       </div>
     </>
   );
