@@ -13,8 +13,8 @@ describe("streamLinesToSegments", () => {
   it("sorts by time, maps speaker names and keeps positions", () => {
     const segments = streamLinesToSegments(
       [
-        { speaker_id: "b", text: "second", start_ts: 2000, end_ts: 3000, type: "speech" },
-        { speaker_id: "a", text: " first ", start_ts: 0, end_ts: 1500, type: "speech" },
+        { speaker_id: "b", text: "second", start_ts: 2000, stop_ts: 3000, type: "speech" },
+        { speaker_id: "a", text: " first ", start_ts: 0, stop_ts: 1500, type: "speech" },
       ],
       new Map([["a", "Lan"]]),
       "Unknown",
@@ -24,6 +24,20 @@ describe("streamLinesToSegments", () => {
       [0, "Lan", "first"],
       [1, "Unknown", "second"],
     ]);
+    expect(segments.map((segment) => [segment.startMs, segment.endMs])).toEqual([
+      [0, 1500],
+      [2000, 3000],
+    ]);
+  });
+
+  it("never returns NaN when a timestamp is missing", () => {
+    const [segment] = streamLinesToSegments(
+      [{ speaker_id: "a", text: "hi", start_ts: 1200 } as never],
+      new Map(),
+      "Unknown",
+    );
+
+    expect([segment.startMs, segment.endMs]).toEqual([1200, 1200]);
   });
 });
 
