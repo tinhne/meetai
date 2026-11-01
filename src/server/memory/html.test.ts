@@ -13,6 +13,11 @@ describe("htmlToText", () => {
     expect(text).toContain("- Không giới hạn");
     expect(text).not.toContain("alert");
   });
+
+  it("drops empty menu bullets", () => {
+    const { text } = htmlToText("<ul><li></li><li> </li><li>Trang chủ</li></ul><p>Nội dung</p>");
+    expect(text).toBe("- Trang chủ\n\nNội dung");
+  });
 });
 
 describe("isPrivateAddress", () => {

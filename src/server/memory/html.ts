@@ -30,6 +30,8 @@ export function htmlToText(html: string) {
   const text = decodeEntities(body)
     .split("\n")
     .map((line) => line.replace(/[ \t\f\v]+/g, " ").trim())
+    // Empty menu items leave lines that are only bullets or separators.
+    .map((line) => (/^[-–—•·|]*$/.test(line) ? "" : line))
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
