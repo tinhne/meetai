@@ -171,6 +171,20 @@ const server = createServer(async (req, res) => {
 
 server.listen(env.PORT, () => log(`agent worker listening on :${env.PORT}`));
 
+// Render's free plan stops a service after 15 minutes without inbound
+// requests, and an agent's outbound WebSocket does not count. Pinging our own
+// public URL keeps it awake (24/7 fits the 750 free hours a month), so agents
+// join without a one-minute cold start.
+const keepAliveUrl = env.KEEP_ALIVE_URL ?? env.RENDER_EXTERNAL_URL;
+if (keepAliveUrl) {
+  setInterval(() => {
+    void fetch(new URL("/health", keepAliveUrl), { signal: AbortSignal.timeout(10_000) }).catch(
+      () => undefined,
+    );
+  }, 10 * 60 * 1000).unref();
+  log(`keep-alive ping every 10 minutes: ${keepAliveUrl}`);
+}
+
 const shutdown = () => {
   log("shutting down");
   for (const handle of sessions.values()) handle.stop("worker shutdown");
