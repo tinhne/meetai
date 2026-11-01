@@ -114,11 +114,14 @@ export const InvitePanel = ({ meeting }: { meeting: MeetingGetOne }) => {
           </Button>
           <Button
             variant="outline"
+            aria-label={t("regenerate")}
             onClick={() => regenerate.mutate({ id: meeting.id })}
             disabled={regenerate.isPending}
           >
             <RefreshCwIcon />
-            <span className="sr-only sm:not-sr-only">{t("regenerate")}</span>
+            {/* Not "sr-only sm:not-sr-only": not-sr-only resets white-space,
+                so the row's min width is underestimated and it overflows. */}
+            <span className="hidden sm:inline">{t("regenerate")}</span>
           </Button>
         </div>
       </div>
