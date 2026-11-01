@@ -4,13 +4,16 @@ import type { JoinMode } from "@/config/ai";
 
 export type JoinDecision = "admitted" | "waiting" | "locked";
 
+// People the host invited by email (personal link) skip the waiting room,
+// like invited guests in Meet or Zoom; a locked room stays closed to them.
 export function decideJoin(params: {
   joinMode: JoinMode | string;
   isOwner: boolean;
+  invited?: boolean;
 }): JoinDecision {
   if (params.isOwner) return "admitted";
   if (params.joinMode === "locked") return "locked";
-  if (params.joinMode === "open") return "admitted";
+  if (params.joinMode === "open" || params.invited) return "admitted";
   return "waiting";
 }
 

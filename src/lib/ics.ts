@@ -36,6 +36,12 @@ export function buildIcsInvite(params: {
     `SUMMARY:${escapeText(params.title)}`,
     `DESCRIPTION:${escapeText(`${params.description}\n${params.url}`)}`,
     `URL:${params.url}`,
+    // Calendar apps remind people 15 minutes before; no reminder email needed.
+    "BEGIN:VALARM",
+    "ACTION:DISPLAY",
+    `DESCRIPTION:${escapeText(params.title)}`,
+    "TRIGGER:-PT15M",
+    "END:VALARM",
     "END:VEVENT",
     "END:VCALENDAR",
   ].join("\r\n");

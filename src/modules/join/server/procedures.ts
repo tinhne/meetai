@@ -5,9 +5,11 @@ import { z } from "zod";
 
 import { db } from "@/db";
 import { agents, meetingParticipants, meetings, user } from "@/db/schema";
+import { env } from "@/env";
 import { generateAvatar } from "@/lib/avatar";
 import { streamVideo } from "@/lib/stream-video";
-import { canJoinMeeting } from "@/modules/meetings/lib/rules";
+import { verifyInvitePass } from "@/modules/meetings/lib/invite-pass";
+import { canEnterCall, canJoinMeeting } from "@/modules/meetings/lib/rules";
 import {
   cleanGuestName,
   decideJoin,
@@ -129,6 +131,7 @@ export const joinRouter = createTRPCRouter({
       scheduledAt: meeting.scheduledAt,
       status: meeting.status,
       joinable: canJoinMeeting(meeting.status),
+      started: meeting.status === "active",
       locked: meeting.joinMode === "locked",
       viewer: {
         kind: viewer.kind,
@@ -144,6 +147,7 @@ export const joinRouter = createTRPCRouter({
       codeInput.extend({
         guestName: z.string().max(100).optional(),
         consent: z.literal(true),
+        invite: z.string().max(80).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -176,7 +180,16 @@ export const joinRouter = createTRPCRouter({
         return { status: viewer.participant.status };
       }
 
-      const decision = decideJoin({ joinMode: meeting.joinMode, isOwner: false });
+      const decision = decideJoin({
+        joinMode: meeting.joinMode,
+        isOwner: false,
+        invited: verifyInvitePass({
+          secret: env.BETTER_AUTH_SECRET,
+          meetingId: meeting.id,
+          inviteCode: meeting.inviteCode,
+          pass: input.invite,
+        }),
+      });
       if (decision === "locked") {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -223,6 +236,7 @@ export const joinRouter = createTRPCRouter({
     return {
       status: viewerStatus(viewer),
       meetingStatus: meeting.status,
+      started: meeting.status === "active",
     };
   }),
 
@@ -238,6 +252,16 @@ export const joinRouter = createTRPCRouter({
       throw new TRPCError({
         code: "PRECONDITION_FAILED",
         message: "This meeting can no longer be joined.",
+      });
+    }
+    const isHost =
+      viewer.kind === "owner" ||
+      viewer.participant?.role === "host" ||
+      viewer.participant?.role === "cohost";
+    if (!canEnterCall(meeting.status, isHost)) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: "The host has not started the meeting yet.",
       });
     }
 
@@ -267,10 +291,7 @@ export const joinRouter = createTRPCRouter({
       aiMode: meeting.aiMode,
       joinMode: meeting.joinMode,
       user: { id: viewer.streamUserId, name, image },
-      isHost:
-        viewer.kind === "owner" ||
-        viewer.participant?.role === "host" ||
-        viewer.participant?.role === "cohost",
+      isHost,
     };
   }),
 

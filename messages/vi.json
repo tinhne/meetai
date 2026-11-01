@@ -194,6 +194,9 @@
     "retryStarted": "Đang xử lý lại cuộc họp…"
   },
   "call": {
+    "aiGroupNotice": "{name} (AI) đang nghe và ghi chép. Gọi \"{name} ơi\" hoặc bấm Hỏi AI để hỏi.",
+    "aiAutoConversational": "Chỉ còn bạn: {name} trò chuyện 1-1 trở lại.",
+    "aiAutoOnDemand": "Phòng đã có nhiều người: {name} chỉ trả lời khi được gọi tên.",
     "connecting": "Đang kết nối…",
     "lobbyTitle": "Sẵn sàng tham gia?",
     "lobbySubtitle": "Kiểm tra camera và micro trước khi vào phòng.",
@@ -266,6 +269,8 @@
     "locked": "Khoá phòng"
   },
   "join": {
+    "hostNotStartedDescription": "Giữ trang này mở, bạn sẽ được đưa vào phòng khi host vào.",
+    "hostNotStartedTitle": "Đang chờ host bắt đầu cuộc họp",
     "metaTitle": "Tham gia cuộc họp",
     "hostedBy": "Tổ chức bởi {name}",
     "withAi": "Có trợ lý AI {name}",

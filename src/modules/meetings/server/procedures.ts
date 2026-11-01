@@ -32,6 +32,7 @@ import { AI_CONFIG, AI_MODES, JOIN_MODES } from "@/config/ai";
 import { APP_TIME_ZONE } from "@/i18n/routing";
 import { buildIcsInvite } from "@/lib/ics";
 import { sendMeetingInviteEmail } from "@/lib/email";
+import { createInvitePass } from "@/modules/meetings/lib/invite-pass";
 import { warnIfNearQuota } from "@/server/billing/quota";
 import {
   askAgentInMeeting,
@@ -497,30 +498,35 @@ export const meetingsRouter = createTRPCRouter({
             timeZone: APP_TIME_ZONE,
           }).format(meeting.scheduledAt)
         : null;
-      const ics = meeting.scheduledAt
-        ? buildIcsInvite({
-            uid: meeting.id,
-            title: meeting.name,
-            description: meeting.agenda ?? "",
-            url,
-            start: meeting.scheduledAt,
-            durationMinutes: 60,
-          })
-        : null;
-
       const unique = [...new Set(input.emails.map((email) => email.toLowerCase()))];
       await Promise.all(
-        unique.map((to) =>
-          sendMeetingInviteEmail({
+        unique.map((to) => {
+          // Personal link: this person skips the waiting room.
+          const personalUrl = `${url}?invite=${createInvitePass({
+            secret: env.BETTER_AUTH_SECRET,
+            meetingId: meeting.id,
+            inviteCode: meeting.inviteCode,
+            email: to,
+          })}`;
+          return sendMeetingInviteEmail({
             to,
             hostName: ctx.auth.user.name || "Meet.AI",
             meetingName: meeting.name,
-            url,
+            url: personalUrl,
             language: input.locale,
             when,
-            ics,
-          }),
-        ),
+            ics: meeting.scheduledAt
+              ? buildIcsInvite({
+                  uid: meeting.id,
+                  title: meeting.name,
+                  description: meeting.agenda ?? "",
+                  url: personalUrl,
+                  start: meeting.scheduledAt,
+                  durationMinutes: 60,
+                })
+              : null,
+          });
+        }),
       );
 
       return { sent: unique.length };
