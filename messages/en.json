@@ -195,8 +195,6 @@
   },
   "call": {
     "aiGroupNotice": "{name} (AI) is listening and taking notes. Say \"{name}\" or press Ask AI to ask.",
-    "aiAutoConversational": "It's just you again: {name} is back to 1-1 conversation.",
-    "aiAutoOnDemand": "More people joined: {name} now answers only when called by name.",
     "connecting": "Connecting…",
     "lobbyTitle": "Ready to join?",
     "lobbySubtitle": "Check your camera and microphone before joining.",

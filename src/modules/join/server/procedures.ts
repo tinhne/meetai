@@ -305,7 +305,7 @@ export const joinRouter = createTRPCRouter({
     }
 
     await enforce(`askAgent:${viewer.streamUserId}`, RATE_LIMITS.askAgent);
-    await askAgentInMeeting(meeting.id, viewer.name ?? "Guest");
+    await askAgentInMeeting(meeting, viewer.name ?? "Guest");
 
     return { ok: true };
   }),

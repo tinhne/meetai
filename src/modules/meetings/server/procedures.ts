@@ -34,12 +34,7 @@ import { buildIcsInvite } from "@/lib/ics";
 import { sendMeetingInviteEmail } from "@/lib/email";
 import { createInvitePass } from "@/modules/meetings/lib/invite-pass";
 import { warnIfNearQuota } from "@/server/billing/quota";
-import {
-  askAgentInMeeting,
-  setAgentModeInMeeting,
-  startAgentForMeeting,
-  toAiMode,
-} from "@/server/agent-dispatch";
+import { askAgentInMeeting, setAgentModeInMeeting } from "@/server/agent-dispatch";
 import { assertRoomForMore, participantDisplayName } from "@/server/participants";
 import { inngest } from "@/inngest/client";
 import { deleteFromStorage, getSignedDownloadUrl } from "@/server/storage";
@@ -432,20 +427,11 @@ export const meetingsRouter = createTRPCRouter({
         .where(eq(meetings.id, meeting.id));
 
       if (meeting.status === "active") {
-        const wasSilent = toAiMode(meeting.aiMode) === "silent";
-        const running = wasSilent
-          ? false
-          : await setAgentModeInMeeting(meeting.id, input.aiMode);
-
-        if (!running && input.aiMode !== "silent") {
-          const [agent] = await db
-            .select()
-            .from(agents)
-            .where(eq(agents.id, meeting.agentId));
-          if (agent) {
-            await startAgentForMeeting({ ...meeting, aiMode: input.aiMode }, agent);
-          }
-        }
+        const [agent] = await db
+          .select()
+          .from(agents)
+          .where(eq(agents.id, meeting.agentId));
+        if (agent) await setAgentModeInMeeting(meeting, agent, input.aiMode);
       }
 
       return { aiMode: input.aiMode };
@@ -463,7 +449,7 @@ export const meetingsRouter = createTRPCRouter({
         });
       }
 
-      await askAgentInMeeting(meeting.id, ctx.auth.user.name || "Someone");
+      await askAgentInMeeting(meeting, ctx.auth.user.name || "Someone");
       return { ok: true };
     }),
   regenerateInviteCode: protectedProcedure

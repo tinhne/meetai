@@ -10,13 +10,16 @@ import type { RealtimeClient } from "@stream-io/openai-realtime-api";
 import { AI_CONFIG, type AiMode } from "@/config/ai";
 import {
   buildRealtimeSessionConfig,
+  effectiveAiMode,
   isAgentAddressed,
+  readAgentControl,
   voiceSecondsFromUsage,
   type RealtimeAgentContext,
   type RealtimeUsage,
 } from "./realtime";
 
-const CALL_POLL_INTERVAL_MS = 30_000;
+// Short enough for "Ask AI" and mode changes to feel live.
+const CALL_POLL_INTERVAL_MS = 5_000;
 const MAX_RECONNECTS = 3;
 const FAREWELL_DELAY_MS = 8_000;
 
@@ -84,6 +87,11 @@ export async function startAgentSession(
   let facilitatorTimer: ReturnType<typeof setInterval> | null = null;
   let responding = false;
   let lastTriggeredAt = 0;
+  // The mode the host picked; context.mode is what runs (quieter in groups).
+  let chosenMode: AiMode = context.mode;
+  let people = 1;
+  let lastControlMode: AiMode | null = null;
+  let lastAskSeq: number | null = null;
   // Conversation items kept in context; older ones are deleted to bound cost.
   const itemIds: string[] = [];
   let resolveDone: () => void = () => {};
@@ -262,11 +270,55 @@ export async function startAgentSession(
   scheduleFacilitator();
 
   // Safety net in case the end-of-call webhook never reaches us.
-  pollTimer = setInterval(() => {
-    void isCallLive().then((live) => {
-      if (!live) stop("call ended");
-    });
-  }, CALL_POLL_INTERVAL_MS);
+  const updateEffectiveMode = () => {
+    const next = effectiveAiMode(chosenMode, people);
+    if (next === context.mode) return;
+    context.mode = next;
+    applySession();
+    scheduleFacilitator();
+    log(`[agent ${options.meetingId}] mode ${next} (${people} people)`);
+  };
+
+  // Every few seconds: leave when the call ends, follow the host's controls
+  // (mode, "Ask AI") and go quiet while more than one person is in the room.
+  const poll = async () => {
+    let state: Awaited<ReturnType<typeof call.get>>["call"];
+    try {
+      ({ call: state } = await call.get());
+    } catch {
+      return; // transient error, try again on the next tick
+    }
+    if (!state.session || state.session.ended_at) {
+      stop("call ended");
+      return;
+    }
+
+    const control = readAgentControl(state.custom);
+    if (lastAskSeq === null) {
+      // First look: remember where things stand, never replay old asks.
+      lastAskSeq = control.askSeq;
+      lastControlMode = control.mode;
+    } else {
+      if (control.mode && control.mode !== lastControlMode) {
+        lastControlMode = control.mode;
+        setMode(control.mode);
+        if (stopped) return;
+      }
+      if (control.askSeq > lastAskSeq) {
+        lastAskSeq = control.askSeq;
+        ask(control.askBy ?? "Someone");
+      }
+    }
+
+    people = new Set(
+      state.session.participants
+        .map((participant) => participant.user.id)
+        .filter((id) => id !== options.agentId),
+    ).size;
+    updateEffectiveMode();
+  };
+
+  pollTimer = setInterval(() => void poll(), CALL_POLL_INTERVAL_MS);
 
   const ask = (askedBy: string) => {
     respond(ASK_MESSAGE[language](askedBy), true);
@@ -277,9 +329,8 @@ export async function startAgentSession(
       stop("AI turned off by host");
       return;
     }
-    context.mode = mode;
-    applySession();
-    scheduleFacilitator();
+    chosenMode = mode;
+    updateEffectiveMode();
   };
 
   return { stop, ask, setMode, done };
