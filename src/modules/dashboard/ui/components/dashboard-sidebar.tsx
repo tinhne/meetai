@@ -3,6 +3,7 @@
 import {
   BotIcon,
   BrainIcon,
+  GraduationCapIcon,
   HomeIcon,
   SearchIcon,
   SettingsIcon,
@@ -30,7 +31,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { DashboardUserButton } from "./dashboard-user-button";
 import { DashboardTrial } from "./dashboard-trial";
 
-type NavKey = "home" | "meetings" | "agents" | "searchPage" | "memory" | "billing" | "settings";
+type NavKey = "home" | "meetings" | "agents" | "practice" | "searchPage" | "memory" | "billing" | "settings";
 
 interface NavItem {
   key: NavKey;
@@ -43,6 +44,7 @@ const mainItems: NavItem[] = [
   { key: "home", href: "/dashboard", icon: HomeIcon, exact: true },
   { key: "meetings", href: "/dashboard/meetings", icon: VideoIcon },
   { key: "agents", href: "/dashboard/agents", icon: BotIcon },
+  { key: "practice", href: "/dashboard/practice", icon: GraduationCapIcon },
   { key: "searchPage", href: "/dashboard/search", icon: SearchIcon },
   { key: "memory", href: "/dashboard/memory", icon: BrainIcon },
 ];

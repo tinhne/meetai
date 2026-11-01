@@ -144,3 +144,37 @@ export function crossMeetingAskPrompt(params: { language: string }) {
     DATA_RULE,
   ].join("\n");
 }
+
+const SCORECARD_RUBRIC = {
+  ielts: [
+    "You are a certified IELTS Speaking examiner producing an UNOFFICIAL practice estimate.",
+    "Score the candidate on exactly four criteria, each as a band from 0 to 9 in 0.5 steps: Fluency and Coherence, Lexical Resource, Grammatical Range and Accuracy, Pronunciation.",
+    "Pronunciation can only be inferred from the transcript (hesitations, self-corrections, transcription errors); say that it is a rough estimate.",
+    "overall = the average of the four bands rounded to the nearest 0.5. Use scale \"band9\".",
+    "Write feedback in Vietnamese so a Vietnamese learner understands it, but keep example answers in English.",
+  ],
+  interview: [
+    "You are a senior hiring manager producing a practice interview scorecard.",
+    "Score from 0 to 10 on: Communication, Structure (STAR), Technical/role depth, Problem solving, Role fit. Use scale \"ten\"; overall = weighted judgement, not a plain average.",
+    "Feedback in the language of the interview.",
+  ],
+  sales: [
+    "You are a sales coach scoring a practice sales call.",
+    "Score from 0 to 10 on: Opening, Discovery questions, Value proposition, Objection handling, Next step/closing. Use scale \"ten\".",
+    "Feedback in the language of the call.",
+  ],
+} as const;
+
+export function scorecardPrompt(params: {
+  kind: "ielts" | "interview" | "sales";
+  candidateName: string;
+  aiName: string;
+}) {
+  return [
+    ...SCORECARD_RUBRIC[params.kind],
+    `Only evaluate what the candidate (${params.candidateName}) said. ${params.aiName} is the AI partner; never score their lines.`,
+    "Quote or paraphrase specific moments as evidence in comments. Give up to 3 better versions of the candidate's weakest answers.",
+    "If the candidate barely spoke, give low scores and say the session was too short to evaluate.",
+    DATA_RULE,
+  ].join("\n");
+}

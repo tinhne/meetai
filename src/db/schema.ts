@@ -86,6 +86,8 @@ export const agents = pgTable("agents", {
   voice: text("voice").notNull().default("alloy"),
   // Learn from meetings (memories) and brief the agent before each call.
   memoryEnabled: boolean("memory_enabled").notNull().default(true),
+  // Created by Practice mode (does not count toward the plan's agent limit).
+  practiceScenario: text("practice_scenario"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -125,6 +127,9 @@ export const meetings = pgTable(
     language: text("language").notNull().default("vi"),
     scheduledAt: timestamp("scheduled_at"),
     agenda: text("agenda"),
+    // Practice mode session ("ielts" | "interview" | "sales") and its report.
+    practiceKind: text("practice_kind"),
+    scorecard: jsonb("scorecard"),
     startedAt: timestamp("started_at"),
     endedAt: timestamp("ended_at"),
     transcriptUrl: text("transcript_url"),

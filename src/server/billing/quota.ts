@@ -1,7 +1,7 @@
 import "server-only";
 
 import { TRPCError } from "@trpc/server";
-import { and, count, eq, gte, sql } from "drizzle-orm";
+import { and, count, eq, gte, isNull, sql } from "drizzle-orm";
 
 import { monthKey, QUOTA_WARNING_RATIO, startOfUtcMonth, type PlanLimits } from "@/config/plans";
 import { db } from "@/db";
@@ -18,7 +18,11 @@ import {
 } from "./quota-rules";
 
 export async function getAgentCount(userId: string) {
-  const [row] = await db.select({ count: count(agents.id) }).from(agents).where(eq(agents.userId, userId));
+  // Practice-mode agents are not counted.
+  const [row] = await db
+    .select({ count: count(agents.id) })
+    .from(agents)
+    .where(and(eq(agents.userId, userId), isNull(agents.practiceScenario)));
   return row?.count ?? 0;
 }
 

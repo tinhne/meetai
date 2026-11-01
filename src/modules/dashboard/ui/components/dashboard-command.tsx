@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   BotIcon,
   BrainIcon,
+  GraduationCapIcon,
   HomeIcon,
   PlusIcon,
   SearchIcon,
@@ -88,6 +89,7 @@ export const DashboardCommand = ({ open, setOpen }: Props) => {
     { label: tNav("home"), icon: HomeIcon, href: "/dashboard" },
     { label: tNav("meetings"), icon: VideoIcon, href: "/dashboard/meetings" },
     { label: tNav("agents"), icon: BotIcon, href: "/dashboard/agents" },
+    { label: tNav("practice"), icon: GraduationCapIcon, href: "/dashboard/practice" },
     { label: tNav("searchPage"), icon: SearchIcon, href: "/dashboard/search" },
     { label: tNav("memory"), icon: BrainIcon, href: "/dashboard/memory" },
     { label: tNav("billing"), icon: SparklesIcon, href: "/dashboard/billing" },

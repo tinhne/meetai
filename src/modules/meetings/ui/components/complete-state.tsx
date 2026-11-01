@@ -12,6 +12,8 @@ import { ActionItemsPanel } from "./action-items-panel";
 import { AnalyticsPanel } from "./analytics-panel";
 import { AskAiPanel } from "./ask-ai-panel";
 import { formatDurationShort } from "./columns";
+import { ScorecardPanel } from "@/modules/practice/ui/scorecard-panel";
+import type { Scorecard } from "@/server/ai/schemas";
 import { MeetingPlayerProvider } from "./meeting-player";
 import { RecordingPlayer } from "./recording-player";
 import { SummaryPanel } from "./summary-panel";
@@ -23,7 +25,9 @@ interface Props {
 
 export const CompletedState = ({ data }: Props) => {
   const t = useTranslations("notes");
+  const tPractice = useTranslations("practice");
   const format = useFormatter();
+  const scorecard = data.scorecard as Scorecard | null;
 
   return (
     <MeetingPlayerProvider>
@@ -56,13 +60,19 @@ export const CompletedState = ({ data }: Props) => {
         </div>
 
         <div className="min-w-0 lg:sticky lg:top-20 lg:self-start">
-          <Tabs defaultValue="summary" className="gap-3">
+          <Tabs defaultValue={scorecard ? "scorecard" : "summary"} className="gap-3">
             <TabsList className="w-full">
+              {scorecard && <TabsTrigger value="scorecard">{tPractice("scorecard.tab")}</TabsTrigger>}
               <TabsTrigger value="summary">{t("tabs.summary")}</TabsTrigger>
               <TabsTrigger value="actions">{t("tabs.actionItems")}</TabsTrigger>
               <TabsTrigger value="ask">{t("tabs.askAi")}</TabsTrigger>
               <TabsTrigger value="analytics">{t("tabs.analytics")}</TabsTrigger>
             </TabsList>
+            {scorecard && (
+              <TabsContent value="scorecard" className="lg:max-h-[calc(100svh-10rem)] lg:overflow-y-auto">
+                <ScorecardPanel scorecard={scorecard} />
+              </TabsContent>
+            )}
             <TabsContent value="summary" className="lg:max-h-[calc(100svh-10rem)] lg:overflow-y-auto">
               <SummaryPanel
                 insights={data.insights as MeetingInsights | null}

@@ -4,6 +4,7 @@ import { NonRetriableError } from "inngest";
 import JSONL from "jsonl-parse-stringify";
 
 import { AI_CONFIG, MEETING_TEMPLATES, type MeetingTemplate } from "@/config/ai";
+import type { PracticeKind } from "@/config/practice";
 import { db } from "@/db";
 import {
   actionItems,
@@ -40,11 +41,13 @@ import {
   correctionPrompt,
   freeTranscriptionPrompt,
   insightsPrompt,
+  scorecardPrompt,
   timelineTranscriptionPrompt,
 } from "@/server/ai/prompts";
 import {
   freeTranscriptionSchema,
   insightsSchema,
+  scorecardSchema,
   segmentTextSchema,
 } from "@/server/ai/schemas";
 import { copyUrlToStorage, storageKeys } from "@/server/storage";
@@ -58,6 +61,10 @@ const NO_SPEECH_SUMMARY: Record<string, string> = {
   vi: "### Không có nội dung\nKhông phát hiện lời nói nào trong cuộc họp này, nên chưa có gì để tóm tắt.",
   en: "### Nothing to summarize\nNo speech was detected in this meeting.",
 };
+
+function toPracticeKind(value: string | null): PracticeKind | null {
+  return value === "ielts" || value === "interview" || value === "sales" ? value : null;
+}
 
 function toTemplate(value: string): MeetingTemplate {
   return (MEETING_TEMPLATES as readonly string[]).includes(value)
@@ -470,6 +477,38 @@ export const meetingsProcessing = inngest.createFunction(
 
     // AI minutes were spent during the call; warn at 80% of the month's quota.
     await step.run("quota-warning", () => warnIfNearQuota(meeting.userId, ["aiVoice"]));
+
+    // Practice sessions get a scorecard (estimate for practice only).
+    if (!insights.empty && meeting.practiceKind) {
+      await step.run("score-practice", async () => {
+        const kind = toPracticeKind(meeting.practiceKind);
+        if (!kind) return { skipped: "unknown practice kind" };
+        const [[owner], [agent]] = await Promise.all([
+          db.select({ name: user.name }).from(user).where(eq(user.id, meeting.userId)),
+          db.select({ name: agents.name }).from(agents).where(eq(agents.id, meeting.agentId)),
+        ]);
+        const segments = await loadSegments(meetingId);
+        const transcript = formatTranscriptForPrompt(
+          segments.map((segment) => ({
+            speakerName: segment.speakerName,
+            startMs: segment.startMs,
+            text: segment.textCorrected ?? segment.text,
+          })),
+        );
+        const scorecard = await generateJson({
+          schema: scorecardSchema,
+          system: scorecardPrompt({
+            kind,
+            candidateName: owner?.name ?? "the candidate",
+            aiName: agent?.name ?? "the AI",
+          }),
+          parts: [{ text: `<transcript>\n${transcript.slice(0, MAX_TRANSCRIPT_CHARS)}\n</transcript>` }],
+          maxOutputTokens: 8_000,
+        });
+        await db.update(meetings).set({ scorecard }).where(eq(meetings.id, meetingId));
+        return { overall: scorecard.overall };
+      });
+    }
 
     // 4. Long-term memory: searchable transcript windows + learned facts.
     // Runs after the notes are delivered, so a failure here never blocks them.

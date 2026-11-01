@@ -52,3 +52,32 @@ export const insightsSchema = z.object({
 });
 
 export type MeetingInsights = z.infer<typeof insightsSchema>;
+
+// Practice mode report. Scores are estimates for practice, never official.
+export const scorecardSchema = z.object({
+  // "band9" = IELTS band 0–9 (0.5 steps), "ten" = score out of 10.
+  scale: z.enum(["band9", "ten"]),
+  overall: z.number().min(0).max(10),
+  criteria: z
+    .array(
+      z.object({
+        name: z.string().max(80),
+        score: z.number().min(0).max(10),
+        comment: z.string().max(500),
+      }),
+    )
+    .max(6),
+  strengths: z.array(z.string().max(300)).max(5),
+  improvements: z.array(z.string().max(300)).max(5),
+  betterAnswers: z
+    .array(
+      z.object({
+        question: z.string().max(300),
+        original: z.string().max(600),
+        improved: z.string().max(800),
+      }),
+    )
+    .max(3),
+  summary: z.string().max(800),
+});
+export type Scorecard = z.infer<typeof scorecardSchema>;

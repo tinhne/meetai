@@ -29,7 +29,8 @@
     "account": "Account",
     "billing": "Plan & billing",
     "memory": "AI memory",
-    "searchPage": "Search"
+    "searchPage": "Search",
+    "practice": "Practice"
   },
   "commandPalette": {
     "placeholder": "Find a meeting, an agent, or type a command…",
@@ -1202,5 +1203,43 @@
     "hint": "Type at least 2 characters and press Enter.",
     "openAt": "Open at {time}",
     "sources": "Sources"
+  },
+  "practice": {
+    "title": "Practice",
+    "description": "Practise interviews, IELTS Speaking and sales 1:1 with AI and get a scorecard after each session.",
+    "scenarios": "Choose a scenario",
+    "start": "Start",
+    "starting": "Preparing the room…",
+    "kinds": {
+      "ielts": "IELTS",
+      "interview": "Interview",
+      "sales": "Sales"
+    },
+    "language": {
+      "vi": "Vietnamese",
+      "en": "English"
+    },
+    "historyTitle": "Practice history",
+    "historyEmpty": "No practice sessions yet",
+    "historyEmptyDescription": "Pick a scenario above to start your first session.",
+    "progressTitle": "Progress",
+    "progressHint": "Overall score of scored sessions.",
+    "scoring": "Scoring…",
+    "notScored": "Not scored",
+    "outOf": {
+      "band9": "/9",
+      "ten": "/10"
+    },
+    "disclaimer": "Scores are AI estimates for practice only, not an official test score or assessment.",
+    "scorecard": {
+      "tab": "Scorecard",
+      "overall": "Overall",
+      "criteria": "By criterion",
+      "strengths": "Strengths",
+      "improvements": "To improve",
+      "betterAnswers": "Better answers",
+      "you": "You said",
+      "better": "Try"
+    }
   }
 }

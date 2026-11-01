@@ -29,7 +29,8 @@
     "account": "Tài khoản",
     "billing": "Gói & thanh toán",
     "memory": "Bộ nhớ AI",
-    "searchPage": "Tìm kiếm"
+    "searchPage": "Tìm kiếm",
+    "practice": "Luyện tập"
   },
   "commandPalette": {
     "placeholder": "Tìm cuộc họp, agent hoặc gõ một lệnh…",
@@ -1202,5 +1203,43 @@
     "hint": "Nhập ít nhất 2 ký tự rồi nhấn Enter.",
     "openAt": "Mở tại {time}",
     "sources": "Nguồn"
+  },
+  "practice": {
+    "title": "Luyện tập",
+    "description": "Luyện phỏng vấn, IELTS Speaking và bán hàng 1-1 với AI, nhận bảng điểm sau mỗi buổi.",
+    "scenarios": "Chọn kịch bản",
+    "start": "Bắt đầu",
+    "starting": "Đang chuẩn bị phòng…",
+    "kinds": {
+      "ielts": "IELTS",
+      "interview": "Phỏng vấn",
+      "sales": "Bán hàng"
+    },
+    "language": {
+      "vi": "Tiếng Việt",
+      "en": "Tiếng Anh"
+    },
+    "historyTitle": "Lịch sử luyện tập",
+    "historyEmpty": "Chưa có buổi luyện tập nào",
+    "historyEmptyDescription": "Chọn một kịch bản ở trên để bắt đầu buổi đầu tiên.",
+    "progressTitle": "Tiến bộ",
+    "progressHint": "Điểm tổng của các buổi đã chấm.",
+    "scoring": "Đang chấm điểm…",
+    "notScored": "Chưa có điểm",
+    "outOf": {
+      "band9": "/9",
+      "ten": "/10"
+    },
+    "disclaimer": "Điểm do AI ước lượng để tham khảo khi luyện tập, không phải điểm thi hay đánh giá chính thức.",
+    "scorecard": {
+      "tab": "Chấm điểm",
+      "overall": "Tổng",
+      "criteria": "Theo tiêu chí",
+      "strengths": "Điểm mạnh",
+      "improvements": "Cần cải thiện",
+      "betterAnswers": "Câu trả lời tốt hơn",
+      "you": "Bạn đã nói",
+      "better": "Gợi ý"
+    }
   }
 }

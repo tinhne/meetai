@@ -65,6 +65,7 @@ import {
   toStreamTranscriptionLanguage,
 } from "../lib/stream";
 import { env } from "@/env";
+import type { PracticeKind } from "@/config/practice";
 
 const STREAM_TOKEN_TTL_SEC = 60 * 60;
 
@@ -89,7 +90,11 @@ function transcriptionSettings(language: string) {
 
 type MeetingCreateInput = z.infer<typeof meetingInsertSchema>;
 
-async function createMeetingForUser(userId: string, input: MeetingCreateInput) {
+export async function createMeetingForUser(
+  userId: string,
+  input: MeetingCreateInput,
+  options: { practiceKind?: PracticeKind } = {},
+) {
   const agent = await getOwnedAgent(userId, input.agentId);
   const meetingId = nanoid();
 
@@ -131,6 +136,7 @@ async function createMeetingForUser(userId: string, input: MeetingCreateInput) {
         callType,
         agenda: input.agenda ? input.agenda : null,
         scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
+        practiceKind: options.practiceKind ?? null,
       })
       .returning(),
     db
@@ -714,7 +720,8 @@ export const meetingsRouter = createTRPCRouter({
           await db
             .select({ id: agents.id })
             .from(agents)
-            .where(eq(agents.userId, userId))
+            // Practice personas are only used from the Practice page.
+            .where(and(eq(agents.userId, userId), isNull(agents.practiceScenario)))
             .orderBy(desc(agents.updatedAt))
             .limit(1)
         )[0]?.id;
