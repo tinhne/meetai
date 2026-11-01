@@ -414,7 +414,8 @@
     "cancelledTitle": "Cuộc họp đã bị huỷ",
     "cancelledDescription": "Cuộc họp này không còn diễn ra.",
     "failedTitle": "Không xử lý được cuộc họp này",
-    "failedDescription": "Đã có lỗi khi tạo biên bản."
+    "failedDescription": "Đã có lỗi khi tạo biên bản.",
+    "failedTimedOut": "Xử lý quá lâu nên đã dừng. Bấm Xử lý lại để thử lần nữa."
   },
   "notes": {
     "tabs": {

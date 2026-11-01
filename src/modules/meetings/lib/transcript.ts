@@ -10,7 +10,8 @@ export interface StreamTranscriptLine {
   type?: string;
   text: string;
   start_ts: number;
-  end_ts: number;
+  // Stream calls the end of an utterance "stop_ts".
+  stop_ts: number;
 }
 
 export interface Segment {
@@ -31,14 +32,22 @@ export function streamLinesToSegments(
     .filter((line) => line.type === undefined || line.type === "speech")
     .filter((line) => typeof line.text === "string")
     .sort((a, b) => a.start_ts - b.start_ts)
-    .map((line, position) => ({
-      position,
-      speakerId: line.speaker_id ?? null,
-      speakerName: speakerNames.get(line.speaker_id) ?? unknownSpeaker,
-      startMs: Math.max(0, Math.round(line.start_ts)),
-      endMs: Math.max(0, Math.round(line.end_ts)),
-      text: line.text.trim(),
-    }));
+    .map((line, position) => {
+      const startMs = toMs(line.start_ts);
+      return {
+        position,
+        speakerId: line.speaker_id ?? null,
+        speakerName: speakerNames.get(line.speaker_id) ?? unknownSpeaker,
+        startMs,
+        endMs: Math.max(startMs, toMs(line.stop_ts)),
+        text: line.text.trim(),
+      };
+    });
+}
+
+// A missing or malformed timestamp must never become NaN (int columns reject it).
+function toMs(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0;
 }
 
 // Compact prompt format: "[m:ss] Name: text" (much cheaper than raw JSON).
