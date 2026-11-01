@@ -7,6 +7,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
+import { useTranslations } from "next-intl";
+
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 
 interface DataTableProps<TData, TValue> {
@@ -20,6 +22,7 @@ export function DataTable<TData, TValue>({
   data,
   onRowClick,
 }: DataTableProps<TData, TValue>) {
+  const t = useTranslations("table");
   const table = useReactTable({
     data,
     columns,
@@ -27,7 +30,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="overflow-hidden rounded-lg border bg-background">
+    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
       <Table>
         <TableBody>
           {table.getRowModel().rows?.length ? (
@@ -51,7 +54,7 @@ export function DataTable<TData, TValue>({
                 colSpan={columns.length}
                 className="h-24 text-center text-muted-foreground"
               >
-                No results.
+                {t("noResults")}
               </TableCell>
             </TableRow>
           )}

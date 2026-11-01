@@ -1,28 +1,43 @@
-import { EmptyState } from "@/components/emty-state";
-import { Button } from "@/components/ui/button";
 import { VideoIcon } from "lucide-react";
-import Link from "next/link";
+import { useFormatter, useTranslations } from "next-intl";
+
+import { EmptyState } from "@/components/empty-state";
+import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 
 interface Props {
   meetingId: string;
+  scheduledAt: string | null;
 }
 
-export const UpcomingState = ({ meetingId }: Props) => {
+export const UpcomingState = ({ meetingId, scheduledAt }: Props) => {
+  const t = useTranslations("meetingStates");
+  const format = useFormatter();
+
   return (
-    <div className="bg-white rounded-lg px-4 py-5 flex flex-col gap-y-8 items-center">
+    <div className="rounded-xl border bg-card px-4 py-8">
       <EmptyState
-        title="No started yet"
-        description="Once you start this meeting, a summary will appear here."
+        title={t("upcomingTitle")}
+        description={
+          scheduledAt
+            ? t("upcomingScheduled", {
+                date: format.dateTime(new Date(scheduledAt), {
+                  dateStyle: "full",
+                  timeStyle: "short",
+                }),
+              })
+            : t("upcomingDescription")
+        }
         image="/upcoming.svg"
+        action={
+          <Button asChild>
+            <Link href={`/call/${meetingId}`}>
+              <VideoIcon />
+              {t("start")}
+            </Link>
+          </Button>
+        }
       />
-      <div className="flex flex-col-reverse lg:flex-row lg:justify-center items-center gap-2 w-full">
-        <Button asChild className="w-full lg:w-auto">
-          <Link href={`/call/${meetingId}`}>
-            <VideoIcon />
-            Start meeting
-          </Link>
-        </Button>
-      </div>
     </div>
   );
 };

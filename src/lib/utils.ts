@@ -13,3 +13,22 @@ export function formatDuration(secords: number) {
     units: ["h", "m", "s"],
   });
 }
+
+// Formats a millisecond offset as m:ss, or h:mm:ss for meetings over an hour.
+export function formatTimestamp(ms: number) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (value: number) => value.toString().padStart(2, "0");
+
+  return hours > 0
+    ? `${hours}:${pad(minutes)}:${pad(seconds)}`
+    : `${minutes}:${pad(seconds)}`;
+}
+
+export function omit<T extends object, K extends keyof T>(value: T, keys: K[]): Omit<T, K> {
+  const result = { ...value };
+  for (const key of keys) delete result[key];
+  return result;
+}

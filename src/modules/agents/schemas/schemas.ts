@@ -4,12 +4,17 @@ import {
   MAX_PAGE_SIZE,
   MIN_PAGE_SIZE,
 } from "@/constants";
-import { MeetingStatus } from "@/modules/meetings/types";
 import { z } from "zod";
+import { REALTIME_VOICES } from "@/config/ai";
 
 export const agentInsertSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }).max(100),
-  instructions: z.string().min(1, { message: "Instructions are required" }),
+  name: z.string().trim().min(1, { message: "Name is required" }).max(100),
+  instructions: z
+    .string()
+    .trim()
+    .min(1, { message: "Instructions are required" })
+    .max(5000, { message: "Instructions must be at most 5000 characters" }),
+  voice: z.enum(REALTIME_VOICES),
 });
 
 export const agentsUpdateSchema = agentInsertSchema.extend({
@@ -23,15 +28,5 @@ export const agentFilterSchema = z.object({
     .min(MIN_PAGE_SIZE)
     .max(MAX_PAGE_SIZE)
     .default(DEFAULT_PAGE_SIZE),
-  search: z.string().nullish(),
-  agentId: z.string().nullish(),
-  status: z
-    .enum([
-      MeetingStatus.Upcoming,
-      MeetingStatus.Active,
-      MeetingStatus.Completed,
-      MeetingStatus.Processing,
-      MeetingStatus.Cancelled,
-    ])
-    .nullish(),
+  search: z.string().max(100).nullish(),
 });

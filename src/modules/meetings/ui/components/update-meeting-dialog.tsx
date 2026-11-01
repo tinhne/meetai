@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { MeetingForm } from "./meeting-form";
 import { MeetingGetOne } from "../../types";
@@ -13,12 +15,13 @@ export const UpdateMeetingDialog = ({
   onOpenChange,
   initialValues,
 }: UpdateMeetingDialogProps) => {
+  const t = useTranslations("meetings");
   return (
     <ResponsiveDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Update Meeting"
-      description="Update the details of this meeting"
+      title={t("editTitle")}
+      description={t("editDescription")}
     >
       <MeetingForm
         onSuccess={() => onOpenChange(false)}

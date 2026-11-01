@@ -1,15 +1,17 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+
+import { absoluteUrl } from "@/lib/seo";
+
+// Private areas (app, calls, invites, share and print views) stay out of search.
+const PRIVATE = ["/dashboard", "/call", "/j/", "/s/", "/print"];
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL || "https://meetai-assistant.vercel.app";
-
   return {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/"], // prevent crawlers from hitting API routes
+      disallow: ["/api/", ...PRIVATE, ...PRIVATE.map((path) => `/en${path}`)],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: absoluteUrl("/sitemap.xml"),
   };
 }

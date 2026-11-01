@@ -1,11 +1,15 @@
-import { EmptyState } from "@/components/emty-state";
+import { useTranslations } from "next-intl";
+
+import { EmptyState } from "@/components/empty-state";
 
 export const CancelledState = () => {
+  const t = useTranslations("meetingStates");
+
   return (
-    <div className="bg-white rounded-lg px-4 py-5 flex flex-col gap-y-8 items-center">
+    <div className="rounded-xl border bg-card px-4 py-8">
       <EmptyState
-        title="Meeting is cancelled"
-        description="This meeting has been cancelled"
+        title={t("cancelledTitle")}
+        description={t("cancelledDescription")}
         image="/cancelled.svg"
       />
     </div>

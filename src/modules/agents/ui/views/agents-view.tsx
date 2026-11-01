@@ -1,64 +1,75 @@
 "use client";
 
-import { ErrorState } from "@/components/error-state";
-import { LoadingState } from "@/components/loading-state";
-import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { columns } from "../components/columns";
-import { EmptyState } from "@/components/emty-state";
-import { useAgentsFilters } from "../../hook/use-agents-filters";
+import { PlusIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { DataPagination } from "@/components/data-pagination";
-import { useRouter } from "next/navigation";
 import { DataTable } from "@/components/data-table";
+import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
+import { ListSkeleton } from "@/components/skeletons";
+import { Button } from "@/components/ui/button";
+import { Link, useRouter } from "@/i18n/navigation";
+import { useTRPC } from "@/trpc/client";
+import { useAgentsFilters } from "../../hook/use-agents-filters";
+import { useAgentColumns } from "../components/columns";
 
 export const AgentsView = () => {
-  const routes = useRouter();
+  const t = useTranslations("agents");
+  const router = useRouter();
+  const columns = useAgentColumns();
   const [filters, setFilter] = useAgentsFilters();
   const trpc = useTRPC();
-  const { data } = useSuspenseQuery(
-    trpc.agents.getMany.queryOptions({
-      ...filters,
-    }),
-  );
+  const { data } = useSuspenseQuery(trpc.agents.getMany.queryOptions({ ...filters }));
+
+  if (data.items.length === 0 && !filters.search) {
+    return (
+      <div className="flex-1 px-4 pb-8 md:px-8">
+        <div className="rounded-xl border bg-card px-4 py-10">
+          <EmptyState
+            title={t("emptyTitle")}
+            description={t("emptyDescription")}
+            action={
+              <Button asChild>
+                <Link href="/dashboard/agents?new=1">
+                  <PlusIcon />
+                  {t("new")}
+                </Link>
+              </Button>
+            }
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex-1 pb-4 px-4 md:px-8 flex flex-col gap-y-4">
+    <div className="flex-1 pb-8 px-4 md:px-8 flex flex-col gap-y-4">
       <DataTable
         columns={columns}
         data={data.items}
-        onRowClick={(row) => routes.push(`/dashboard/agents/${row.id}`)}
+        onRowClick={(row) => router.push(`/dashboard/agents/${row.id}`)}
       />
       <DataPagination
         page={filters.page}
         totalPages={data.totalPages}
-        onPageChange={(page) => {
-          setFilter({ page });
-        }}
+        onPageChange={(page) => setFilter({ page })}
       />
-      {data.items.length === 0 && (
-        <EmptyState
-          title="Create your first agent"
-          description="Create an agent to join  your meetings. With agents will follow your instructions and can interact with other participants in the meeting."
-        />
-      )}
     </div>
   );
 };
 
 export const AgentsViewLoading = () => {
   return (
-    <LoadingState
-      title="Loading agents"
-      description="this may take a few seconds"
-    />
+    <div className="flex-1 pb-4 px-4 md:px-8">
+      <ListSkeleton />
+    </div>
   );
 };
 
 export const AgentsViewError = () => {
-  return (
-    <ErrorState
-      title="Failed to load agents"
-      description="please try again later"
-    />
-  );
+  const t = useTranslations("agents");
+  const tStates = useTranslations("states");
+  return <ErrorState title={t("loadError")} description={tStates("errorDescription")} />;
 };

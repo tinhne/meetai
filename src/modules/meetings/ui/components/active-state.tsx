@@ -1,28 +1,28 @@
-import { EmptyState } from "@/components/emty-state";
-import { Button } from "@/components/ui/button";
 import { VideoIcon } from "lucide-react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 
-interface Props {
-  meetingId: string;
-}
+import { EmptyState } from "@/components/empty-state";
+import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 
-export const ActiveState = ({ meetingId }: Props) => {
+export const ActiveState = ({ meetingId }: { meetingId: string }) => {
+  const t = useTranslations("meetingStates");
+
   return (
-    <div className="bg-white rounded-lg px-4 py-5 flex flex-col gap-y-8 items-center">
+    <div className="rounded-xl border bg-card px-4 py-8">
       <EmptyState
-        title="Meeting is active"
-        description="Meeting will end once all participants have left"
+        title={t("activeTitle")}
+        description={t("activeDescription")}
         image="/upcoming.svg"
+        action={
+          <Button asChild>
+            <Link href={`/call/${meetingId}`}>
+              <VideoIcon />
+              {t("join")}
+            </Link>
+          </Button>
+        }
       />
-      <div className="flex flex-col-reverse lg:flex-row lg:justify-center items-center gap-2 w-full">
-        <Button asChild className="w-full lg:w-auto">
-          <Link href={`/call/${meetingId}`}>
-            <VideoIcon />
-            Join meeting
-          </Link>
-        </Button>
-      </div>
     </div>
   );
 };

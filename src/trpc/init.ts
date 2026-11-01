@@ -1,20 +1,14 @@
-import { db } from "@/db";
-import { agents, meetings } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { polarClient } from "@/lib/polar";
-import {
-  MAX_FREE_AGENTS,
-  MAX_FREE_MEETINGS,
-} from "@/modules/premium/constants";
+import { assertQuota } from "@/server/billing/quota";
+import { QuotaExceededError } from "@/server/billing/quota-rules";
 import { initTRPC, TRPCError } from "@trpc/server";
-import { count, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { cache } from "react";
 export const createTRPCContext = cache(async () => {
   /**
    * @see: https://trpc.io/docs/server/context
    */
-  return { userId: "user_123" };
+  return {};
 });
 // Avoid exporting the entire t-object
 // since it's not very descriptive.
@@ -25,6 +19,16 @@ const t = initTRPC.create({
    * @see https://trpc.io/docs/server/data-transformers
    */
   // transformer: superjson,
+  // Quota errors carry their context so the client can open the upgrade dialog.
+  errorFormatter({ shape, error }) {
+    return {
+      ...shape,
+      data: {
+        ...shape.data,
+        quota: error.cause instanceof QuotaExceededError ? error.cause.info : null,
+      },
+    };
+  },
 });
 // Base router and procedure helpers
 export const createTRPCRouter = t.router;
@@ -47,44 +51,21 @@ export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
   });
 });
 
+// For pages usable both signed in and as a guest (meeting join links).
+export const optionalAuthProcedure = baseProcedure.use(async ({ ctx, next }) => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  return next({ ctx: { ...ctx, session } });
+});
+
+// Creating meetings/agents checks the plan quota first (FORBIDDEN + quota info).
 export const premiumProcedure = (entity: "meetings" | "agents") =>
   protectedProcedure.use(async ({ ctx, next }) => {
-    const customer = await polarClient.customers.getStateExternal({
-      externalId: ctx.auth.user.id,
-    });
-
-    const [userMeetings, userAgents] = await Promise.all([
-      db
-        .select({
-          count: count(meetings.id),
-        })
-        .from(meetings)
-        .where(eq(meetings.userId, ctx.auth.user.id))
-        .then((res) => res[0]),
-      db
-        .select({
-          count: count(agents.id),
-        })
-        .from(agents)
-        .where(eq(agents.userId, ctx.auth.user.id))
-        .then((res) => res[0]),
-    ]);
-
-    const isPremium = customer.activeSubscriptions.length > 0;
-    const isFreeAgentLimitReached = userAgents.count >= MAX_FREE_AGENTS;
-    const isFreeMeetingLimitReached = userMeetings.count >= MAX_FREE_MEETINGS;
-
-    const shouldThrewMeetingError =
-      entity === "meetings" && !isPremium && isFreeMeetingLimitReached;
-    const shouldThrewAgentError =
-      entity === "agents" && !isPremium && isFreeAgentLimitReached;
-
-    if (shouldThrewMeetingError || shouldThrewAgentError) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: `You have reached the free ${entity} limit. Please upgrade to create more.`,
-      });
-    }
-
-    return next({ ctx: { ...ctx, customer } });
+    const plan = await assertQuota(
+      ctx.auth.user.id,
+      entity === "meetings" ? ["meetings", "recordingMinutes"] : ["agents"],
+    );
+    return next({ ctx: { ...ctx, plan } });
   });

@@ -1,0 +1,1245 @@
+{
+  "metadata": {
+    "title": "Meet.AI — AI meeting assistant: notes, summaries and Q&A",
+    "description": "Invite AI into your meeting like a teammate: it answers by voice, takes notes, summarizes, and answers questions about the meeting."
+  },
+  "common": {
+    "appName": "Meet.AI",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "continue": "Continue",
+    "tryAgain": "Try again",
+    "loading": "Loading…",
+    "save": "Save",
+    "back": "Back",
+    "unlimited": "Unlimited",
+    "search": "Search…",
+    "noOptions": "No options found",
+    "pagination": "Pagination"
+  },
+  "nav": {
+    "home": "Home",
+    "meetings": "Meetings",
+    "agents": "Agents",
+    "upgrade": "Upgrade",
+    "settings": "Settings",
+    "toggleSidebar": "Toggle sidebar",
+    "search": "Search…",
+    "workspace": "Workspace",
+    "account": "Account",
+    "billing": "Plan & billing",
+    "memory": "AI memory",
+    "searchPage": "Search",
+    "practice": "Practice"
+  },
+  "commandPalette": {
+    "placeholder": "Find a meeting, an agent, or type a command…",
+    "actions": "Actions",
+    "navigation": "Navigation",
+    "meetings": "Meetings",
+    "agents": "Agents",
+    "newMeeting": "New meeting",
+    "newAgent": "New agent",
+    "toggleTheme": "Toggle light/dark mode",
+    "noMeetings": "No meetings found.",
+    "noAgents": "No agents found.",
+    "searchEverywhere": "Search meetings for “{query}”"
+  },
+  "userMenu": {
+    "unnamed": "User",
+    "billing": "Billing",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "usage": {
+    "freePlan": "Free plan",
+    "agents": "Agents",
+    "meetingsThisMonth": "Meetings this month",
+    "upgrade": "Upgrade",
+    "aiVoice": "AI voice minutes"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggle": "Toggle theme"
+  },
+  "language": {
+    "label": "Language",
+    "vi": "Tiếng Việt",
+    "en": "English",
+    "switch": "Change language"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Customize how Meet.AI looks and which language it uses.",
+    "appearanceTitle": "Appearance",
+    "appearanceDescription": "Choose light, dark, or follow your device setting.",
+    "languageTitle": "Language",
+    "languageDescription": "The display language of the app."
+  },
+  "states": {
+    "errorTitle": "Something went wrong",
+    "errorDescription": "Please try again in a moment."
+  },
+  "confirm": {
+    "title": "Are you sure?",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "aiStatus": {
+    "idle": "AI is waiting",
+    "listening": "AI is listening",
+    "thinking": "AI is thinking",
+    "speaking": "AI is speaking",
+    "off": "AI is off"
+  },
+  "auth": {
+    "panel": {
+      "title": "Meetings with an AI that listens, speaks and remembers",
+      "point1": "AI joins the call and answers out loud",
+      "point2": "Notes, summaries and action items right after the meeting",
+      "point3": "Ask about anything that was said"
+    },
+    "fields": {
+      "name": "Full name",
+      "namePlaceholder": "Jane Doe",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "newPassword": "New password"
+    },
+    "validation": {
+      "nameMin": "Name must be at least 2 characters.",
+      "emailInvalid": "Enter a valid email address.",
+      "passwordMin": "Password must be at least 8 characters.",
+      "passwordMismatch": "Passwords do not match.",
+      "passwordRequired": "Please enter your password."
+    },
+    "orContinueWith": "Or continue with",
+    "continueWith": "Continue with {provider}",
+    "terms": "By continuing, you agree to our Terms of Service and Privacy Policy.",
+    "backToSignIn": "Back to sign in",
+    "signIn": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account",
+      "submit": "Sign in",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign up",
+      "metaTitle": "Sign in"
+    },
+    "signUp": {
+      "title": "Get started for free",
+      "subtitle": "Create your Meet.AI account",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "signInLink": "Sign in",
+      "checkInboxTitle": "Check your inbox",
+      "checkInboxDescription": "We sent a verification link to {email}. Open it to activate your account.",
+      "metaTitle": "Sign up"
+    },
+    "forgot": {
+      "title": "Forgot your password?",
+      "subtitle": "Enter your email and we'll send you a reset link.",
+      "submit": "Send reset link",
+      "sentTitle": "Check your inbox",
+      "sentDescription": "If an account exists for that email, we sent a link to reset your password. The link expires in 1 hour.",
+      "metaTitle": "Forgot password"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "submit": "Reset password",
+      "expiredTitle": "Link expired",
+      "expiredDescription": "This password reset link is invalid or has expired. Please request a new one.",
+      "requestNew": "Request a new link",
+      "success": "Your password has been reset. Please sign in.",
+      "metaTitle": "Reset password"
+    },
+    "errors": {
+      "INVALID_EMAIL_OR_PASSWORD": "Incorrect email or password.",
+      "EMAIL_NOT_VERIFIED": "Please verify your email first. We just sent you a new verification link.",
+      "USER_ALREADY_EXISTS": "This email is already registered. Please sign in.",
+      "PASSWORD_TOO_SHORT": "Password is too short.",
+      "PASSWORD_TOO_LONG": "Password is too long.",
+      "INVALID_TOKEN": "This link is invalid or has expired.",
+      "TOO_MANY_REQUESTS": "Too many attempts. Please try again in a few minutes.",
+      "generic": "We couldn't complete your request. Please try again."
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for doesn't exist or has moved.",
+    "home": "Back to home"
+  },
+  "askAi": {
+    "title": "Ask AI about this meeting",
+    "placeholder": "Ask anything that was said in the meeting…",
+    "send": "Send",
+    "emptyTitle": "Ask AI about this meeting",
+    "emptyDescription": "Answers come from the summary and transcript, with timestamps so you can check them.",
+    "suggestion1": "Summarize the key decisions",
+    "suggestion2": "Who needs to do what, and by when?",
+    "suggestion3": "Which questions are still open?",
+    "you": "You",
+    "thinking": "AI is answering…",
+    "rateLimited": "You've asked a lot this hour. Try again in {minutes} minutes or upgrade your plan.",
+    "error": "The AI is busy right now. Please try again shortly."
+  },
+  "meetingDetail": {
+    "recordingUnavailable": "The recording is not available for this meeting.",
+    "retryProcessing": "Process again",
+    "retryStarted": "Processing the meeting again…"
+  },
+  "call": {
+    "connecting": "Connecting…",
+    "lobbyTitle": "Ready to join?",
+    "lobbySubtitle": "Check your camera and microphone before joining.",
+    "camera": "Camera",
+    "microphone": "Microphone",
+    "permissionHint": "Please allow your browser to use the camera and microphone.",
+    "consent": "I understand this meeting is recorded and an AI assistant takes notes.",
+    "join": "Join now",
+    "cancel": "Cancel",
+    "recording": "Recording",
+    "people": "{count, plural, one {# person} other {# people}}",
+    "layoutGrid": "Grid",
+    "layoutSpeaker": "Speaker",
+    "captions": "Captions",
+    "captionsUnsupported": "Live captions don't support Vietnamese yet. The Vietnamese transcript is created after the meeting.",
+    "askAi": "Ask AI",
+    "askAiHint": "The AI answers the latest question",
+    "askAiSent": "AI called",
+    "panel": "People & chat",
+    "peopleTab": "People",
+    "chatTab": "Chat",
+    "waiting": "Waiting to join",
+    "inCall": "In the call",
+    "admit": "Admit",
+    "deny": "Deny",
+    "mute": "Mute",
+    "muteAll": "Mute everyone",
+    "remove": "Remove",
+    "you": "You",
+    "aiBadge": "AI",
+    "guestBadge": "Guest",
+    "newWaiting": "{name} is waiting to join",
+    "chatPlaceholder": "Message everyone…",
+    "chatEmpty": "Messages are only visible to people in the call.",
+    "send": "Send",
+    "hostMenu": "Host options",
+    "aiMode": "AI mode",
+    "joinMode": "Joining",
+    "leave": "Leave",
+    "endForAll": "End for everyone",
+    "endConfirmTitle": "End the meeting for everyone?",
+    "endConfirmDescription": "Everyone will be disconnected and the AI will start writing the notes.",
+    "removeConfirmTitle": "Remove {name} from the call?",
+    "removeConfirmDescription": "They won't be able to join this meeting again.",
+    "leftTitle": "You left the meeting",
+    "leftDescription": "The meeting ends a few minutes after everyone has left. The notes are created after that.",
+    "endedTitle": "The meeting has ended",
+    "endedDescription": "Your notes will be ready in a few minutes.",
+    "summaryReady": "Your notes are ready",
+    "viewSummary": "View notes",
+    "backToMeeting": "Back to meeting",
+    "endNow": "End meeting now",
+    "rateTitle": "How helpful was the AI in this meeting?",
+    "rateThanks": "Thanks for your feedback!",
+    "rateStar": "{count, plural, one {# star} other {# stars}}"
+  },
+  "aiModes": {
+    "conversational": "Conversational (1:1)",
+    "on_demand": "Answers when asked",
+    "facilitator": "Facilitator (time checks)",
+    "silent": "Silent, notes only",
+    "conversationalHint": "The AI talks naturally. Best for 1:1 practice.",
+    "on_demandHint": "The AI only answers when called by name or when someone presses “Ask AI”.",
+    "facilitatorHint": "Same as above, plus periodic time and agenda checks.",
+    "silentHint": "The AI never speaks, only takes notes. Uses no AI minutes."
+  },
+  "joinModes": {
+    "approval": "Host approves each person",
+    "open": "Anyone with the link",
+    "locked": "Locked"
+  },
+  "join": {
+    "metaTitle": "Join meeting",
+    "hostedBy": "Hosted by {name}",
+    "withAi": "With AI assistant {name}",
+    "yourName": "Your name",
+    "yourNamePlaceholder": "Name shown in the meeting",
+    "signInInstead": "Have an account? Sign in",
+    "joiningAs": "Joining as {name}",
+    "askToJoin": "Ask to join",
+    "joinNow": "Join now",
+    "waitingTitle": "Waiting for the host to let you in…",
+    "waitingDescription": "The host can see your request. Keep this page open.",
+    "deniedTitle": "The host declined your request",
+    "removedTitle": "You were removed from this meeting",
+    "lockedTitle": "This meeting is locked",
+    "lockedDescription": "The host isn't letting anyone else in right now.",
+    "endedTitle": "This meeting has ended",
+    "endedDescription": "This link can no longer be used.",
+    "notFoundTitle": "Meeting not found",
+    "notFoundDescription": "The invite link is wrong or has been changed."
+  },
+  "invite": {
+    "title": "Invite people",
+    "description": "Share the link with anyone, even people without an account.",
+    "copy": "Copy link",
+    "copied": "Invite link copied",
+    "regenerate": "New link",
+    "regenerated": "New link created. The old one no longer works.",
+    "emailsLabel": "Invite by email",
+    "emailsPlaceholder": "email1@company.com, email2@company.com",
+    "send": "Send invites",
+    "sent": "{count, plural, one {# invite sent} other {# invites sent}}",
+    "invalidEmails": "Some email addresses are invalid.",
+    "joinModeLabel": "Who can join",
+    "aiModeLabel": "AI mode",
+    "saved": "Saved"
+  },
+  "table": {
+    "noResults": "No results.",
+    "page": "Page {page} of {total}",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "meetingStatus": {
+    "upcoming": "Upcoming",
+    "active": "Live",
+    "completed": "Completed",
+    "processing": "Processing",
+    "cancelled": "Cancelled",
+    "failed": "Failed"
+  },
+  "languages": {
+    "vi": "Vietnamese",
+    "en": "English",
+    "auto": "Auto-detect"
+  },
+  "templates": {
+    "general": "General summary",
+    "minutes": "Formal minutes",
+    "standup": "Daily standup",
+    "sales": "Sales call",
+    "interview": "Interview scorecard",
+    "lecture": "Lecture / study notes"
+  },
+  "meetings": {
+    "title": "Meetings",
+    "description": "Schedule, join and review every AI-assisted meeting.",
+    "meetNow": "Meet now",
+    "schedule": "Schedule",
+    "instantName": "Quick meeting {time}",
+    "needAgent": "Create an agent before starting a meeting.",
+    "tabs": {
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "all": "All"
+    },
+    "searchPlaceholder": "Search by name…",
+    "agentFilter": "Filter by agent",
+    "statusFilter": "Status",
+    "clearFilters": "Clear filters",
+    "columns": {
+      "name": "Meeting",
+      "status": "Status",
+      "duration": "Duration",
+      "noDuration": "—",
+      "scheduled": "Scheduled: {date}"
+    },
+    "emptyTitle": "No meetings yet",
+    "emptyDescription": "Start a quick meeting with AI, or schedule one and invite people.",
+    "emptyUpcoming": "No upcoming meetings",
+    "emptyPast": "No finished meetings yet",
+    "loadError": "Couldn't load meetings",
+    "newTitle": "Schedule a meeting",
+    "newDescription": "Pick the agent, language and how the AI takes part.",
+    "editTitle": "Edit meeting",
+    "editDescription": "Update the meeting details.",
+    "created": "Meeting created",
+    "updated": "Meeting updated",
+    "cancelled": "Meeting cancelled",
+    "deleted": "Meeting deleted",
+    "form": {
+      "name": "Meeting name",
+      "namePlaceholder": "e.g. Q4 planning",
+      "agent": "Agent",
+      "agentPlaceholder": "Select an agent…",
+      "agentMissing": "Can't find the right agent?",
+      "createAgent": "Create a new agent",
+      "language": "Meeting language",
+      "languageHint": "The language people speak. Used for the transcript and notes.",
+      "aiMode": "AI mode",
+      "template": "Notes format",
+      "scheduledAt": "Date & time (optional)",
+      "agenda": "Agenda (optional)",
+      "agendaPlaceholder": "What should this meeting cover?",
+      "create": "Create meeting",
+      "update": "Save changes",
+      "cancel": "Cancel"
+    },
+    "menu": {
+      "edit": "Edit",
+      "cancelMeeting": "Cancel meeting",
+      "delete": "Delete",
+      "share": "Share",
+      "export": "Export",
+      "more": "Options"
+    },
+    "deleteConfirmTitle": "Delete this meeting?",
+    "deleteConfirmDescription": "Notes, transcript and recording will be deleted permanently.",
+    "cancelConfirmTitle": "Cancel this meeting?",
+    "cancelConfirmDescription": "Nobody will be able to join it anymore.",
+    "breadcrumb": "Meetings"
+  },
+  "meetingStates": {
+    "upcomingTitle": "Not started yet",
+    "upcomingDescription": "Once the meeting ends, the notes will appear here.",
+    "upcomingScheduled": "Scheduled for {date}. Once the meeting ends, the notes will appear here.",
+    "start": "Start meeting",
+    "activeTitle": "This meeting is live",
+    "activeDescription": "It ends automatically once everyone has left.",
+    "join": "Join",
+    "processingTitle": "Writing your notes",
+    "processingDescription": "This usually takes a few minutes. This page updates by itself.",
+    "stepWaiting": "Receive recording",
+    "stepTranscribing": "Transcribe",
+    "stepSummarizing": "Write notes",
+    "stepDone": "Done",
+    "cancelledTitle": "This meeting was cancelled",
+    "cancelledDescription": "It won't take place.",
+    "failedTitle": "We couldn't process this meeting",
+    "failedDescription": "Something went wrong while writing the notes."
+  },
+  "notes": {
+    "tabs": {
+      "summary": "Summary",
+      "actionItems": "Action items",
+      "askAi": "Ask AI",
+      "analytics": "Analytics",
+      "transcript": "Transcript"
+    },
+    "tldr": "TL;DR",
+    "chapters": "Chapters",
+    "decisions": "Decisions",
+    "openQuestions": "Open questions",
+    "fullNotes": "Full notes",
+    "sentiment": {
+      "positive": "Positive mood",
+      "neutral": "Neutral mood",
+      "negative": "Tense mood"
+    },
+    "noInsights": "No detailed analysis for this meeting yet.",
+    "actionItemsEmpty": "The AI found no action items.",
+    "owner": "Owner: {name}",
+    "due": "Due: {date}",
+    "unassigned": "Unassigned",
+    "jumpTo": "Jump to {time}",
+    "transcriptSearch": "Search the transcript…",
+    "allSpeakers": "All speakers",
+    "follow": "Follow video",
+    "transcriptEmpty": "No transcript yet.",
+    "analyticsTitle": "Talk time",
+    "analyticsEmpty": "Not enough data to analyse yet.",
+    "talkTime": "{minutes} min · {percent}%",
+    "turns": "Turns",
+    "questions": "Questions",
+    "fillers": "Filler words",
+    "words": "Words",
+    "agentLabel": "Agent",
+    "duration": "Duration",
+    "share": {
+      "title": "Share notes",
+      "description": "Anyone with the link can read the summary and transcript (not the recording). Revoke it any time.",
+      "create": "Create share link",
+      "copy": "Copy",
+      "copied": "Link copied",
+      "revoke": "Revoke link",
+      "revoked": "Link revoked"
+    },
+    "export": {
+      "markdown": "Download Markdown (.md)",
+      "print": "Print / save as PDF",
+      "copySummary": "Copy summary",
+      "copied": "Summary copied"
+    }
+  },
+  "sharePage": {
+    "metaTitle": "Meeting notes",
+    "sharedNotes": "Shared meeting notes",
+    "transcript": "Transcript",
+    "ctaTitle": "Get notes like these for free",
+    "ctaDescription": "Invite AI into your meetings: it answers by voice, writes the notes and remembers every decision.",
+    "cta": "Try Meet.AI",
+    "notFound": "This link doesn't exist or has been revoked."
+  },
+  "agents": {
+    "title": "Agents",
+    "description": "AI assistants that join your meetings with their own personality and voice.",
+    "new": "New agent",
+    "searchPlaceholder": "Search agents…",
+    "clearFilters": "Clear filters",
+    "columns": {
+      "name": "Agent",
+      "meetings": "Meetings",
+      "meetingCount": "{count, plural, one {# meeting} other {# meetings}}"
+    },
+    "emptyTitle": "No agents yet",
+    "emptyDescription": "Start from a template: meeting secretary, interviewer, IELTS examiner…",
+    "loadError": "Couldn't load agents",
+    "gallery": {
+      "title": "Choose a template",
+      "description": "Start from a template, then make it yours.",
+      "custom": "Start from scratch",
+      "customDescription": "Write your own personality and instructions."
+    },
+    "newTitle": "New agent",
+    "editTitle": "Edit agent",
+    "editDescription": "Update the personality and voice.",
+    "created": "Agent created",
+    "updated": "Agent updated",
+    "deleted": "Agent deleted",
+    "form": {
+      "name": "Agent name",
+      "namePlaceholder": "e.g. Mia",
+      "nameHint": "People say this name to ask the AI during a meeting.",
+      "voice": "Voice",
+      "instructions": "Personality & instructions",
+      "instructionsPlaceholder": "You are… Your job is to… Answer…",
+      "instructionsHint": "Describe the role, tone, and what the AI should or shouldn't do.",
+      "create": "Create agent",
+      "update": "Save changes",
+      "cancel": "Cancel",
+      "back": "Pick another template"
+    },
+    "detail": {
+      "instructions": "Personality & instructions",
+      "voice": "Voice: {voice}",
+      "meetNow": "Meet now with this agent",
+      "edit": "Edit",
+      "delete": "Delete",
+      "breadcrumb": "Agents"
+    },
+    "deleteConfirmTitle": "Delete this agent?",
+    "deleteConfirmDescription": "{count, plural, =0 {This agent has no meetings.} one {# meeting with this agent will also be deleted.} other {# meetings with this agent will also be deleted.}}",
+    "testChat": {
+      "title": "Test chat",
+      "description": "Chat by text to try the personality (uses no AI voice minutes).",
+      "placeholder": "Message the agent…",
+      "send": "Send",
+      "reset": "Reset",
+      "error": "The AI is busy, try again later.",
+      "rateLimited": "You've test-chatted a lot this hour."
+    }
+  },
+  "home": {
+    "greeting": "Hi {name} 👋",
+    "subtitle": "What are we meeting about today?",
+    "meetNow": "Meet now",
+    "schedule": "Schedule a meeting",
+    "upcoming": "Coming up",
+    "upcomingEmpty": "Nothing scheduled.",
+    "live": "Live",
+    "join": "Join",
+    "recent": "Recent notes",
+    "recentEmpty": "Notes appear here after your first meeting.",
+    "viewAll": "View all",
+    "actionItems": "Action items",
+    "actionItemsEmpty": "No open action items.",
+    "checklist": "Get started with Meet.AI",
+    "checkAgent": "Create your first agent",
+    "checkMeeting": "Create a meeting",
+    "checkHeld": "Try a meeting with AI",
+    "checkNotes": "Read your first notes",
+    "notScheduled": "Not scheduled"
+  },
+  "onboarding": {
+    "step": "Step {current} of {total}",
+    "skip": "Skip",
+    "purposeTitle": "What will you use Meet.AI for?",
+    "purposeDescription": "We'll suggest the right agent.",
+    "purposes": {
+      "team": "Team meetings",
+      "interview": "Interview practice",
+      "ielts": "IELTS Speaking practice",
+      "learning": "Learning",
+      "sales": "Sales practice"
+    },
+    "agentTitle": "Meet your AI assistant",
+    "agentDescription": "Change the name and voice if you like. You can edit them any time.",
+    "create": "Create agent",
+    "creating": "Creating…",
+    "tryTitle": "Try a 2-minute meeting with {name}",
+    "tryDescription": "Join, turn on your microphone and talk. When you finish, the AI writes the notes.",
+    "startCall": "Start a test meeting",
+    "later": "Later",
+    "testMeetingName": "Test meeting with {name}"
+  },
+  "settingsExtra": {
+    "profileTitle": "Profile",
+    "profileDescription": "Your name as shown in meetings.",
+    "name": "Full name",
+    "email": "Email",
+    "save": "Save",
+    "saved": "Saved",
+    "sessionsTitle": "Sessions",
+    "sessionsDescription": "Devices signed in to your account.",
+    "currentSession": "This device",
+    "revoke": "Sign out",
+    "revokeOthers": "Sign out all other devices",
+    "revoked": "Session signed out",
+    "unknownDevice": "Unknown device",
+    "dataTitle": "Data & privacy",
+    "dataDescription": "Download all your data or delete your account.",
+    "export": "Download my data (JSON)",
+    "exported": "Data downloaded",
+    "deleteAccount": "Delete account",
+    "deleteConfirmTitle": "Delete your account permanently?",
+    "deleteConfirmDescription": "All meetings, notes, agents and recordings will be deleted. This cannot be undone.",
+    "deleted": "Account deletion requested"
+  },
+  "upgrade": {
+    "title": "Upgrade",
+    "currentPlan": "You are on the {plan} plan",
+    "free": "Free",
+    "upgrade": "Upgrade",
+    "manage": "Manage",
+    "changePlan": "Change plan",
+    "features": "Features",
+    "loadError": "Couldn't load your plan. Please try again later."
+  },
+  "shortcuts": {
+    "newMeeting": "N: new meeting"
+  },
+  "callUnavailable": {
+    "completedTitle": "Meeting completed",
+    "completedDescription": "This meeting has ended. You can review the notes instead.",
+    "processingTitle": "Meeting ended",
+    "processingDescription": "The notes are being written and will appear shortly.",
+    "cancelledTitle": "Meeting cancelled",
+    "cancelledDescription": "This meeting was cancelled.",
+    "failedTitle": "Meeting ended",
+    "failedDescription": "This meeting can no longer be joined.",
+    "back": "Back to meeting"
+  },
+  "landing": {
+    "meta": {
+      "title": "Meet.AI — the AI meeting assistant that listens, speaks and remembers",
+      "description": "Invite AI into your meetings like a teammate: it answers by voice, writes clean notes, assigns action items and remembers every decision. Free to start."
+    },
+    "nav": {
+      "features": "Features",
+      "useCases": "Use cases",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "blog": "Blog",
+      "signIn": "Sign in",
+      "getStarted": "Start for free",
+      "dashboard": "Go to dashboard",
+      "menu": "Open menu"
+    },
+    "hero": {
+      "badge": "Vietnamese-first",
+      "title": "Meetings with an AI that listens, speaks and remembers",
+      "subtitle": "Invite AI into your meeting like a teammate: ask it anything out loud, get clean notes minutes later, automatic action items, and a memory of every decision.",
+      "primaryCta": "Start for free",
+      "secondaryCta": "See the demo",
+      "noCard": "No credit card required",
+      "trust1": "Accurate Vietnamese",
+      "trust2": "Encrypted connections",
+      "trust3": "Delete your data any time"
+    },
+    "mock": {
+      "meetingName": "Q4 planning",
+      "recording": "REC",
+      "aiSpeaking": "AI is speaking",
+      "caption": "Mia, what price did we agree for Pro last week?",
+      "answer": "The team agreed on 149k VND a month; Nam updates the pricing page by Friday.",
+      "notesTitle": "Notes ready",
+      "note1": "Pro price set at 149k/month",
+      "note2": "Nam: update pricing page · Friday",
+      "note3": "Open: Q4 ad channels"
+    },
+    "builtWith": "Built on infrastructure from",
+    "problems": {
+      "title": "Lots of meetings, little memory, tasks slip",
+      "subtitle": "Problems every remote team knows.",
+      "items": [
+        {
+          "title": "Note-taking kills focus",
+          "description": "Whoever writes the minutes can barely take part."
+        },
+        {
+          "title": "Decisions get forgotten",
+          "description": "Everyone remembers differently and nobody owns the follow-up."
+        },
+        {
+          "title": "Multilingual meetings are hard",
+          "description": "Overseas clients, remote colleagues, scattered notes."
+        }
+      ],
+      "solutionTitle": "Meet.AI handles that for you",
+      "solution": "The AI joins the meeting, records everything and answers any question about it, even weeks later."
+    },
+    "how": {
+      "title": "Get started in 3 steps",
+      "steps": [
+        {
+          "title": "Pick an AI assistant",
+          "description": "Meeting secretary, interviewer, IELTS examiner… or your own."
+        },
+        {
+          "title": "Invite people",
+          "description": "Share a link. Guests need no account; the host admits them."
+        },
+        {
+          "title": "Get the notes",
+          "description": "Summary, decisions, action items and a transcript synced to video."
+        }
+      ]
+    },
+    "features": {
+      "title": "Everything a productive meeting needs",
+      "subtitle": "More than a recorder: the AI understands, answers and remembers.",
+      "items": [
+        {
+          "title": "AI that joins by voice",
+          "description": "Call the AI by name for instant answers, or let it facilitate and keep time."
+        },
+        {
+          "title": "Clean notes in any format",
+          "description": "6 formats: formal minutes, standup, sales, interview, lecture and more."
+        },
+        {
+          "title": "Automatic action items",
+          "description": "Owners, due dates and the moment in the meeting."
+        },
+        {
+          "title": "Ask AI about the meeting",
+          "description": "Answers come with timestamps that jump the video to the moment."
+        },
+        {
+          "title": "Transcript synced to video",
+          "description": "Click a line to jump there; search and filter by speaker."
+        },
+        {
+          "title": "Meeting analytics",
+          "description": "Talk time, questions asked and filler words per person."
+        }
+      ]
+    },
+    "useCases": {
+      "title": "One assistant, many uses",
+      "subtitle": "From team meetings to interview and IELTS practice.",
+      "learnMore": "Learn more"
+    },
+    "demo": {
+      "title": "Explore real meeting notes",
+      "subtitle": "Click a transcript line, or ask the AI a question.",
+      "transcript": "Transcript",
+      "notes": "Notes",
+      "ask": "Ask AI",
+      "askHint": "Pick a question:",
+      "meetingName": "Launch plan sign-off"
+    },
+    "pricing": {
+      "title": "Simple pricing, free to start",
+      "subtitle": "Upgrade when you need more meetings and more AI minutes.",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "save": "2 months free",
+      "perMonth": "/month",
+      "perSeat": "/seat/month",
+      "comingSoon": "Coming soon",
+      "current": "Start for free",
+      "plans": {
+        "free": {
+          "name": "Free",
+          "description": "To try it out and for personal use.",
+          "cta": "Start for free"
+        },
+        "pro": {
+          "name": "Pro",
+          "description": "For people who meet and practise often.",
+          "cta": "Try Pro"
+        },
+        "team": {
+          "name": "Team",
+          "description": "A shared workspace for your team.",
+          "cta": "Get notified"
+        }
+      },
+      "features": {
+        "meetings5": "5 meetings a month",
+        "agents1": "1 AI assistant",
+        "voice10": "10 AI voice minutes a month",
+        "participants3": "Up to 3 people per room",
+        "notes": "Notes, transcript, action items",
+        "askAi": "Ask AI about meetings",
+        "meetingsUnlimited": "Unlimited meetings",
+        "agentsUnlimited": "Unlimited AI assistants",
+        "voice60": "60 AI voice minutes a month",
+        "participants10": "Up to 10 people per room",
+        "templates": "Every notes format",
+        "share": "Share links, Markdown/PDF export",
+        "priority": "Priority support",
+        "everythingPro": "Everything in Pro",
+        "workspace": "Shared workspace",
+        "sharedMemory": "AI remembers team decisions",
+        "admin": "Member management",
+        "seats": "Per seat, minimum 3"
+      },
+      "creditsTitle": "Need more AI minutes?",
+      "creditsDescription": "Top up with AI voice minute packs, valid for a year.",
+      "creditsPack": "{minutes} minutes",
+      "vat": "Prices exclude VAT. Payments via Polar with international cards."
+    },
+    "security": {
+      "title": "Your data is protected",
+      "subtitle": "Privacy by design, not an add-on.",
+      "items": [
+        {
+          "title": "Recording consent",
+          "description": "Everyone sees the recording and AI notice before joining."
+        },
+        {
+          "title": "Access control",
+          "description": "People only get into meetings they're invited to; hosts admit guests."
+        },
+        {
+          "title": "Expiring links",
+          "description": "Recordings open only through short-lived signed links after an access check."
+        },
+        {
+          "title": "Export and delete",
+          "description": "Download all your data or delete your account from settings."
+        }
+      ],
+      "cta": "Learn about security"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": [
+        {
+          "question": "How is Meet.AI different from a note-taker?",
+          "answer": "The AI doesn't just record: it joins by voice, answers when called by name, and you can ask it about the meeting later with timestamped answers."
+        },
+        {
+          "question": "Does it support Vietnamese?",
+          "answer": "Yes. The interface, the AI voice and the notes all support Vietnamese. Vietnamese transcripts are generated from the recording after the meeting for accurate diacritics."
+        },
+        {
+          "question": "Do participants need an account?",
+          "answer": "No. Guests open the invite link and type their name; the host can admit each person."
+        },
+        {
+          "question": "What does the free plan include?",
+          "answer": "5 meetings and 10 AI voice minutes a month, 1 AI assistant and up to 3 people per room. Notes, transcripts and Ask AI are included."
+        },
+        {
+          "question": "How are AI minutes counted?",
+          "answer": "Only the time the AI speaks counts. Notes, transcripts and text Ask AI don't use AI minutes. In “Silent” mode the AI never speaks, so it uses none."
+        },
+        {
+          "question": "Where is meeting data stored?",
+          "answer": "On the cloud providers listed in our Privacy Policy. You can download or delete your data at any time."
+        },
+        {
+          "question": "Does it work on mobile?",
+          "answer": "Yes. Meet.AI runs in mobile browsers, no app install needed."
+        },
+        {
+          "question": "Can I cancel any time?",
+          "answer": "Yes. Manage or cancel your plan in the billing portal; it stays active until the end of the paid period."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Let AI take the notes at your next meeting",
+      "subtitle": "Create an account in 30 seconds and try a meeting with AI today.",
+      "cta": "Start for free"
+    },
+    "footer": {
+      "tagline": "The AI meeting assistant, Vietnamese-first.",
+      "product": "Product",
+      "solutions": "Solutions",
+      "resources": "Resources",
+      "legal": "Legal",
+      "changelog": "Changelog",
+      "about": "About",
+      "contact": "Contact",
+      "security": "Security",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "cookies": "Cookies",
+      "rights": "© {year} Meet.AI."
+    },
+    "lead": {
+      "name": "Name",
+      "email": "Email",
+      "message": "Message",
+      "submit": "Send",
+      "success": "Thank you! We'll be in touch soon.",
+      "error": "Couldn't send, please try again.",
+      "teamTitle": "Get notified when Team launches",
+      "teamDescription": "Leave your email and we'll tell you first."
+    },
+    "cookie": {
+      "text": "We use essential cookies to keep you signed in, and analytics cookies only with your consent.",
+      "accept": "Accept",
+      "decline": "Essential only",
+      "learnMore": "Learn more"
+    },
+    "pages": {
+      "home": "Home",
+      "pricing": {
+        "metaTitle": "Meet.AI pricing: free to start, Pro from $6/month",
+        "metaDescription": "Compare Meet.AI Free, Pro and Team plans. Pay monthly or yearly, and buy extra AI minutes when you need them.",
+        "faqTitle": "Billing questions",
+        "faq": [
+          {
+            "question": "Do I need a card for the Free plan?",
+            "answer": "No. The Free plan needs no card and has no time limit."
+          },
+          {
+            "question": "What happens when I run out of AI voice minutes?",
+            "answer": "The meeting continues and the AI switches to notes-only. You can buy a minute pack or upgrade."
+          },
+          {
+            "question": "Can I cancel any time?",
+            "answer": "Yes. Cancel in Settings; your plan stays active until the end of the paid period."
+          },
+          {
+            "question": "Do I get invoices?",
+            "answer": "Yes, an invoice is emailed after every payment."
+          }
+        ]
+      },
+      "useCase": {
+        "breadcrumb": "Use cases",
+        "painsTitle": "Sound familiar?",
+        "benefitsTitle": "How Meet.AI helps",
+        "stepsTitle": "How to start",
+        "faqTitle": "Frequently asked questions",
+        "ctaTitle": "Try it free",
+        "ctaSubtitle": "Create an account in 30 seconds, pick a ready-made assistant and start.",
+        "otherTitle": "Other use cases"
+      },
+      "blog": {
+        "metaTitle": "Meet.AI blog: better meetings, speaking practice, AI meeting notes",
+        "metaDescription": "Articles on running better meetings, writing minutes, and practising interviews and IELTS Speaking with an AI assistant.",
+        "title": "Blog",
+        "subtitle": "Tips for better meetings and getting the most out of AI.",
+        "readMore": "Read article",
+        "back": "All articles",
+        "ctaTitle": "Let AI take notes in your next meeting",
+        "ctaSubtitle": "Free to start, no card needed."
+      },
+      "legal": {
+        "updated": "Last updated: {date}",
+        "draft": "Draft: this content is still being finalised and has not been reviewed by a lawyer."
+      },
+      "security": {
+        "metaTitle": "Security and privacy at Meet.AI",
+        "metaDescription": "How Meet.AI protects meetings, recordings and personal data: access control, short-lived signed links, recording consent, data deletion.",
+        "title": "Security at Meet.AI",
+        "subtitle": "Meetings hold sensitive information. Here is how we protect it.",
+        "sections": [
+          {
+            "title": "Access control",
+            "items": [
+              "Only the organizer and invited people can join a meeting.",
+              "Guests go through a waiting room and the host admits each one.",
+              "Video call tokens only work for that meeting and expire within hours."
+            ]
+          },
+          {
+            "title": "Recordings and notes",
+            "items": [
+              "Recordings open only through short-lived signed links after an access check.",
+              "Shared notes links are read-only and can be revoked at any time.",
+              "You can delete a meeting or your whole account in Settings."
+            ]
+          },
+          {
+            "title": "Consent and transparency",
+            "items": [
+              "Everyone sees a recording and AI notice before joining.",
+              "The list of data processors is published in the Privacy Policy.",
+              "Analytics cookies are only enabled with your consent."
+            ]
+          },
+          {
+            "title": "Infrastructure",
+            "items": [
+              "All connections use HTTPS with HSTS and security headers.",
+              "Rate limits on sign-in, meeting creation and costly APIs.",
+              "Webhooks are signature-verified and deduplicated."
+            ]
+          }
+        ],
+        "reportTitle": "Report a vulnerability",
+        "report": "If you find a security issue, please send it through the Contact page. We respond within 72 hours."
+      },
+      "about": {
+        "metaTitle": "About Meet.AI",
+        "metaDescription": "Meet.AI is an AI meeting assistant built Vietnamese-first: it listens, speaks and remembers.",
+        "title": "About Meet.AI",
+        "lead": "We believe meetings are for deciding, not for taking notes.",
+        "body": [
+          "Most note-taking tools are built for English. In Vietnamese, transcripts lose their diacritics, names come out wrong and notes miss the point. Meet.AI started from that problem.",
+          "Meet.AI invites an AI assistant into the meeting like a teammate: it listens, answers when called by name, writes notes the way Vietnamese teams write them, and remembers every decision so you can ask later.",
+          "Beyond team meetings, Meet.AI is an interview practice partner, an IELTS Speaking examiner and a sales coach, available 24/7."
+        ],
+        "valuesTitle": "What we care about",
+        "values": [
+          {
+            "title": "Vietnamese first",
+            "description": "Every feature is designed and tested with Vietnamese."
+          },
+          {
+            "title": "Private by default",
+            "description": "Meeting data is yours and can be deleted at any time."
+          },
+          {
+            "title": "Fair pricing",
+            "description": "Free to start, and Pro costs about a coffee a week."
+          }
+        ]
+      },
+      "contact": {
+        "metaTitle": "Contact Meet.AI",
+        "metaDescription": "Send questions, feedback, partnership or personal data requests to the Meet.AI team.",
+        "title": "Contact",
+        "subtitle": "Questions, feedback, partnerships or data requests: we read and reply to everything.",
+        "emailLabel": "Or email us directly:"
+      },
+      "changelog": {
+        "metaTitle": "Meet.AI changelog",
+        "metaDescription": "The latest features and improvements in Meet.AI.",
+        "title": "Changelog",
+        "subtitle": "What's new in Meet.AI."
+      },
+      "legalLinks": {
+        "privacy": "Privacy Policy"
+      }
+    }
+  },
+  "billing": {
+    "title": "Plan & billing",
+    "description": "Your plan, this month's usage and payment history.",
+    "plans": {
+      "free": "Free",
+      "pro": "Pro"
+    },
+    "currentPlan": "Current plan",
+    "status": {
+      "active": "Active",
+      "trialing": "Trial",
+      "past_due": "Payment due",
+      "canceled": "Canceled",
+      "unpaid": "Unpaid"
+    },
+    "renewsOn": "Renews on {date}",
+    "endsOn": "Ends on {date}",
+    "freeForever": "Free, with no time limit.",
+    "pastDueHint": "Your renewal payment failed. Update your payment method to avoid interruption.",
+    "manage": "Manage billing",
+    "upgrade": "Upgrade to Pro",
+    "upgradeTo": "Upgrade ({price}/{interval})",
+    "interval": {
+      "month": "month",
+      "year": "year",
+      "week": "week",
+      "day": "day"
+    },
+    "sync": "Sync",
+    "synced": "Plan status updated.",
+    "syncFailed": "Could not sync, please try again later.",
+    "checkoutSuccess": "Payment successful! Your plan has been updated.",
+    "usageTitle": "This month's usage",
+    "usageResets": "Resets on the 1st of every month (UTC).",
+    "usage": {
+      "meetings": "Meetings",
+      "recordingMinutes": "Recorded minutes",
+      "agents": "Agents",
+      "aiVoice": "AI voice minutes",
+      "credits": "Includes {minutes} purchased minutes"
+    },
+    "compareTitle": "Compare plans",
+    "compare": {
+      "feature": "Feature",
+      "meetingsPerMonth": "Meetings per month",
+      "recordingMinutesPerMonth": "Recorded minutes per month",
+      "aiVoiceMinutesPerMonth": "AI voice minutes per month",
+      "maxAgents": "Agents",
+      "maxParticipants": "People per room",
+      "askAiPerHour": "AI questions per hour",
+      "recordingRetentionDays": "Recording retention",
+      "knowledgeDocuments": "Knowledge documents",
+      "unlimited": "Unlimited",
+      "days": "{count} days",
+      "none": "—"
+    },
+    "packsTitle": "Buy AI minutes",
+    "packsDescription": "Used after this month's AI minutes run out. They never expire.",
+    "packMinutes": "{minutes} AI minutes",
+    "buy": "Buy",
+    "packsUnavailable": "AI minute packs are not on sale yet.",
+    "productsError": "Could not load prices from the payment provider.",
+    "ordersTitle": "Payment history",
+    "ordersEmpty": "No payments yet.",
+    "orders": {
+      "date": "Date",
+      "item": "Item",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "orderStatus": {
+      "paid": "Paid",
+      "pending": "Pending",
+      "refunded": "Refunded",
+      "partially_refunded": "Partially refunded"
+    },
+    "paymentNote": "Payments are processed securely by Polar. Local QR bank transfers are coming soon.",
+    "loadError": "Could not load your plan. Please try again."
+  },
+  "quota": {
+    "title": {
+      "meetings": "You've used all meetings for this month",
+      "recordingMinutes": "You've used all recorded minutes for this month",
+      "agents": "Your plan's agent limit is reached",
+      "aiVoice": "You've used all AI voice minutes for this month",
+      "knowledgeDocuments": "Knowledge document limit reached"
+    },
+    "description": "Used {used}/{limit} on the {plan} plan. Upgrade to Pro to continue{voice, select, yes { or buy more AI minutes} other {}}.",
+    "upgrade": "See Pro plan",
+    "buyMinutes": "Buy minutes",
+    "later": "Later"
+  },
+  "memory": {
+    "title": "AI memory",
+    "description": "What the AI has learned from your meetings. Edit, archive or delete anything; deleted items are never brought up again.",
+    "types": {
+      "all": "All",
+      "decision": "Decisions",
+      "fact": "Facts",
+      "preference": "Preferences",
+      "todo": "Open items",
+      "glossary": "Glossary"
+    },
+    "searchPlaceholder": "Filter by text…",
+    "showArchived": "Show archived",
+    "empty": "Nothing remembered yet",
+    "emptyDescription": "After each meeting the AI remembers key decisions, facts and terms.",
+    "from": "From meeting {name}",
+    "shared": "Shared",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "archive": "Archive",
+    "restore": "Restore",
+    "delete": "Delete",
+    "deleteTitle": "Delete this memory?",
+    "deleteDescription": "The AI will no longer bring this up. This cannot be undone.",
+    "add": "Add to memory",
+    "addPlaceholder": "E.g. The team holds sprint review on Friday afternoon",
+    "definition": "Definition",
+    "saved": "Saved",
+    "deleted": "Deleted",
+    "toggleLabel": "Learn from meetings",
+    "toggleHint": "When on, the AI extracts what to remember after each meeting and is briefed before the next one.",
+    "tabs": {
+      "memory": "Memory",
+      "knowledge": "Knowledge"
+    },
+    "archived": "Archived"
+  },
+  "knowledge": {
+    "title": "Knowledge base",
+    "description": "Documents the agent uses to answer: PDF, TXT, Markdown, web pages or pasted text.",
+    "upload": "Upload file",
+    "uploadHint": "PDF, TXT, MD up to 4 MB. Only the text is kept.",
+    "addUrl": "Add web page",
+    "urlPlaceholder": "https://…",
+    "addText": "Paste text",
+    "textTitle": "Title",
+    "textBody": "Content",
+    "add": "Add",
+    "status": {
+      "processing": "Processing",
+      "ready": "Ready",
+      "failed": "Failed"
+    },
+    "chunks": "{count} chunks",
+    "empty": "No documents yet",
+    "emptyDescription": "Add product docs, processes or price lists so the AI answers accurately.",
+    "locked": "Knowledge base is part of Pro",
+    "lockedDescription": "Upgrade to add up to {count} documents for your agents.",
+    "upgrade": "See Pro plan",
+    "added": "Added, processing…",
+    "removed": "Document removed",
+    "remove": "Remove",
+    "usage": "{used}/{limit} documents"
+  },
+  "search": {
+    "title": "Search",
+    "description": "Search by meaning across all meetings, or ask the AI one question across them.",
+    "placeholder": "E.g. what price did we settle on for Pro?",
+    "search": "Search",
+    "ask": "Ask AI",
+    "asking": "The AI is reading your meetings…",
+    "answer": "Answer",
+    "noAnswer": "Nothing relevant found in your meetings yet.",
+    "moments": "Relevant moments",
+    "memories": "From memory",
+    "empty": "No results",
+    "emptyDescription": "Try other words. Only processed meetings are searchable.",
+    "hint": "Type at least 2 characters and press Enter.",
+    "openAt": "Open at {time}",
+    "sources": "Sources"
+  },
+  "practice": {
+    "title": "Practice",
+    "description": "Practise interviews, IELTS Speaking and sales 1:1 with AI and get a scorecard after each session.",
+    "scenarios": "Choose a scenario",
+    "start": "Start",
+    "starting": "Preparing the room…",
+    "kinds": {
+      "ielts": "IELTS",
+      "interview": "Interview",
+      "sales": "Sales"
+    },
+    "language": {
+      "vi": "Vietnamese",
+      "en": "English"
+    },
+    "historyTitle": "Practice history",
+    "historyEmpty": "No practice sessions yet",
+    "historyEmptyDescription": "Pick a scenario above to start your first session.",
+    "progressTitle": "Progress",
+    "progressHint": "Overall score of scored sessions.",
+    "scoring": "Scoring…",
+    "notScored": "Not scored",
+    "outOf": {
+      "band9": "/9",
+      "ten": "/10"
+    },
+    "disclaimer": "Scores are AI estimates for practice only, not an official test score or assessment.",
+    "scorecard": {
+      "tab": "Scorecard",
+      "overall": "Overall",
+      "criteria": "By criterion",
+      "strengths": "Strengths",
+      "improvements": "To improve",
+      "betterAnswers": "Better answers",
+      "you": "You said",
+      "better": "Try"
+    }
+  }
+}

@@ -1,48 +1,52 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import {
-  MAX_FREE_AGENTS,
-  MAX_FREE_MEETINGS,
-} from "@/modules/premium/constants";
-import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { RocketIcon } from "lucide-react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 
+import { Button } from "@/components/ui/button";
+import { UsageMeter } from "@/components/usage-meter";
+import { Link } from "@/i18n/navigation";
+import { track } from "@/lib/analytics";
+import { useTRPC } from "@/trpc/client";
+
+// Free-plan usage in the sidebar; hidden on paid plans.
 export const DashboardTrial = () => {
+  const t = useTranslations("usage");
   const trpc = useTRPC();
 
-  const { data } = useQuery(trpc.premium.getFreeUsage.queryOptions());
+  const { data } = useQuery(trpc.billing.getOverview.queryOptions());
 
-  if (!data) return null;
+  if (!data || data.plan.id !== "free") return null;
+  const { usage } = data;
 
   return (
-    <div className="border border-border/10 rounded-lg w-full bg-white/5 flex flex-col gap-y-2">
-      <div className="p-3 flex flex-col gap-y-4">
+    <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/40 flex flex-col">
+      <div className="p-3 flex flex-col gap-y-3">
         <div className="flex items-center gap-2">
-          <RocketIcon className="size-4" />
-          <p className="text-sm font-medium">Free Trial</p>
+          <RocketIcon className="size-4 text-sidebar-primary" />
+          <p className="text-sm font-medium">{t("freePlan")}</p>
         </div>
-        <div className="flex flex-col gap-y-2">
-          <p className="text-xs">
-            {data.agentCount}/{MAX_FREE_AGENTS} Agents
-          </p>
-          <Progress value={(data.agentCount / MAX_FREE_AGENTS) * 100} />
-        </div>
-        <div className="flex flex-col gap-y-2">
-          <p className="text-xs">
-            {data.meetingCount}/{MAX_FREE_MEETINGS} Meetings
-          </p>
-          <Progress value={(data.meetingCount / MAX_FREE_MEETINGS) * 100} />
-        </div>
+        <UsageMeter label={t("agents")} used={usage.agents.used} limit={usage.agents.limit} />
+        <UsageMeter
+          label={t("meetingsThisMonth")}
+          used={usage.meetings.used}
+          limit={usage.meetings.limit}
+        />
+        <UsageMeter
+          label={t("aiVoice")}
+          used={usage.aiVoice.usedMinutes}
+          limit={usage.aiVoice.includedMinutes + usage.aiVoice.creditMinutes}
+        />
       </div>
       <Button
-        className="bg-transparent border-t border-border/10 hover:bg-white/10 rounded-t-none"
         asChild
+        size="sm"
+        className="m-3 mt-0 bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
       >
-        <Link href="/dashboard/upgrade">Upgrade</Link>
+        <Link href="/dashboard/billing" onClick={() => track("upgrade_clicked", { source: "sidebar" })}>
+          {t("upgrade")}
+        </Link>
       </Button>
     </div>
   );

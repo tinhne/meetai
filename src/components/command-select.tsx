@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { ChevronsUpDownIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ReactNode, useState } from "react";
 
 interface Props {
@@ -22,6 +23,7 @@ interface Props {
   placeholder?: string;
   isSearchable?: boolean;
   className?: string;
+  disabled?: boolean;
 }
 
 export const CommandSelect = ({
@@ -31,7 +33,9 @@ export const CommandSelect = ({
   value,
   placeholder = "select and options...",
   className,
+  disabled,
 }: Props) => {
+  const t = useTranslations("common");
   const [open, setOpen] = useState(false);
   const selectedOption = options.find((option) => option.value === value);
 
@@ -45,6 +49,7 @@ export const CommandSelect = ({
       <Button
         onClick={() => setOpen(true)}
         type="button"
+        disabled={disabled}
         variant="outline"
         className={cn(
           "h-9 justify-between font-normal px-2",
@@ -60,10 +65,10 @@ export const CommandSelect = ({
         open={open}
         onOpenChange={handleOpenChange}
       >
-        <CommandInput placeholder="Search..." onValueChange={onSearch} />
+        <CommandInput placeholder={t("search")} onValueChange={onSearch} />
         <CommandList>
           <CommandEmpty className="text-muted-foreground text-sm">
-            <span>No options found</span>
+            <span>{t("noOptions")}</span>
           </CommandEmpty>
           {options.map((option) => (
             <CommandItem

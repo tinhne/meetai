@@ -1,5 +1,7 @@
+import { useTranslations } from "next-intl";
+
 import { ResponsiveDialog } from "@/components/responsive-dialog";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { MeetingForm } from "./meeting-form";
 
 interface NewMeetingDialogProps {
@@ -11,14 +13,15 @@ export const NewMeetingDialog = ({
   open,
   onOpenChange,
 }: NewMeetingDialogProps) => {
+  const t = useTranslations("meetings");
   const router = useRouter();
 
   return (
     <ResponsiveDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="New Meeting"
-      description="Create a new meeting"
+      title={t("newTitle")}
+      description={t("newDescription")}
     >
       <MeetingForm
         onSuccess={(id) => {

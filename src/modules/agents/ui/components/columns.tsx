@@ -1,49 +1,54 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { AgentGetMany } from "../../types";
+import { MicIcon, VideoIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useMemo } from "react";
+
 import { GeneratedAvatar } from "@/components/generated-avatar";
-import { CornerDownRightIcon, VideoIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { AgentGetMany } from "../../types";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
+export const useAgentColumns = () => {
+  const t = useTranslations("agents.columns");
 
-export const columns: ColumnDef<AgentGetMany[number]>[] = [
-  {
-    accessorKey: "name",
-    header: "Agent Name",
-    cell: ({ row }) => (
-      <div className="flex flex-col gap-y-1">
-        <div className="flex items-center gap-x-2">
-          <GeneratedAvatar
-            variant="botttsNeutral"
-            seed={row.original.name}
-            className="size-6"
-          />
-          <span className="font-semibold capitalize">{row.original.name}</span>
-        </div>
-        <div className="flex items-center gap-x-2">
-          <CornerDownRightIcon className="size-3 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground max-w-[200px] truncate capitalize">
-            {row.original.instructions}
+  return useMemo<ColumnDef<AgentGetMany[number]>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: t("name"),
+        cell: ({ row }) => (
+          <div className="flex min-w-0 items-center gap-3">
+            <GeneratedAvatar variant="botttsNeutral" seed={row.original.name} className="size-9 shrink-0" />
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="truncate font-semibold">{row.original.name}</span>
+              <span className="line-clamp-1 max-w-md text-sm text-muted-foreground">
+                {row.original.instructions}
+              </span>
+            </div>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "voice",
+        header: "",
+        cell: ({ row }) => (
+          <span className="flex items-center gap-1.5 text-sm capitalize text-muted-foreground">
+            <MicIcon className="size-4" aria-hidden />
+            {row.original.voice}
           </span>
-        </div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "meetingCount",
-    header: "Meetings",
-    cell: ({ row }) => (
-      <Badge
-        variant="outline"
-        className="flex items-center gap-x-2 [&>svg]:size-4"
-      >
-        <VideoIcon className="text-blue-700" />
-        {row.original.meetingCount}{" "}
-        {row.original.meetingCount === 1 ? "meeting" : "meetings"}
-      </Badge>
-    ),
-  },
-];
+        ),
+      },
+      {
+        accessorKey: "meetingCount",
+        header: t("meetings"),
+        cell: ({ row }) => (
+          <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <VideoIcon className="size-4 text-info" aria-hidden />
+            {t("meetingCount", { count: row.original.meetingCount })}
+          </span>
+        ),
+      },
+    ],
+    [t],
+  );
+};

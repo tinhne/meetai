@@ -1,3 +1,8 @@
+"use client";
+
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { Button } from "@/components/ui/button";
 
 interface Props {
@@ -7,31 +12,35 @@ interface Props {
 }
 
 export const DataPagination = ({ page, totalPages, onPageChange }: Props) => {
+  const t = useTranslations("table");
+  const tCommon = useTranslations("common");
+  const total = totalPages || 1;
+
+  if (total <= 1) return null;
+
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex-1 text-sm text-muted-foreground">
-        Page {page} of {totalPages || 1}
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
+    <nav className="flex items-center justify-between gap-2" aria-label={tCommon("pagination")}>
+      <p className="text-sm text-muted-foreground">{t("page", { page, total })}</p>
+      <div className="flex gap-2">
         <Button
-          variant={"outline"}
+          variant="outline"
+          size="sm"
           onClick={() => onPageChange(Math.max(1, page - 1))}
           disabled={page === 1}
-          size={"sm"}
         >
-          Previous
+          <ChevronLeftIcon />
+          {t("previous")}
         </Button>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
         <Button
-          variant={"outline"}
-          onClick={() => onPageChange(Math.min(page + 1, totalPages || 1))}
-          disabled={page === totalPages || totalPages === 0}
-          size={"sm"}
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(Math.min(page + 1, total))}
+          disabled={page >= total}
         >
-          Next
+          {t("next")}
+          <ChevronRightIcon />
         </Button>
       </div>
-    </div>
+    </nav>
   );
 };
