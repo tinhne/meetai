@@ -35,7 +35,7 @@ interface DispatchAgent {
 // Development fallback only: sessions started in this process.
 const localSessions = new Map<string, AgentSessionHandle>();
 
-async function callWorker(path: string, payload: Record<string, unknown>) {
+async function callWorker(path: string, payload: Record<string, unknown>, timeoutMs = 10_000) {
   if (!env.AGENT_WORKER_URL || !env.WORKER_SHARED_SECRET) return;
 
   const body = JSON.stringify(payload);
@@ -48,11 +48,28 @@ async function callWorker(path: string, payload: Record<string, unknown>) {
       "x-worker-signature": signWorkerRequest(env.WORKER_SHARED_SECRET, body, timestamp),
     },
     body,
-    signal: AbortSignal.timeout(10_000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 
   if (!response.ok) {
     throw new Error(`Agent worker responded ${response.status}`);
+  }
+}
+
+// Wakes the worker while the host is in the lobby: a free host (Render) puts
+// it to sleep when idle and takes about a minute to start again.
+export function warmUpWorker() {
+  if (!env.AGENT_WORKER_URL) return;
+  const ping = fetch(new URL("/health", env.AGENT_WORKER_URL), {
+    signal: AbortSignal.timeout(60_000),
+  }).then(
+    () => undefined,
+    () => undefined,
+  );
+  try {
+    after(() => ping);
+  } catch {
+    // outside a request
   }
 }
 
@@ -117,7 +134,20 @@ export async function startAgentForMeeting(
   }
 
   if (env.AGENT_WORKER_URL) {
-    await callWorker("/sessions", { meetingId: meeting.id, voiceSecondsRemaining });
+    // Dispatch in the background with a long timeout, so the webhook answers
+    // at once even when the worker is still waking up.
+    const dispatch = callWorker(
+      "/sessions",
+      { meetingId: meeting.id, voiceSecondsRemaining },
+      75_000,
+    ).catch((error: unknown) =>
+      console.error("[agent] worker dispatch failed:", error instanceof Error ? error.message : error),
+    );
+    try {
+      after(() => dispatch);
+    } catch {
+      await dispatch;
+    }
     return { started: true, reason: "worker" };
   }
 

@@ -1,0 +1,39 @@
+# Render Blueprint: the Meet.AI agent worker on the free plan.
+# Setup steps: worker/README.md ("Deploy on Render, free").
+services:
+  - type: web
+    name: meetai-agent-worker
+    runtime: docker
+    plan: free
+    # Neon (us-west-2), Stream and OpenAI are all in the US.
+    region: oregon
+    dockerfilePath: ./worker/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    # Rebuild only when a file the worker image copies changes.
+    buildFilter:
+      paths:
+        - worker/**
+        - tsconfig.json
+        - src/db/schema.ts
+        - src/config/ai.ts
+        - src/config/plans.ts
+        - src/lib/text.ts
+        - src/server/ai/prompts.ts
+        - src/modules/agents/lib/**
+        - src/modules/meetings/lib/stream.ts
+        - src/server/billing/ledger.ts
+        - src/server/memory/briefing.ts
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_STREAM_VIDEO_API_KEY
+        sync: false
+      - key: STREAM_VIDEO_SECRET_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      # Copy this generated value to WORKER_SHARED_SECRET on Vercel.
+      - key: WORKER_SHARED_SECRET
+        generateValue: true

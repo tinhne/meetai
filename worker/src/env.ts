@@ -9,6 +9,10 @@ const schema = z.object({
   OPENAI_REALTIME_MODEL: z.string().optional(),
   WORKER_SHARED_SECRET: z.string().min(32),
   AI_VOICE_ENABLED: z.stringbool().default(true),
+  // Public URL to ping so a free host does not put the worker to sleep.
+  // Render sets RENDER_EXTERNAL_URL on its own.
+  KEEP_ALIVE_URL: z.url().optional(),
+  RENDER_EXTERNAL_URL: z.url().optional(),
 });
 
 const result = schema.safeParse(process.env);

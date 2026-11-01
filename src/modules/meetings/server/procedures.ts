@@ -34,7 +34,7 @@ import { buildIcsInvite } from "@/lib/ics";
 import { sendMeetingInviteEmail } from "@/lib/email";
 import { createInvitePass } from "@/modules/meetings/lib/invite-pass";
 import { warnIfNearQuota } from "@/server/billing/quota";
-import { askAgentInMeeting, setAgentModeInMeeting } from "@/server/agent-dispatch";
+import { askAgentInMeeting, setAgentModeInMeeting, warmUpWorker } from "@/server/agent-dispatch";
 import { assertRoomForMore, participantDisplayName } from "@/server/participants";
 import { inngest } from "@/inngest/client";
 import { deleteFromStorage, getSignedDownloadUrl } from "@/server/storage";
@@ -567,6 +567,7 @@ export const meetingsRouter = createTRPCRouter({
           image: image ?? generateAvatar(name || "Unknown User", "initials"),
         },
       ]);
+      warmUpWorker();
 
       const issuedAt = Math.floor(Date.now() / 1000) - 60; // clock skew
 
