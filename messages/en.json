@@ -792,12 +792,16 @@
         "workspace": "Shared workspace",
         "sharedMemory": "AI remembers team decisions",
         "admin": "Member management",
-        "seats": "Per seat, minimum 3"
+        "seats": "Per seat, minimum 3",
+        "recording60": "60 recorded minutes a month",
+        "recording600": "600 recorded minutes a month (10 hours)"
       },
       "creditsTitle": "Need more AI minutes?",
-      "creditsDescription": "Top up with AI voice minute packs, valid for a year.",
+      "creditsDescription": "Buy extra AI voice minutes once the month's minutes run out. Purchased minutes never expire.",
       "creditsPack": "{minutes} minutes",
-      "vat": "Prices exclude VAT. Payments via Polar with international cards."
+      "vat": "Prices exclude VAT. Payments via Polar with international cards.",
+      "billedYearly": "Billed {price} per year",
+      "billedYearlyPerSeat": "Billed {price} per seat per year"
     },
     "security": {
       "title": "Your data is protected",
@@ -898,7 +902,7 @@
     "pages": {
       "home": "Home",
       "pricing": {
-        "metaTitle": "Meet.AI pricing: free to start, Pro from $6/month",
+        "metaTitle": "Meet.AI pricing: free to start, Pro from $7.99/month",
         "metaDescription": "Compare Meet.AI Free, Pro and Team plans. Pay monthly or yearly, and buy extra AI minutes when you need them.",
         "faqTitle": "Billing questions",
         "faq": [

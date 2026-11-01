@@ -244,15 +244,15 @@ P0 = cần để bán · P1 = tạo khác biệt · P2 = tăng trưởng.
 
 ---
 
-## 6. Mô hình kiếm tiền (đề xuất ban đầu — chỉnh sau khi đo cost thật)
+## 6. Mô hình kiếm tiền (chốt 2026-11-01 — chỉnh lại sau khi đo cost thật)
 
 Chi phí biến đổi lớn nhất là **phút AI nói** → bán theo phút + credit pack, không bán "không giới hạn AI".
 
 | | Free | Pro | Team | Business |
 |---|---|---|---|---|
-| Giá | 0đ | **149.000đ (~$6)/tháng** | **119.000đ/người/tháng** (tối thiểu 3) | Liên hệ |
+| Giá | 0đ | **199.000đ ($7.99)/tháng** hoặc **1.990.000đ ($79)/năm** | **119.000đ/người/tháng** (tối thiểu 3, chưa mở bán) | Liên hệ |
 | Cuộc họp | 5 / tháng | Không giới hạn | Không giới hạn | Không giới hạn |
-| Phút ghi + biên bản | 60 / tháng | 1.200 / tháng | 1.500 / người | Tuỳ chỉnh |
+| Phút ghi + biên bản | 60 / tháng | 600 / tháng | 1.500 / người | Tuỳ chỉnh |
 | **Phút AI nói** | 10 / tháng | 60 / tháng | 60 / người (dùng chung pool) | Tuỳ chỉnh |
 | Agent | 1 | Không giới hạn | Không giới hạn | Không giới hạn |
 | Người tham gia / phòng | 3 | 10 | 50 | Tuỳ chỉnh |
@@ -260,12 +260,19 @@ Chi phí biến đổi lớn nhất là **phút AI nói** → bán theo phút + 
 | Templates, export, translated captions | Cơ bản | ✓ | ✓ | ✓ |
 | Memory & Knowledge Base | — | 20 tài liệu | Dùng chung workspace | ✓ + SSO, paid AI tier (không train) |
 
-- **Credit pack phút AI:** 60 phút = 79.000đ; 300 phút = 299.000đ.
+- **Credit pack phút AI (không hết hạn):** 60 phút = 179.000đ ($6.99); 200 phút = 499.000đ ($19.99). Mỗi phút AI nói kéo theo ~2,5 phút gọi Stream, nên giá ~2.500–3.000đ/phút để vẫn có lãi.
 - **Gói Practice (B2C):** 10 lượt mock IELTS/phỏng vấn = 249.000đ.
 - **Thanh toán:**
   - Polar (merchant of record, thẻ quốc tế, USD) cho thị trường global → chuyển sang `production`.
   - Thêm **SePay/PayOS** (chuyển khoản QR) cho người dùng Việt ở phase sau.
-- **Biên lợi nhuận Pro:** 60 phút AI × $0.03 ≈ $1.8; transcription và storage khoảng <$1 → margin ~60–70% *(cần đo thực tế)*.
+- **Chi phí ước tính (giá công bố 11/2026, chưa có số liệu dùng thật):**
+  - OpenAI gpt-realtime-mini ≈ $0.04–0.05 / phút AI nói (audio ra $20/1M, audio vào $10/1M, cache $0.30/1M).
+  - Stream ≈ $0.012–0.016 / phút gọi có ghi hình (chép lời $8/1.000 phút là phần lớn nhất; $100 miễn phí mỗi tháng).
+  - Gemini trả phí ≈ $0.005 / phút ghi (hiện dùng free tier).
+  - 1 buổi IELTS 12 phút ≈ $0.45.
+  - Polar (org mới, gói Starter): 5% + $0.50, thêm 1,5% với thẻ ngoài Mỹ. Pro $7.99 → nhận về ~$6.97.
+  - Cố định ≈ $30–45/tháng (Vercel Pro $20 bắt buộc khi bán, Railway ~$5, Neon $0–19) → hoà vốn ~6–10 khách Pro.
+- **Biên lợi nhuận Pro:** dùng ~25 phút AI + 200 phút ghi/tháng → chi phí ~$5.3, lãi mỏng; sau khi bỏ chép lời Stream và ghi chỉ âm thanh cho buổi luyện tập 1-1 → chi phí ~$2.9, lãi ~55–60%. Dùng hết hạn mức thì lỗ, nên giữ giới hạn.
 - **Stream:** kiểm tra điều kiện "Maker Account" (miễn phí cho team nhỏ và doanh thu thấp) để giảm cost giai đoạn đầu.
 - **Growth loops:**
   - Aha moment trong < 3 phút (onboarding: gọi thử 2 phút với AI template).

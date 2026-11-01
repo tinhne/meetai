@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  monthlyEquivalent,
   PRICING_PLANS,
   VOICE_CREDIT_PACKS,
   type BillingCycle,
@@ -57,7 +58,9 @@ export const PricingSection = ({ headingLevel = "h2" }: { headingLevel?: "h1" | 
 
       <div className="grid gap-4 lg:grid-cols-3">
         {PRICING_PLANS.map((plan) => {
-          const price = plan[cycle];
+          // Yearly plans are billed once a year but compared per month.
+          const billed = plan[cycle];
+          const price = billed && cycle === "yearly" ? monthlyEquivalent(billed) : billed;
           return (
             <div
               key={plan.id}
@@ -75,16 +78,25 @@ export const PricingSection = ({ headingLevel = "h2" }: { headingLevel?: "h1" | 
                 <h3 className="text-lg font-semibold">{t(`plans.${plan.id}.name`)}</h3>
                 <p className="text-sm text-muted-foreground">{t(`plans.${plan.id}.description`)}</p>
               </div>
-              <p className="flex items-baseline gap-1">
-                <span className="text-4xl font-bold tracking-tight">
-                  {price ? formatPrice(price[currency], currency, locale) : "—"}
-                </span>
-                {price && price[currency] > 0 && (
-                  <span className="text-sm text-muted-foreground">
-                    {plan.id === "team" ? t("perSeat") : t("perMonth")}
+              <div className="flex flex-col gap-1">
+                <p className="flex items-baseline gap-1">
+                  <span className="text-4xl font-bold tracking-tight">
+                    {price ? formatPrice(price[currency], currency, locale) : "—"}
                   </span>
+                  {price && price[currency] > 0 && (
+                    <span className="text-sm text-muted-foreground">
+                      {plan.id === "team" ? t("perSeat") : t("perMonth")}
+                    </span>
+                  )}
+                </p>
+                {cycle === "yearly" && billed && billed[currency] > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {t(plan.id === "team" ? "billedYearlyPerSeat" : "billedYearly", {
+                      price: formatPrice(billed[currency], currency, locale),
+                    })}
+                  </p>
                 )}
-              </p>
+              </div>
               {plan.available ? (
                 <AuthCta
                   location={`pricing-${plan.id}`}
