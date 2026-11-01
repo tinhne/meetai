@@ -11,6 +11,7 @@ import {
   XCircleIcon,
 } from "lucide-react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -56,14 +57,18 @@ export const JoinView = ({ code }: Props) => {
 
   const info = useQuery({ ...trpc.join.getInfo.queryOptions({ code }), retry: false });
   const viewerStatus = info.data?.viewer.status ?? null;
+  const isOwner = info.data?.viewer.kind === "owner";
 
-  // While waiting, poll until the host decides.
+  // Poll while waiting for the host to admit us or to start the meeting.
   const status = useQuery({
     ...trpc.join.status.queryOptions({ code }),
-    enabled: viewerStatus === "waiting",
+    enabled:
+      viewerStatus === "waiting" ||
+      (viewerStatus === "admitted" && !isOwner && info.data?.started === false),
     refetchInterval: 3000,
   });
   const currentStatus = status.data?.status ?? viewerStatus;
+  const started = status.data?.started ?? info.data?.started ?? false;
 
   if (info.isPending) {
     return (
@@ -95,7 +100,24 @@ export const JoinView = ({ code }: Props) => {
     );
   }
 
-  if (currentStatus === "admitted") return <JoinedCall code={code} meeting={meeting} />;
+  if (currentStatus === "admitted" && (started || isOwner)) {
+    return <JoinedCall code={code} meeting={meeting} />;
+  }
+
+  // Admitted early, or waiting before the host is in: the page joins (or
+  // shows the host's decision) on its own once the meeting starts.
+  if (currentStatus === "admitted" || (currentStatus === "waiting" && !started)) {
+    return (
+      <Card>
+        <MeetingSummary meeting={meeting} />
+        <div className="flex flex-col items-center gap-2 text-center" role="status" aria-live="polite">
+          <LoaderIcon className="size-6 animate-spin text-primary" />
+          <p className="font-medium">{t("hostNotStartedTitle")}</p>
+          <p className="text-sm text-muted-foreground">{t("hostNotStartedDescription")}</p>
+        </div>
+      </Card>
+    );
+  }
 
   if (currentStatus === "waiting") {
     return (
@@ -189,6 +211,8 @@ const RequestForm = ({
   const t = useTranslations("join");
   const tCall = useTranslations("call");
   const trpc = useTRPC();
+  // Personal link from an email invite: skips the waiting room.
+  const invite = useSearchParams().get("invite") ?? undefined;
   const [name, setName] = useState("");
   const [consent, setConsent] = useState(false);
   const isAnonymous = meeting.viewer.kind === "anonymous";
@@ -207,6 +231,7 @@ const RequestForm = ({
       code,
       consent: true,
       guestName: isAnonymous ? name : undefined,
+      invite,
     });
   };
 

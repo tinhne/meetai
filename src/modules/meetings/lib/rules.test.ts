@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { canJoinMeeting, planMeetingUpdate } from "./rules";
+import { canEnterCall, canJoinMeeting, nextAutoAiMode, planMeetingUpdate } from "./rules";
 
 const input = {
   name: "Weekly sync",
@@ -83,5 +83,27 @@ describe("canJoinMeeting", () => {
     ] as const) {
       expect(canJoinMeeting(status)).toBe(false);
     }
+  });
+});
+
+describe("canEnterCall", () => {
+  it("lets only the host start a meeting", () => {
+    expect(canEnterCall("upcoming", true)).toBe(true);
+    expect(canEnterCall("upcoming", false)).toBe(false);
+    expect(canEnterCall("active", false)).toBe(true);
+    expect(canEnterCall("processing", true)).toBe(false);
+  });
+});
+
+describe("nextAutoAiMode", () => {
+  it("quiets the AI when a second person joins", () => {
+    expect(nextAutoAiMode({ mode: "conversational", people: 2, autoSwitched: false })).toBe("on_demand");
+    expect(nextAutoAiMode({ mode: "conversational", people: 1, autoSwitched: false })).toBeNull();
+  });
+
+  it("goes back to 1-1 only when it switched on its own", () => {
+    expect(nextAutoAiMode({ mode: "on_demand", people: 1, autoSwitched: true })).toBe("conversational");
+    expect(nextAutoAiMode({ mode: "on_demand", people: 1, autoSwitched: false })).toBeNull();
+    expect(nextAutoAiMode({ mode: "silent", people: 3, autoSwitched: false })).toBeNull();
   });
 });

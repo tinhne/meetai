@@ -194,6 +194,9 @@
     "retryStarted": "Processing the meeting again…"
   },
   "call": {
+    "aiGroupNotice": "{name} (AI) is listening and taking notes. Say \"{name}\" or press Ask AI to ask.",
+    "aiAutoConversational": "It's just you again: {name} is back to 1-1 conversation.",
+    "aiAutoOnDemand": "More people joined: {name} now answers only when called by name.",
     "connecting": "Connecting…",
     "lobbyTitle": "Ready to join?",
     "lobbySubtitle": "Check your camera and microphone before joining.",
@@ -266,6 +269,8 @@
     "locked": "Locked"
   },
   "join": {
+    "hostNotStartedDescription": "Keep this page open; you will join as soon as the host arrives.",
+    "hostNotStartedTitle": "Waiting for the host to start the meeting",
     "metaTitle": "Join meeting",
     "hostedBy": "Hosted by {name}",
     "withAi": "With AI assistant {name}",

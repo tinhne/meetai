@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AIStatusIndicator, type AIStatus } from "@/components/ai-status-indicator";
@@ -33,6 +33,7 @@ import type { AiMode } from "@/config/ai";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn, formatTimestamp } from "@/lib/utils";
+import { nextAutoAiMode } from "@/modules/meetings/lib/rules";
 import { toStreamTranscriptionLanguage } from "@/modules/meetings/lib/stream";
 import { useTRPC } from "@/trpc/client";
 import { useCallRoom } from "./call-context";
@@ -90,6 +91,11 @@ export const CallRoom = ({ onLeave }: Props) => {
   );
 
   const agent = participants.find((participant) => participant.userId === room.agentId);
+  const agentName = agent?.name || "AI";
+  const hasAgent = !!agent;
+  // People in the room, not counting the AI.
+  const people = participants.filter((participant) => participant.userId !== room.agentId).length;
+  const isGroup = people >= 2;
   const aiStatus: AIStatus = !agent || aiMode === "silent"
     ? "off"
     : agent.isSpeaking
@@ -107,6 +113,37 @@ export const CallRoom = ({ onLeave }: Props) => {
       onError: (error) => toast.error(error.message),
     }),
   );
+
+  // Host only: a 1-1 AI chat becomes "answer when called" while a second
+  // person is in the room, and back when they leave. A mode the host picks
+  // by hand turns this off for the rest of the call.
+  const autoSwitched = useRef(false);
+  const manualMode = useRef(false);
+  const lastAttempt = useRef<string | null>(null);
+  const { mutate: switchAiMode, isPending: switchingAiMode } = useMutation(
+    trpc.meetings.setAiMode.mutationOptions(),
+  );
+  useEffect(() => {
+    if (!room.isHost || !hasAgent || switchingAiMode || manualMode.current) return;
+    const next = nextAutoAiMode({ mode: aiMode, people, autoSwitched: autoSwitched.current });
+    const attempt = `${next}:${people}`;
+    if (!next || lastAttempt.current === attempt) return;
+    lastAttempt.current = attempt;
+    switchAiMode(
+      { id: room.meetingId, aiMode: next },
+      {
+        onSuccess: ({ aiMode: mode }) => {
+          autoSwitched.current = mode === "on_demand";
+          setAiMode(mode);
+          toast.info(
+            t(mode === "on_demand" ? "aiAutoOnDemand" : "aiAutoConversational", {
+              name: agentName,
+            }),
+          );
+        },
+      },
+    );
+  }, [room.isHost, room.meetingId, hasAgent, switchingAiMode, aiMode, people, agentName, switchAiMode, t]);
 
   const [asking, setAsking] = useState(false);
   const askAi = async () => {
@@ -151,6 +188,14 @@ export const CallRoom = ({ onLeave }: Props) => {
       <div className="flex min-h-0 flex-1 gap-3 px-3">
         <main className="relative min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl bg-stage-surface">
           {effectiveLayout === "grid" ? <PaginatedGridLayout /> : <SpeakerLayout />}
+
+          {agent && isGroup && aiMode !== "silent" && (
+            <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center px-4">
+              <p className="rounded-full bg-black/60 px-3 py-1 text-center text-xs">
+                {t("aiGroupNotice", { name: agentName })}
+              </p>
+            </div>
+          )}
 
           {showCaptions && (
             <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center px-4">
@@ -219,7 +264,7 @@ export const CallRoom = ({ onLeave }: Props) => {
           <UsersIcon />
         </RoomButton>
 
-        {agent && aiMode !== "conversational" && aiMode !== "silent" && (
+        {agent && aiMode !== "silent" && (aiMode !== "conversational" || isGroup) && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -235,7 +280,15 @@ export const CallRoom = ({ onLeave }: Props) => {
           </Tooltip>
         )}
 
-        {room.isHost && <CallHostMenu aiMode={aiMode} onAiModeChange={setAiMode} />}
+        {room.isHost && (
+          <CallHostMenu
+            aiMode={aiMode}
+            onAiModeChange={(mode) => {
+              manualMode.current = true;
+              setAiMode(mode);
+            }}
+          />
+        )}
 
         <Button
           variant="secondary"

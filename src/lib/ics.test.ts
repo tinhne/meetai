@@ -18,5 +18,7 @@ describe("buildIcsInvite", () => {
     expect(ics).toContain("DTEND:20261102T094500Z");
     expect(ics).toContain("SUMMARY:Họp\\, chốt giá\; Q4");
     expect(ics.split("\r\n")[0]).toBe("BEGIN:VCALENDAR");
+    expect(ics).toContain("BEGIN:VALARM\r\nACTION:DISPLAY");
+    expect(ics).toContain("TRIGGER:-PT15M");
   });
 });

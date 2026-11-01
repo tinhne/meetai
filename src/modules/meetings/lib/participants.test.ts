@@ -51,3 +51,10 @@ describe("guest tokens", () => {
     expect(verifyGuestToken({ secret, token: "garbage" })).toBeNull();
   });
 });
+
+describe("decideJoin with a personal invite", () => {
+  it("lets invited people skip the waiting room but not a locked room", () => {
+    expect(decideJoin({ joinMode: "approval", isOwner: false, invited: true })).toBe("admitted");
+    expect(decideJoin({ joinMode: "locked", isOwner: false, invited: true })).toBe("locked");
+  });
+});
