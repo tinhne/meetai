@@ -27,10 +27,12 @@ export function buildAlternates(path: string, locale: string) {
   };
 }
 
+// USD keeps cents when there are any ($7.99, but $79); VND never has decimals.
 export function formatPrice(amount: number, currency: "VND" | "USD", locale: string) {
   return new Intl.NumberFormat(locale === "en" ? "en-US" : "vi-VN", {
     style: "currency",
     currency,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: currency === "USD" ? 2 : 0,
   }).format(amount);
 }

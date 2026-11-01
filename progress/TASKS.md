@@ -3,12 +3,10 @@
 Status as of 2026-11-01, `main` @ `7e9313d`. Context: [SESSION_HANDOFF.md](SESSION_HANDOFF.md).
 Rules: ask before pushing `main` (it deploys production), before running migrations on the Neon DB, and before changing external dashboards (Polar, Stream, Vercel, Google/GitHub OAuth).
 
-## 1. Apply the agreed pricing in code — WAITING FOR USER DECISION
-- **Objective:** make the app match the proposal: Pro $7.99 (~199.000đ)/month, $79 (~1.990.000đ)/year; Pro recorded minutes 1200 → 600; AI packs 60 min $6.99 (~179k), 200 min $19.99 (~499k). Free plan unchanged.
-- **Files:** `src/config/pricing.ts` (PRICING_PLANS monthly/yearly VND+USD, VOICE_CREDIT_PACKS), `src/config/plans.ts` (`pro.recordingMinutesPerMonth`), `messages/{vi,en}.json` (`landing.pricing`, `landing.pages.pricing.faq`, any copy quoting 149k/$6/79k), `src/content/blog.ts` and `src/content/demo-meeting.ts` (mention 149k; this is demo content, so keep it or change it on purpose), `src/modules/marketing/lib/structured-data.ts` (reads PRICING_PLANS), `docs/BILLING_SETUP.md` (product table), `docs/PRODUCT_PLAN.md` §6. (`src/config/plans.test.ts` does not assert these numbers.)
-- **Dependencies:** the user approves the numbers.
-- **Expected result:** pricing page, billing compare table and JSON-LD show the new prices; quotas enforce 600 recorded minutes for Pro.
-- **Verify:** `npx tsc --noEmit`, `npx eslint src`, `npx vitest run`, open `/pricing` and `/en/pricing` locally, then commit (no AI attribution) and **ask before pushing**.
+## 1. Apply the agreed pricing in code — DONE (branch `pricing-v2`, not merged/pushed)
+- Pro $7.99 / 199.000đ monthly, $79 / 1.990.000đ yearly (`PricingPlan.yearly` is now the yearly **total**; the site shows the per-month equivalent plus "billed … per year"), Pro recorded minutes 600, AI packs 60 min $6.99 / 179k and 200 min $19.99 / 499k, `formatPrice` keeps USD cents. Free plan unchanged. Demo/blog mentions of 149k left as sample content.
+- Verified: typecheck, lint (0 errors), 85 tests, `/pricing` and `/en/pricing` checked in the browser (monthly/yearly × VND/USD, packs, JSON-LD offer `7.99`, page titles).
+- **Remaining:** merge `pricing-v2` into `main` and push (deploys production) — ask the owner first.
 
 ## 2. Switch Polar to production (user does the dashboard part)
 - **Objective:** collect real money.

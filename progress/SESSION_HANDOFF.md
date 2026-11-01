@@ -44,7 +44,7 @@ Related: [CLAUDE.md](../CLAUDE.md) · [CURRENT_STATUS](CURRENT_STATUS.md) · [TA
   - **Pro monthly $7.99 (~199.000đ)**, **Pro yearly $79 (~1.990.000đ)**: unlimited meetings and agents, **600 recorded min** (currently 1200 in code), 60 AI voice min, 10 people/room, 20 knowledge docs
   - **AI minute packs: 60 min $6.99 (~179k), 200 min $19.99 (~499k)** (currently 79k/60 and 299k/300 in code)
   - Team: later
-  - The user has **not yet answered** whether to apply it in code.
+  - **Applied in code on 2026-11-01** on branch `pricing-v2` (approved by the owner); not merged into `main`, not pushed. See TASKS.md item 1.
 - Cost model behind the proposal (estimates from official price pages, no real usage data yet): OpenAI realtime-mini ≈ $0.04–0.05 per AI-speaking minute; Stream ≈ $0.012–0.016 per recorded call minute (Stream transcription $8/1000 min is the biggest part); Gemini paid tier ≈ $0.005/recorded min (currently free tier); a 12-min IELTS session ≈ $0.45; Polar (org created after 2026-05-27, Starter) 5% + $0.50 + 1.5% for non-US cards; fixed ≈ $30–45/month (Vercel Pro $20 required for commercial use, Railway ~$5, Neon $0–19). The user's $5 OpenAI credit ≈ 100–125 AI-speaking minutes.
 
 **Implemented (see git log per phase for detail)**
@@ -118,4 +118,4 @@ See [TASKS.md](TASKS.md) for the prioritized list with files, dependencies and v
 
 ## H. Exact next step
 
-**Ask the user whether to apply the pricing proposal in code** (Pro $7.99 / 199.000đ monthly, $79 yearly, Pro recorded minutes 600, AI packs 60 min $6.99 and 200 min $19.99). If yes, do TASKS.md item 1 exactly; if they want changes, revise the numbers first. Do not push to `main` without asking (pushing deploys production).
+**Ask the owner whether to merge branch `pricing-v2` into `main` and push** (pushing deploys production). If yes: `git checkout main && git merge --no-ff pricing-v2` (message without AI attribution), run `npx tsc --noEmit`, `npx eslint src`, `npx vitest run`, push, then curl `https://meetai-assistant.vercel.app/pricing` until it shows 199.000đ. After that continue with TASKS.md item 2 (Polar production; the owner creates products at $7.99 / $79 / $6.99 / $19.99).

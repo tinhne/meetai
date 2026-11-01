@@ -37,7 +37,7 @@ export const PLANS: Record<PlanId, PlanLimits> = {
   pro: {
     id: "pro",
     meetingsPerMonth: null,
-    recordingMinutesPerMonth: 1200,
+    recordingMinutesPerMonth: 600,
     maxAgents: null,
     askAiPerHour: 120,
     aiVoiceMinutesPerMonth: 60,

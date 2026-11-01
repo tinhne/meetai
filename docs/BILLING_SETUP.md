@@ -5,12 +5,12 @@ trạng thái gói từ bảng `subscriptions` (cache) chứ không gọi Polar 
 
 ## 1. Tạo sản phẩm trên Polar (sandbox trước, production sau)
 
-| Sản phẩm | Loại | Giá gợi ý | Metadata |
+| Sản phẩm | Loại | Giá | Metadata |
 |---|---|---|---|
-| Meet.AI Pro (tháng) | Recurring, monthly | $6 | (không cần) |
-| Meet.AI Pro (năm) | Recurring, yearly | $60 | (không cần) |
-| 60 phút AI | One-time | $3 | `voice_minutes` = `60` |
-| 300 phút AI | One-time | $12 | `voice_minutes` = `300` |
+| Meet.AI Pro (tháng) | Recurring, monthly | $7.99 | (không cần) |
+| Meet.AI Pro (năm) | Recurring, yearly | $79 | (không cần) |
+| 60 phút AI | One-time | $6.99 | `voice_minutes` = `60` |
+| 200 phút AI | One-time | $19.99 | `voice_minutes` = `200` |
 
 - Mọi sản phẩm recurring được coi là gói **Pro**. Khi có gói Team, thêm metadata
   `plan` = `team`.
@@ -37,7 +37,7 @@ trạng thái gói + đơn mua phút từ Polar.
 | | Free | Pro |
 |---|---|---|
 | Cuộc họp / tháng | 5 | Không giới hạn |
-| Phút ghi hình / tháng | 60 | 1.200 |
+| Phút ghi hình / tháng | 60 | 600 |
 | Phút AI nói / tháng | 10 | 60 |
 | Agent | 1 | Không giới hạn |
 | Người / phòng | 3 | 10 |

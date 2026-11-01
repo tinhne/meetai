@@ -24,5 +24,7 @@ describe("formatPrice", () => {
   it("formats VND and USD without decimals", () => {
     expect(formatPrice(149_000, "VND", "vi").replace(/\s/g, " ")).toMatch(/149\.000/);
     expect(formatPrice(6, "USD", "en")).toBe("$6");
+    expect(formatPrice(7.99, "USD", "en")).toBe("$7.99");
+    expect(formatPrice(1_990_000, "VND", "vi").replace(/\s/g, " ")).toMatch(/1\.990\.000/);
   });
 });

@@ -792,12 +792,16 @@
         "workspace": "Không gian làm việc chung",
         "sharedMemory": "AI nhớ quyết định của cả team",
         "admin": "Quản trị thành viên",
-        "seats": "Tính theo số người, tối thiểu 3"
+        "seats": "Tính theo số người, tối thiểu 3",
+        "recording60": "60 phút ghi hình mỗi tháng",
+        "recording600": "600 phút ghi hình mỗi tháng (10 giờ)"
       },
       "creditsTitle": "Cần thêm phút AI?",
-      "creditsDescription": "Mua thêm gói phút AI nói, dùng không thời hạn trong năm.",
+      "creditsDescription": "Mua thêm phút AI nói khi đã dùng hết phút của tháng. Phút mua thêm không hết hạn.",
       "creditsPack": "{minutes} phút",
-      "vat": "Giá chưa gồm VAT. Thanh toán qua Polar bằng thẻ quốc tế."
+      "vat": "Giá chưa gồm VAT. Thanh toán qua Polar bằng thẻ quốc tế.",
+      "billedYearly": "Thanh toán {price} mỗi năm",
+      "billedYearlyPerSeat": "Thanh toán {price}/người mỗi năm"
     },
     "security": {
       "title": "Dữ liệu của bạn được bảo vệ",
@@ -898,7 +902,7 @@
     "pages": {
       "home": "Trang chủ",
       "pricing": {
-        "metaTitle": "Bảng giá Meet.AI: miễn phí để bắt đầu, Pro 149.000đ/tháng",
+        "metaTitle": "Bảng giá Meet.AI: miễn phí để bắt đầu, Pro 199.000đ/tháng",
         "metaDescription": "So sánh gói Miễn phí, Pro và Team của Meet.AI. Thanh toán theo tháng hoặc năm, mua thêm phút AI khi cần.",
         "faqTitle": "Câu hỏi về thanh toán",
         "faq": [
