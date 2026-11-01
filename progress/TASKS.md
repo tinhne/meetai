@@ -3,10 +3,10 @@
 Status as of 2026-11-01, `main` @ `7e9313d`. Context: [SESSION_HANDOFF.md](SESSION_HANDOFF.md).
 Rules: ask before pushing `main` (it deploys production), before running migrations on the Neon DB, and before changing external dashboards (Polar, Stream, Vercel, Google/GitHub OAuth).
 
-## 1. Apply the agreed pricing in code — DONE (branch `pricing-v2`, not merged/pushed)
+## 1. Apply the agreed pricing in code — DONE, merged into `main` (4bb2c07) and live on production
 - Pro $7.99 / 199.000đ monthly, $79 / 1.990.000đ yearly (`PricingPlan.yearly` is now the yearly **total**; the site shows the per-month equivalent plus "billed … per year"), Pro recorded minutes 600, AI packs 60 min $6.99 / 179k and 200 min $19.99 / 499k, `formatPrice` keeps USD cents. Free plan unchanged. Demo/blog mentions of 149k left as sample content.
 - Verified: typecheck, lint (0 errors), 85 tests, `/pricing` and `/en/pricing` checked in the browser (monthly/yearly × VND/USD, packs, JSON-LD offer `7.99`, page titles).
-- **Remaining:** merge `pricing-v2` into `main` and push (deploys production) — ask the owner first.
+- Production verified 2026-11-01: `/pricing` title shows 199.000đ, `/en/pricing` shows $7.99, $6.99, $19.99.
 
 ## 2. Switch Polar to production (user does the dashboard part)
 - **Objective:** collect real money.

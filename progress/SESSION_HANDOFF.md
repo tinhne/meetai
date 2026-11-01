@@ -33,7 +33,7 @@ Related: [CLAUDE.md](../CLAUDE.md) · [CURRENT_STATUS](CURRENT_STATUS.md) · [TA
 | `scripts/` | `db-migrate.ts` (baseline-aware), `stream-setup.ts` (creates locked `meetai` call type; dry run unless `--apply`) |
 | `docs/` | PRODUCT_PLAN (pricing §6), MASTER_PROMPT (phase specs), BILLING_SETUP (Polar steps) |
 
-**Current branch:** `main`. Code is at `7e9313d` (= `origin/main`); one local docs-only commit on top (this handoff), not pushed. The handoff request said `phase-5-marketing-seo`; that is stale. All phase branches (`phase-0…phase-8`) are merged into `main` and kept locally.
+**Current branch:** `main` @ `4bb2c07` (= `origin/main`, deployed), plus a later docs-only status commit. The handoff request said `phase-5-marketing-seo`; that is stale. All phase branches (`phase-0…phase-8`) are merged into `main` and kept locally.
 
 ## B. Exact current progress
 
@@ -44,7 +44,7 @@ Related: [CLAUDE.md](../CLAUDE.md) · [CURRENT_STATUS](CURRENT_STATUS.md) · [TA
   - **Pro monthly $7.99 (~199.000đ)**, **Pro yearly $79 (~1.990.000đ)**: unlimited meetings and agents, **600 recorded min** (currently 1200 in code), 60 AI voice min, 10 people/room, 20 knowledge docs
   - **AI minute packs: 60 min $6.99 (~179k), 200 min $19.99 (~499k)** (currently 79k/60 and 299k/300 in code)
   - Team: later
-  - **Applied in code on 2026-11-01** on branch `pricing-v2` (approved by the owner); not merged into `main`, not pushed. See TASKS.md item 1.
+  - **Applied, merged into `main` (4bb2c07), pushed and live on production** (verified `/pricing` and `/en/pricing`). See TASKS.md item 1.
 - Cost model behind the proposal (estimates from official price pages, no real usage data yet): OpenAI realtime-mini ≈ $0.04–0.05 per AI-speaking minute; Stream ≈ $0.012–0.016 per recorded call minute (Stream transcription $8/1000 min is the biggest part); Gemini paid tier ≈ $0.005/recorded min (currently free tier); a 12-min IELTS session ≈ $0.45; Polar (org created after 2026-05-27, Starter) 5% + $0.50 + 1.5% for non-US cards; fixed ≈ $30–45/month (Vercel Pro $20 required for commercial use, Railway ~$5, Neon $0–19). The user's $5 OpenAI credit ≈ 100–125 AI-speaking minutes.
 
 **Implemented (see git log per phase for detail)**
@@ -118,4 +118,4 @@ See [TASKS.md](TASKS.md) for the prioritized list with files, dependencies and v
 
 ## H. Exact next step
 
-**Ask the owner whether to merge branch `pricing-v2` into `main` and push** (pushing deploys production). If yes: `git checkout main && git merge --no-ff pricing-v2` (message without AI attribution), run `npx tsc --noEmit`, `npx eslint src`, `npx vitest run`, push, then curl `https://meetai-assistant.vercel.app/pricing` until it shows 199.000đ. After that continue with TASKS.md item 2 (Polar production; the owner creates products at $7.99 / $79 / $6.99 / $19.99).
+**Help the owner switch Polar to production (TASKS.md item 2).** The owner creates products on polar.sh at $7.99/month, $79/year, and AI packs $6.99 (`voice_minutes`=60) and $19.99 (`voice_minutes`=200), adds the webhook and sets the Vercel env vars. Then, **only with the owner's go-ahead**, clear the sandbox billing cache (`subscriptions`, `billing_customers`, purchased `credits`) and verify a real purchase on `/dashboard/billing`.
