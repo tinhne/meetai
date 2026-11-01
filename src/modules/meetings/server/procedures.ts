@@ -29,6 +29,7 @@ import {
   user,
 } from "@/db/schema";
 import { AI_CONFIG, AI_MODES, JOIN_MODES } from "@/config/ai";
+import { APP_TIME_ZONE } from "@/i18n/routing";
 import { buildIcsInvite } from "@/lib/ics";
 import { sendMeetingInviteEmail } from "@/lib/email";
 import { warnIfNearQuota } from "@/server/billing/quota";
@@ -493,7 +494,7 @@ export const meetingsRouter = createTRPCRouter({
         ? new Intl.DateTimeFormat(input.locale === "en" ? "en-US" : "vi-VN", {
             dateStyle: "full",
             timeStyle: "short",
-            timeZone: "Asia/Ho_Chi_Minh",
+            timeZone: APP_TIME_ZONE,
           }).format(meeting.scheduledAt)
         : null;
       const ics = meeting.scheduledAt

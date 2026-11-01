@@ -32,11 +32,17 @@ export const FailedState = ({ meetingId, reason }: Props) => {
     }),
   );
 
+  // The stored reason is an English note for logs (src/inngest/functions.ts);
+  // only the timeout case gets its own message.
+  const description = reason?.startsWith("Processing took too long")
+    ? tStates("failedTimedOut")
+    : tStates("failedDescription");
+
   return (
     <div className="bg-card rounded-xl border px-4 py-8 flex flex-col gap-y-8 items-center">
       <EmptyState
         title={tStates("failedTitle")}
-        description={reason ?? tStates("failedDescription")}
+        description={description}
         image="/cancelled.svg"
         action={
           <Button

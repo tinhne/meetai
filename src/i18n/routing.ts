@@ -10,6 +10,10 @@ export const routing = defineRouting({
   localeDetection: false,
 });
 
+// Dates and times are shown in Vietnam time everywhere (pages and emails).
+// Without it next-intl uses the server's zone, which is UTC on Vercel.
+export const APP_TIME_ZONE = "Asia/Ho_Chi_Minh";
+
 export type AppLocale = (typeof routing.locales)[number];
 
 export function toAppLocale(value: string): AppLocale {

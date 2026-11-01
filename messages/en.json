@@ -414,7 +414,8 @@
     "cancelledTitle": "This meeting was cancelled",
     "cancelledDescription": "It won't take place.",
     "failedTitle": "We couldn't process this meeting",
-    "failedDescription": "Something went wrong while writing the notes."
+    "failedDescription": "Something went wrong while writing the notes.",
+    "failedTimedOut": "Processing took too long and was stopped. Press Process again to retry."
   },
   "notes": {
     "tabs": {
