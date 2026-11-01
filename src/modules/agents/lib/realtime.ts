@@ -86,6 +86,34 @@ export function isAgentAddressed(transcript: string, agentName: string) {
   );
 }
 
+// A 1-1 conversation becomes "answer when called" while two or more people
+// are in the room; any other mode the host picked is kept as is.
+export function effectiveAiMode(chosen: AiMode, people: number): AiMode {
+  return chosen === "conversational" && people >= 2 ? "on_demand" : chosen;
+}
+
+// Live controls written on the Stream call's custom data by the app (see
+// src/server/agent-dispatch.ts) and polled by the agent, so they reach it
+// wherever it runs.
+export interface AgentControl {
+  mode: AiMode | null;
+  askSeq: number;
+  askBy: string | null;
+}
+
+export function readAgentControl(custom: Record<string, unknown> | undefined | null): AgentControl {
+  const mode = custom?.ai_mode;
+  const askSeq = Number(custom?.ai_ask_seq ?? 0);
+  return {
+    mode:
+      mode === "conversational" || mode === "on_demand" || mode === "facilitator" || mode === "silent"
+        ? mode
+        : null,
+    askSeq: Number.isFinite(askSeq) ? askSeq : 0,
+    askBy: typeof custom?.ai_ask_by === "string" ? custom.ai_ask_by : null,
+  };
+}
+
 export interface RealtimeUsage {
   input_tokens?: number;
   output_tokens?: number;

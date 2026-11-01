@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AIStatusIndicator, type AIStatus } from "@/components/ai-status-indicator";
@@ -33,7 +33,6 @@ import type { AiMode } from "@/config/ai";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn, formatTimestamp } from "@/lib/utils";
-import { nextAutoAiMode } from "@/modules/meetings/lib/rules";
 import { toStreamTranscriptionLanguage } from "@/modules/meetings/lib/stream";
 import { useTRPC } from "@/trpc/client";
 import { useCallRoom } from "./call-context";
@@ -92,8 +91,8 @@ export const CallRoom = ({ onLeave }: Props) => {
 
   const agent = participants.find((participant) => participant.userId === room.agentId);
   const agentName = agent?.name || "AI";
-  const hasAgent = !!agent;
-  // People in the room, not counting the AI.
+  // People in the room, not counting the AI. With two or more, a 1-1 agent
+  // answers only when called (it switches itself, see agent-session.ts).
   const people = participants.filter((participant) => participant.userId !== room.agentId).length;
   const isGroup = people >= 2;
   const aiStatus: AIStatus = !agent || aiMode === "silent"
@@ -113,37 +112,6 @@ export const CallRoom = ({ onLeave }: Props) => {
       onError: (error) => toast.error(error.message),
     }),
   );
-
-  // Host only: a 1-1 AI chat becomes "answer when called" while a second
-  // person is in the room, and back when they leave. A mode the host picks
-  // by hand turns this off for the rest of the call.
-  const autoSwitched = useRef(false);
-  const manualMode = useRef(false);
-  const lastAttempt = useRef<string | null>(null);
-  const { mutate: switchAiMode, isPending: switchingAiMode } = useMutation(
-    trpc.meetings.setAiMode.mutationOptions(),
-  );
-  useEffect(() => {
-    if (!room.isHost || !hasAgent || switchingAiMode || manualMode.current) return;
-    const next = nextAutoAiMode({ mode: aiMode, people, autoSwitched: autoSwitched.current });
-    const attempt = `${next}:${people}`;
-    if (!next || lastAttempt.current === attempt) return;
-    lastAttempt.current = attempt;
-    switchAiMode(
-      { id: room.meetingId, aiMode: next },
-      {
-        onSuccess: ({ aiMode: mode }) => {
-          autoSwitched.current = mode === "on_demand";
-          setAiMode(mode);
-          toast.info(
-            t(mode === "on_demand" ? "aiAutoOnDemand" : "aiAutoConversational", {
-              name: agentName,
-            }),
-          );
-        },
-      },
-    );
-  }, [room.isHost, room.meetingId, hasAgent, switchingAiMode, aiMode, people, agentName, switchAiMode, t]);
 
   const [asking, setAsking] = useState(false);
   const askAi = async () => {
@@ -280,15 +248,7 @@ export const CallRoom = ({ onLeave }: Props) => {
           </Tooltip>
         )}
 
-        {room.isHost && (
-          <CallHostMenu
-            aiMode={aiMode}
-            onAiModeChange={(mode) => {
-              manualMode.current = true;
-              setAiMode(mode);
-            }}
-          />
-        )}
+        {room.isHost && <CallHostMenu aiMode={aiMode} onAiModeChange={setAiMode} />}
 
         <Button
           variant="secondary"

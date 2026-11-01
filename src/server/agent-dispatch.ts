@@ -1,5 +1,7 @@
 import "server-only";
 
+import { after } from "next/server";
+
 import { AI_CONFIG, type AiMode } from "@/config/ai";
 import { db } from "@/db";
 import { env } from "@/env";
@@ -62,6 +64,30 @@ export async function recordVoiceUsage(
   await recordVoiceUsageInLedger(db, { userId, meetingId, ...usage });
 }
 
+// True when the agent is already connected to the call, so it is never
+// started twice (webhook retries, mode changes from another instance).
+async function isAgentInCall(meeting: { id: string; callType: string }, agentId: string) {
+  try {
+    const { call } = await streamVideo.video.call(meeting.callType, meeting.id).get();
+    return (call.session?.participants ?? []).some((participant) => participant.user.id === agentId);
+  } catch {
+    return false;
+  }
+}
+
+// Live controls go through the Stream call's custom data, which the agent
+// session polls: they reach the agent wherever it runs (the worker or another
+// serverless instance). See readAgentControl in modules/agents/lib/realtime.
+async function updateCallCustom(
+  meeting: { id: string; callType: string },
+  patch: (custom: Record<string, unknown>) => Record<string, unknown>,
+) {
+  const call = streamVideo.video.call(meeting.callType, meeting.id);
+  const { call: state } = await call.get();
+  const custom = (state.custom ?? {}) as Record<string, unknown>;
+  await call.update({ custom: { ...custom, ...patch(custom) } });
+}
+
 export function toAiMode(value: string): AiMode {
   return value === "on_demand" || value === "facilitator" || value === "silent"
     ? value
@@ -84,6 +110,10 @@ export async function startAgentForMeeting(
 
   if (voiceSecondsRemaining <= 0) {
     return { started: false, reason: "quota" };
+  }
+
+  if (await isAgentInCall(meeting, agent.id)) {
+    return { started: true, reason: "already-in-call" };
   }
 
   if (env.AGENT_WORKER_URL) {
@@ -120,6 +150,13 @@ export async function startAgentForMeeting(
   });
   localSessions.set(meeting.id, handle);
   void handle.done.then(() => localSessions.delete(meeting.id));
+  // Keep this serverless invocation alive while the agent talks (up to the
+  // function's max duration); otherwise the platform may freeze it.
+  try {
+    after(() => handle.done);
+  } catch {
+    // outside a request (scripts, tests)
+  }
 
   return { started: true, reason: "in-process" };
 }
@@ -129,19 +166,25 @@ export async function stopAgentForMeeting(meetingId: string) {
   await callWorker("/sessions/stop", { meetingId });
 }
 
-export async function askAgentInMeeting(meetingId: string, askedBy: string) {
-  localSessions.get(meetingId)?.ask(askedBy);
-  await callWorker("/sessions/ask", { meetingId, askedBy });
+// "Ask AI": the agent answers the latest question on its next poll.
+export async function askAgentInMeeting(
+  meeting: { id: string; callType: string },
+  askedBy: string,
+) {
+  await updateCallCustom(meeting, (custom) => ({
+    ai_ask_seq: Number(custom.ai_ask_seq ?? 0) + 1,
+    ai_ask_by: askedBy,
+  }));
 }
 
-// Returns false when no agent session is running (caller may start one).
-export async function setAgentModeInMeeting(meetingId: string, mode: AiMode) {
-  const local = localSessions.get(meetingId);
-  if (local) {
-    local.setMode(mode);
-    return true;
+// Changes the mode of a running agent, or starts one when none is in the call.
+export async function setAgentModeInMeeting(
+  meeting: DispatchMeeting,
+  agent: DispatchAgent,
+  mode: AiMode,
+) {
+  await updateCallCustom(meeting, () => ({ ai_mode: mode }));
+  if (mode !== "silent" && !(await isAgentInCall(meeting, agent.id))) {
+    await startAgentForMeeting({ ...meeting, aiMode: mode }, agent);
   }
-  if (!env.AGENT_WORKER_URL) return false;
-  await callWorker("/sessions/mode", { meetingId, mode });
-  return true;
 }

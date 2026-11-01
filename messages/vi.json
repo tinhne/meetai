@@ -195,8 +195,6 @@
   },
   "call": {
     "aiGroupNotice": "{name} (AI) đang nghe và ghi chép. Gọi \"{name} ơi\" hoặc bấm Hỏi AI để hỏi.",
-    "aiAutoConversational": "Chỉ còn bạn: {name} trò chuyện 1-1 trở lại.",
-    "aiAutoOnDemand": "Phòng đã có nhiều người: {name} chỉ trả lời khi được gọi tên.",
     "connecting": "Đang kết nối…",
     "lobbyTitle": "Sẵn sàng tham gia?",
     "lobbySubtitle": "Kiểm tra camera và micro trước khi vào phòng.",

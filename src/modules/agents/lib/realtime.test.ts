@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildRealtimeSessionConfig,
+  effectiveAiMode,
   isAgentAddressed,
+  readAgentControl,
   voiceSecondsFromUsage,
 } from "./realtime";
 import { signWorkerRequest, verifyWorkerRequest } from "./worker-auth";
@@ -103,5 +105,25 @@ describe("worker request signing", () => {
         now: now + 10 * 60 * 1000,
       }),
     ).toBe(false);
+  });
+});
+
+describe("effectiveAiMode", () => {
+  it("answers only when called once two people are in the room", () => {
+    expect(effectiveAiMode("conversational", 1)).toBe("conversational");
+    expect(effectiveAiMode("conversational", 2)).toBe("on_demand");
+    expect(effectiveAiMode("facilitator", 3)).toBe("facilitator");
+  });
+});
+
+describe("readAgentControl", () => {
+  it("reads the mode and ask counter from the call's custom data", () => {
+    expect(readAgentControl({ meetingId: "m1", ai_mode: "silent", ai_ask_seq: 3, ai_ask_by: "Lan" })).toEqual({
+      mode: "silent",
+      askSeq: 3,
+      askBy: "Lan",
+    });
+    expect(readAgentControl({ ai_mode: "loud", ai_ask_seq: "x" })).toEqual({ mode: null, askSeq: 0, askBy: null });
+    expect(readAgentControl(undefined)).toEqual({ mode: null, askSeq: 0, askBy: null });
   });
 });
